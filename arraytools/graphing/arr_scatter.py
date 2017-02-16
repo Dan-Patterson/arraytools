@@ -2,12 +2,13 @@
 """
 :Script:   arr_scatter.py
 :Author:   Dan.Patterson@carleton.ca
-:Modified: 2017-01-23
+:Modified: 2017-02-15
 :
-:Purpose:
+:Purpose: Basic shell for producing scatterplots
 :
-:Notes:
-:
+:Notes: Line 21 should be used when using pythonwin since it seems to
+:  only support tk graphing.  When using pyscripter, pycharm or iPython
+:  the QT5 option can be used
 :References:
 :
 :---------------------------------------------------------------------:
