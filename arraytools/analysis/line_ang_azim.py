@@ -34,7 +34,6 @@
 
 import sys
 import numpy as np
-from textwrap import dedent, indent
 
 ft = {'bool': lambda x: repr(x.astype('int32')),
       'float': '{: 0.3f}'.format}
@@ -55,16 +54,16 @@ def line_dir(orig, dest, fromNorth=False):
     :Notes:
     :
     """
-    orig = np.asarray(orig)
-    dest = np.asarray(dest)
-    dx, dy = dest - orig
-    ang = np.degrees(np.arctan2(dy, dx))
+    orig = np.atleast_2d(orig)
+    dest = np.atleast_2d(dest)
+    dxy = dest - orig
+    ang = np.degrees(np.arctan2(dxy[:, 1], dxy[:, 0]))
     if fromNorth:
         ang = np.mod((450.0 - ang), 360.)
     return ang
 
 
-def demo(xc=0, yc=0, fromNorth=True):
+def _demo(xc=0, yc=0, fromNorth=True):
     """ run the demo with the data below """
     p0 = np.array([xc, yc])  # origin point
     p1 = p0 + [-1, 1]   # NW
@@ -87,12 +86,12 @@ def demo(xc=0, yc=0, fromNorth=True):
             dir = "From x-axis"
         args = [orig, dest, dir, ang]
         print("orig: {}: dest: {!s:<8} {}: {!s:>6}".format(*args))
-
+    return od
 
 # ---------------------------------------------------------------------
 if __name__ == "__main__":
     """Main section...   """
 #    print("Script... {}".format(script))
-    xc = 300000   # pick an origin x  0 or 300000 for example
-    yc = 5025000  # pick an origin y  0 or 5025000
-    demo(xc, yc, fromNorth=True)
+    xc = 0  # 300000   # pick an origin x  0 or 300000 for example
+    yc = 0  # 5025000  # pick an origin y  0 or 5025000
+    od = _demo(xc, yc, fromNorth=True)
