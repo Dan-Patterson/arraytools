@@ -16,13 +16,17 @@ Available subpackages
 ---------------------
 analysis:
     Tools for calculating distance, proximity, angles.
-format
+formating
     Format options to facilitate viewing of numpy arrays in a variety of ways.
+geom
+    Geometry related function
 graph
     Graphing capabilities using MatPlotLib as the basic graphing program
+stats
+    Statistics and related
 other
     Placeholder
-docs
+examples
     Documentation for *.py script, will have the same name but end with *.txt.
 
    
