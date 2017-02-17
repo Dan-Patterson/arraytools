@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-:Script:   arr_tools.py
+:Script:   tools.py
 :Author:   Dan.Patterson@carleton.ca
 :Modified: 2016-02-14
 :Purpose:  tools for working with numpy arrays
@@ -409,7 +409,7 @@ def block_arr(a, win=[3, 3], nodata=-1):
     s = np.array(a.shape)
     if len(win) != 2:
         print("\n....... Read the docs .....\n{}".format(block_arr.__doc__))
-        return None, None
+        return None
     win = np.asarray(win)
     m = divmod(s, win)
     s2 = win*m[0] + win*(m[1] != 0)
@@ -417,7 +417,7 @@ def block_arr(a, win=[3, 3], nodata=-1):
     pad = ((0, ypad), (0, xpad))
     p_with = ((nodata, nodata), (nodata, nodata))
     b = np.pad(a, pad_width=pad, mode='constant', constant_values=p_with)
-    w_y, w_x = win  # Blocksize
+    w_y, w_x = win       # Blocksize
     y, x = b.shape       # padded array
     c = b.reshape((y//w_y, w_y, x//w_x, w_x))
     c = c.swapaxes(1, 2).reshape(-1, w_y, w_x)
@@ -1211,6 +1211,16 @@ def _check(a, r_c, subok=False):
     return a, r, c, tuple(r_c)
 
 
+def _pad(a, nan_edge=False):
+    """Pad a sliding array to allow for stats"""
+    if nan_edge:
+        a = np.pad(a, pad_width=(1, 2), mode="constant",
+                   constant_values=(np.NaN, np.NaN))
+    else:
+        a = np.pad(a, pad_width=(1, 1), mode="reflect")
+    return a
+
+
 def stride(a, r_c=(3, 3)):
     """Provide a 2D sliding/moving view of an array.
     :  There is no edge correction for outputs.
@@ -1230,6 +1240,54 @@ def stride(a, r_c=(3, 3)):
     strides = a.strides * 2
     a_s = (as_strided(a, shape=shape, strides=strides)).squeeze()
     return a_s
+
+
+# ----------------------------------------------------------------------
+# (21) stride .... code section
+def rolling_stats(a, no_null=True, prn=True):
+    """Statistics on the last two dimensions of an array.
+    :Requires
+    :--------
+    : a - 2D array
+    : no_null - boolean, whether to use masked values (nan) or not.
+    : prn - boolean, to print the results or return the values.
+    :
+    :Returns
+    :-------
+    : The results return an array of 4 dimensions representing the original
+    : array size and block size
+    : eg.  original = 6x6 array   block = 3x3
+    :      breaking the array into 4 chunks
+    """
+    a = np.asarray(a)
+    a = np.atleast_2d(a)
+    ax = None
+    if a.ndim > 1:
+        ax = tuple(np.arange(len(a.shape))[-2:])
+    if no_null:
+        a_min = a.min(axis=ax)
+        a_max = a.max(axis=ax)
+        a_mean = a.mean(axis=ax)
+        a_sum = a.sum(axis=ax)
+        a_std = a.std(axis=ax)
+        a_var = a.var(axis=ax)
+        a_ptp = a_max - a_min
+    else:
+        a_min = np.nanmin(a, axis=(ax))
+        a_max = np.nanmax(a, axis=(ax))
+        a_mean = np.nanmean(a, axis=(ax))
+        a_sum = np.nansum(a, axis=(ax))
+        a_std = np.nanstd(a, axis=(ax))
+        a_var = np.nanvar(a, axis=(ax))
+        a_ptp = a_max - a_min
+    if prn:
+        frmt = "Minimum...\n{}\nMaximum...\n{}\nMean...\n{}\n" + \
+               "Sum...\n{}\nStd...\n{}\nVar...\n{}\nRange...\n{}"
+        frmt = dedent(frmt)
+        args = [a_min, a_max, a_mean, a_sum, a_std, a_var, a_ptp]
+        print(frmt.format(*args))
+    else:
+        return a_min, a_max, a_mean, a_sum, a_std, a_var, a_ptp
 
 
 # ----------------------------------------------------------------------
@@ -1280,6 +1338,7 @@ def _help():
          scale an array up in size by repeating values
     (20) stride(a, r_c=(3, 3))
          stride an array for moving window functions
+    (21) rolling_stats((a0, no_null=True, prn=True))
     :-------------------------------------------------------------------:
     """
     print(dedent(_hf))
@@ -1293,10 +1352,12 @@ def _demo():
     : - Run examples of the existing functions.
     """
     a = np.arange(3*4).reshape(3, 4)
+    a0 = np.arange(9*6).reshape(9, 6)
     b = nd_struct(a)
     c = np.arange(2*3*4).reshape(2, 3, 4)
     d = np.arange(2*3*4*5).reshape(2, 3, 4, 5)
     e = block_arr(a, win=[2, 2], nodata=-1)
+    f = stride(a, (3, 3))
     f1 = in_by(arr2xyz(a, verbose=False))
     f2 = in_by(e)
     f3 = change(b, order=['B', 'C', 'A'], prn=False)
@@ -1313,6 +1374,7 @@ def _demo():
     f16 = nd_struct(a)
     f19 = in_by(scale(a, 2))
     f20 = in_by(stride(a, (3, 3)))
+    f21 = rolling_stats(a0, no_null=True, prn=False)
 
     frmt = """
 : ----- _demo {}
@@ -1357,11 +1419,14 @@ def _demo():
 :(19) scale() ... scale an array up by an integer factor...
 {}\n
 :(20) stride() ... stride an array ....
+{}\n
+:(21) rolling_stats()... stats for a strided array ...
+:    min, max, mean, sum, std, var, ptp
 {}
 """
     args = ["-"*62, a, b, c,
             f1, f2, f3.reshape(a.shape[0], -1),
-            f4, f5, f6, f8, f9, f12, f12a, f13, f14, f15, f16, f19, f20
+            f4, f5, f6, f8, f9, f12, f12a, f13, f14, f15, f16, f19, f20, f21
             ]
     print(frmt.format(*args))
     del args, d, e
