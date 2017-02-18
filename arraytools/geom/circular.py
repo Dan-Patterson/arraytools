@@ -6,7 +6,7 @@
 :Purpose:  See the documentation for the functions
 :Notes:
 :
-:References
+:References:
 :
 """
 
@@ -17,7 +17,7 @@ import numpy as np
 
 
 ft = {'bool': lambda x: repr(x.astype('int32')),
-       'float': '{: 0.3f}'.format}
+      'float': '{: 0.3f}'.format}
 np.set_printoptions(edgeitems=10, linewidth=80, precision=2,
                     suppress=True, threshold=100, formatter=ft)
 
@@ -31,7 +31,8 @@ __all__ = ["plot_",
            "buffer_ring",
            "multiring_buffer_demo",
            "multi_sector_demo"
-          ]
+           ]
+
 
 # ---- functions ----
 
@@ -42,10 +43,6 @@ def plot_(pnts):
     import matplotlib
     from matplotlib.patches import Polygon
     from matplotlib.collections import PatchCollection
-    #x_min = pnts[:,0].min()
-    #x_max = pnts[:,0].max()
-    #y_min = pnts[:,1].min()
-    #y_max = pnts[:,1].max()
     fig, ax = plt.subplots()
     patches = []
     for i in pnts:  # Points need to form a closed loop
@@ -54,13 +51,10 @@ def plot_(pnts):
     p = PatchCollection(patches, cmap=matplotlib.cm.jet, alpha=1.0)
     colors = 100*np.random.rand(len(patches))
     p.set_array(np.array(colors))
-    #ax.set_xlim(x_min-0.5, x_max+0.5)  # (x_min, x_max)
-    #ax.set_ylim(y_min-0.5, y_max+0.5)  # y_min, y_max)
     ax.add_collection(p)
     plt.axis('equal')
     plt.show()
-    plt.close()
-    #return fig, ax
+#    plt.close()
 
 
 def rot_matrix(angle=0, nm_3=False):
@@ -158,14 +152,13 @@ def arc_sector(outer=10, inner=9, start=1, stop=6, step=0.1):
     s_s = [start, stop]
     s_s.sort()
     start, stop = s_s
-    top = _arc(radius=outer, start=start, stop=stop, step=step, xc=0.0, yc=0.0)
+    top = _arc(outer, start, stop, step, 0.0, 0.0)
     top.reverse()
-    bott = _arc(radius=inner, start=start, stop=stop, step=step, xc=0.0, yc=0.0)
+    bott = _arc(inner, start, stop, step, 0.0, 0.0)
     top = np.array(top)
     bott = np.array(bott)
     close = top[0]
     pnts = np.asarray([i for i in [*top, *bott, close]])
-    #plot_(pnts)  # uncomment if using with plot_ function
     return pnts
 
 
@@ -193,7 +186,6 @@ def buffer_ring(outer=100, inner=0, theta=10, rot=0, scale=1, xc=0.0, yc=0.0):
         pnts = np.asarray([i for i in [*top, *bott]])
     else:
         pnts = top
-    #plot_(pnts)  # uncomment if using with plot_ function
     return pnts
 
 
@@ -212,10 +204,10 @@ def multiring_buffer_demo():
     rot = 22.5
     scale = 0.7
     for r in range(1, len(radii)):
-        ring = buffer_ring(radii[r], radii[r-1], theta=theta, rot=rot, scale=scale)
+        ring = buffer_ring(radii[r], radii[r-1], theta, rot, scale)
         buffers.append(ring)
     plot_(buffers)
-    #return buffers
+    # return buffers
 
 
 def multi_sector_demo():
@@ -223,29 +215,39 @@ def multi_sector_demo():
     sectors = []
     outer = 10
     inner = 9
-    incr = np.arange(0, 91, 1) #(0,361,5)
+    incr = np.arange(0, 91, 1)  # (0,361,5)
     for outer in range(6, 10):
         inner = outer - 1
         for i in range(0, len(incr)):
             st = incr[i]
             end = incr[i-1]
-            arc = arc_sector(outer=outer, inner=inner, start=st, stop=end, step=0.1)
+            arc = arc_sector(outer, inner, start=st, stop=end, step=0.1)
             sectors.append(arc)
     plot_(sectors)
 
 
 def help_():
     """Print the docs"""
-    print(__doc__)
-#----------------------
+    args = ['_arc ....', _arc.__doc__,
+            'arc_sector ....', arc_sector.__doc__,
+            '_circle ....', _circle.__doc__,
+            'buffer_ring ....', buffer_ring.__doc__,
+            'rot_matrix ....', rot_matrix.__doc__,
+            'buffer_ring ....', buffer_ring.__doc__]
+    frmt = "-"*60 + "\ncircular.py ....\n\n" + "{}\n"*len(args)
+    print(frmt.format(*args))
+    del frmt, args
+
+
+# ----------------------
 if __name__ == "__main__":
     """Uncomment what you want to see"""
-    #print("Script... {}".format(_script))
-    #circ_pnts = _circle(radius=1, theta=30, xc=5, yc=5)
-    #print("\ncircle points...\n{}".format(circ_pnts))
-    #arc_pnts = _arc(radius=10, start=0, stop=90.5, step=5, xc=0.0, yc=0.0)
-    #print("\narc points...\n{}".format(arc_pnts))
-    #pnts = arc_sector()
-    #pnts = buffer_ring()
-    #multi_sector_demo()
-    multiring_buffer_demo()
+#    print("Script... {}".format(_script))
+#    circ_pnts = _circle(radius=1, theta=30, xc=5, yc=5)
+#    print("\ncircle points...\n{}".format(circ_pnts))
+#    arc_pnts = _arc(radius=10, start=0, stop=90.5, step=5, xc=0.0, yc=0.0)
+#    print("\narc points...\n{}".format(arc_pnts))
+#    pnts = arc_sector()
+#    pnts = buffer_ring()
+#    multi_sector_demo()
+#    multiring_buffer_demo()
