@@ -29,24 +29,21 @@ other
 examples
     Documentation for *.py script, will have the same name but end with *.txt.
 
-   
+
 """
 # from __future__ import division, absolute_import, print_function
-import sys
-import numpy
 
-print("Initialization arraytools...\n...{}\nInitial keys...\
-       \n...{}".format(__path__[0], list(locals().keys())))
+# print("Initialization arraytools...\n...{}\nInitial keys...\
+#       \n...{}".format(__path__[0], list(locals().keys())))
 
 __all__ = ['tools']
 
 from .tools import *
+from .tools import _help
 from . import analysis
 from .analysis import *
 from . import format
 from .format import *
 from . import geom
 from .geom import e_area, e_dist, e_leng
-print("Final keys...\n...{}".format(list(locals().keys())))
-
-#__all__.extend(geom.__all__)
+# print("Final keys...\n...{}".format(list(locals().keys())))
