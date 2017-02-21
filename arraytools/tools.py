@@ -493,7 +493,7 @@ def deline(a, header="", prefix="  ."):
     if not isinstance(a, (list, tuple, np.ndarray)):
         return "list, tuple or ndarray required"
     a = np.asanyarray(a)
-    header += ": ...array... shape: {}".format(a.shape)
+    header += ": ... shape: {}".format(a.shape)
     f1 = "[{},...] {}"
     out = [header]
     c = 0
