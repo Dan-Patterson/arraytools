@@ -359,6 +359,7 @@ def frmt_rec(in_array, decimals=True, f_names=False, max_rows=-1):
         idx += 1
     return msg
 
+
 # ----------------------------------------------------------------------
 # in_by .... code section
 def in_by(obj, hdr="", nums=False, prefix="  "):
@@ -416,7 +417,7 @@ def make_row_format(dim=2, cols=3, a_kind='f', deci=1, a_max=10, a_min=-10):
     frmt = "Row format: dim cols: ({}, {})  kind: {} decimals: {}\n\n{}"
     print(dedent(frmt).format(dim, cols, a_kind, deci, row_frmt))
     a = np.random.randint(a_min, a_max+1, dim*cols)  # [1, 5, 10, -1, 5, -10]))
-    col_hdr()
+    col_hdr()  # run col_hdr to produce the column headers
     print(row_frmt.format(*a))
     return row_frmt
 
