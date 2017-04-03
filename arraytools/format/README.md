@@ -4,7 +4,7 @@ A series of tools for working with numpy arrays.
 arr_tools.py
   Many functions used as an import module for my work.
 
-arrfrmts.py  
+frmts.py  
   Various methods of formatting the output of numpy arrays.
 
 edist.py
