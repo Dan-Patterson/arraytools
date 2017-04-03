@@ -2,7 +2,7 @@
 """
 :Script:   tools.py
 :Author:   Dan.Patterson@carleton.ca
-:Modified: 2016-02-14
+:Modified: 2016-04-02
 :Purpose:  tools for working with numpy arrays
 :Useage:   import arr_tools as art
 :  access in other programs using .... art.func(params) ....
@@ -75,69 +75,18 @@
 :     d = a[[0,1,3,4], :]     # delete row 2, keeping the columns
 :     e = a[[0,1,3], [1,2,3]] # keep [0,1],[1,2],[3,3] => ([ 1, 7, 18])
 :
-: (4) ---- col_hdr() ----
-:   - produce column headers to align output for formatting purposes
-:           1         2         3         4         5         6
-:  123456789012345678901234567890123456789012345678901234567890123456789
-:  ----------------------------------------------------------------------
-:
-: (5) ---- deline(a) ----
-:     shp = (2,3,4)
-:     a = np.arange(np.prod(shp)).reshape(shp)
-:     deline(a)
-:
-:     Main array...
-:     ndim: 3 size: 24
-:     shape: (2, 3, 4)
-:     [[[ 0  1  2  3]
-:       [ 4  5  6  7]
-:       [ 8  9 10 11]]
-:     a[1]....
-:      [[12 13 14 15]
-:       [16 17 18 19]
-:       [20 21 22 23]]]
-:
-: (6) ---- doc_func(func=None) ----
+: (4) ---- doc_func(func=None) ----
 :   see get_func and get_modu
 :
-: (7) ---- find(a, func, this=None, count=0, keep=[], prn=False, r_lim=2)
+: (5) ---- find(a, func, this=None, count=0, keep=[], prn=False, r_lim=2)
 :   func - (cumsum, eq, neq, ls, lseq, gt, gteq, btwn, btwni, byond)
 :          (        ==,  !=,  <,   <=,  >,   >=,  >a<, =>a<=,  <a> )
-: (7a) --- _func(fn, a, this)
+: (5a) --- _func(fn, a, this)
 :    called by 'find' see details there
 :   (cumsum, eq, neq, ls, lseq, gt, gteq, btwn, btwni, byond)
 : Note: see find1d_demo.py for examples
 :
-: (8) ---- f_(a) ----
-:   a = np.arange(2*3*3).reshape(2,3,3)
-:   array([[[ 0,  1,  2],
-:           [ 3,  4,  5],
-:           [ 6,  7,  8]],
-:
-:          [[ 9, 10, 11],
-:           [12, 13, 14],
-:           [15, 16, 17]]])
-:   f_(a)
-:   Array... shape (2, 3, 3), ndim 3, not masked
-:    0,  1,  2     9, 10, 11
-:    3,  4,  5    12, 13, 14
-:    6,  7,  8    15, 16, 17
-:   sub (0)       sub (1)
-:
-: (9) ---- frmt_ma ----
-:   :--------------------
-:   :Masked array........
-:   :  ndim: 2 size: 20
-:   :  shape: (5, 4)
-:   :
-:   :... a[:5, :4] ...
-:     -  1  2  3
-:     4  5  6  7
-:     8  -  -  -
-:    12 13 14 15
-:    16 17 18  -
-:
-: (10) ---- get_func ----
+: (6) ---- get_func ----
 :    print(art.get_func(art.main))
 :    :-----------------------------------------------------------------
 :    :Function: .... main ....
@@ -152,23 +101,9 @@
 :       1   '''Do nothing'''
 :       2      pass
 :
-: (11) ---- get_modu ----
+: (7) ---- get_modu ----
 :
-: (12) ---- in_by ---- indent objects, added automatic support for arrays
-:     and optional line numbers
-: - example
-:  >>> a = np.arange(2*3*4).reshape(2,3,4)
-:  >>> print(art.in_by(a, hdr='---- header ----', nums=True, prefix =".."))
-:  ---- header ----
-:  00..[[[ 0  1  2  3]
-:  01..  [ 4  5  6  7]
-:  02..  [ 8  9 10 11]]
-:  03..
-:  04.. [[12 13 14 15]
-:  05..  [16 17 18 19]
-:  06..  [20 21 22 23]]]
-:
-: (13) ---- info(a, prn=True) ----
+: (8) ---- info(a, prn=True) ----
 : - example
 :   - array([(0, 1, 2, 3, 4), (5, 6, 7, 8, 9),
 :            (10, 11, 12, 13, 14), (15, 16, 17, 18, 19)],
@@ -196,12 +131,12 @@
 :   :     |__['E', '<i8']
 :   :---------------------
 :
-: (14) ---- make_blocks(rows=2, cols=4, r=2, c=2, dt='int')
+: (9) ---- make_blocks(rows=2, cols=4, r=2, c=2, dt='int')
 :    array([[0, 0, 1, 1, 2, 2, 3, 3],
 :           [0, 0, 1, 1, 2, 2, 3, 3],
 :           [4, 4, 5, 5, 6, 6, 7, 7],
 :           [4, 4, 5, 5, 6, 6, 7, 7]])
-: (15) ---- make_flds(n=1, names=None, default="col") ----
+: (10) ---- make_flds(n=1, names=None, default="col") ----
 :   - Example
 :   - make_flds(3, names='A,B,C', default='A')
 :     =>  dtype([('A', '<f8'), ('B', '<f8'), ('C', '<f8')])
@@ -212,7 +147,7 @@
 :     easy(f,names,name)
 :     =>  dtype([('A', '<f8'), ('B', '<f8'), ('A00', '<f8')]
 :
-: (16) ---- nd_struct(a) ----
+: (11) ---- nd_struct(a) ----
 :   - ndarray to structured array
 :   (a) keep the dtype the same
 :      aa = nd_struct(a)       # produce a structured array from inputs
@@ -229,7 +164,7 @@
 :             (15.0, 16.0, 17.0, 18.0, 19.0)],
 :         dtype=[('A', '<f8'), ... snip ... , ('E', '<f8')])
 :
-: (17) ---- reclass(z, bins, new_bins, mask=False, mask_val=None)
+: (12) ---- reclass(z, bins, new_bins, mask=False, mask_val=None)
 :   - reclass an array using existing class breaks (bins) and new bins
 :     both must be in ascending order
 :     z = np.arange(3*5).reshape(3,5)
@@ -241,14 +176,8 @@
 :            [ 5,  6,  7,  8,  9],          [2, 2, 2, 2, 2],
 :            [10, 11, 12, 13, 14]])         [3, 3, 3, 3, 3]])
 :
-: (18) ---- redent(lines, spaces=4)
-:    a = np.arange(3*5).reshape(3,5)
-:    >>> print(redent(a))
-:   |    [[ 0  1  2  3  4]
-:   |     [ 5  6  7  8  9]
-:   |     [10 11 12 13 14]]
-:
-: (19) ---- scale(a, x=2, y=2)
+
+: (13) ---- scale(a, x=2, y=2)
 :   - scale an array by x, y factors
 :     a = np.array([[0, 1, 2], [3, 4, 5]]
 :     b = scale(a, x=2, y=2)
@@ -267,7 +196,7 @@
 :                                      [2, 2, 3, 3, 2, 2, 3, 3],
 :                                      [2, 2, 3, 3, 2, 2, 3, 3]])
 :
-: (20) ---- stride(a, r_c=(3, 3))
+: (14) ---- stride(a, r_c=(3, 3))
 :   - produce a strided array using a window of r_c shape
 :   - calls _check(a, r_c, subok=False) to check for array compliance
 :     a =np.arange(15).reshape(3,5)
@@ -275,6 +204,10 @@
 :     array([[[ 0,  1,  2],  [[ 1,  2,  3],  [[ 2,  3,  4],
 :             [ 5,  6,  7],   [ 6,  7,  8],   [ 7,  8,  9],
 :             [10, 11, 12]],  [11, 12, 13]],  [12, 13, 14]]])
+:
+: (15) rolling_stats()... stats for a strided array ...
+:    min, max, mean, sum, std, var, ptp
+:   (0, 53, 26.5, 1431, 15.5857..., 242.9166..., 53)
 :
 :References
 : - https://github.com/numpy/numpy
@@ -288,16 +221,21 @@ import numpy as np
 from numpy.lib.stride_tricks import as_strided
 from textwrap import dedent
 
-__all__ = ['arr2xyz', 'block_arr',
-           'change', 'deline',
+__all__ = ['arr2xyz',
+           'block_arr',
+           'change',
            'doc_func',
-           'find', 'frmt_',
-           'frmt_ma', 'get_func',
-           'get_modu', 'in_by',
-           'info', 'make_blocks',
-           'make_flds', 'nd_struct',
-           'reclass', 'redent',
-           'scale',  'stride'
+           'find',
+           'get_func',
+           'get_modu',
+           'info',
+           'make_blocks',
+           'make_flds',
+           'nd_struct',
+           'reclass',
+           'scale',
+           'stride',
+           'rolling_stats'
            ]
 __xtras__ = ['_func', '_check',
              '_demo', 'run_deco',
@@ -360,7 +298,6 @@ def run_deco(func):
 
 
 # ---- functions ----
-
 
 # ----------------------------------------------------------------------
 # (1) arr2xyz .... code section
@@ -468,51 +405,7 @@ def change(a, order=[], prn=False):
 
 
 # ----------------------------------------------------------------------
-# (4) col_hdr ... code section .....
-def col_hdr():
-    """Print numbers from 1 to 70 to show column positions"""
-    args = [(('{:<10}')*7).format(*'0123456789'), '0123456789'*7, '-'*70]
-    s = "\n{}\n{}\n{}".format(args[0][1:], args[1][1:], args[2])  # *args)
-    return s
-
-
-# ----------------------------------------------------------------------
-# (5) deline ... code section .....
-def deline(a, header="", prefix="  ."):
-    """Remove extraneous lines from array output
-    :  More useful for long arrays with ndim >= 3
-    :Requires:
-    :--------
-    : a - anything that can be put into array form
-    : header - an optional header
-    : prefix - could be just spaces or something like shown
-    :Returns:
-    :-------
-    :  a string for printing
-    """
-    if not isinstance(a, (list, tuple, np.ndarray)):
-        return "list, tuple or ndarray required"
-    a = np.asanyarray(a)
-    header += ": ... shape: {}".format(a.shape)
-    f1 = "[{},...] {}"
-    out = [header]
-    c = 0
-
-    def _pre(obj):
-        for line in obj.splitlines(False):
-            frmt = "{}{}".format(prefix, line)
-            yield frmt
-    for i in a:
-        a_s = f1.format(c, i.shape)
-        out.append(a_s)
-        out.extend(_pre(str(i)))
-        c += 1
-    f = "\n".join([i for i in out if i != prefix])
-    return f
-
-
-# ----------------------------------------------------------------------
-# (6) doc_func ... code section ...
+# (4) doc_func ... code section ...
 def doc_func(func=None):
     """(doc_func)...Documenting code using inspect
     :Requires:
@@ -565,7 +458,7 @@ def doc_func(func=None):
 
 
 # ----------------------------------------------------------------------
-# (7, 7a) find .... code section
+# (5, 5a) find .... code section
 def _func(fn, a, this):
     """called by 'find' see details there
     :  (cumsum, eq, neq, ls, lseq, gt, gteq, btwn, btwni, byond)
@@ -664,143 +557,7 @@ def find(a, func, this=None, count=0, keep=[], prn=False, r_lim=2):
 
 
 # ----------------------------------------------------------------------
-# (8) frmt_ .... code section
-def frmt_(a, deci=4, wdth=100, title="Array", prefix="  .", prn=True):
-    """Format number arrays by row, and print
-    :Requires:
-    :--------
-    : a - an array of int or float dtypes, 1, 2, 3 and 4D arrays tested.
-    : deci - decimal places for floating point numbers
-    : wdth - Default width for onscreen and printing, output beyond this
-    :   length will be truncated with a warning.  Reshape to overcome.
-    : title - The default title, change to provide more information.
-    :Returns:
-    :--------
-    : prints the array with the 1st dimension flattened-like by row
-    :Notes:
-    : w_frmt  width formatter
-    : m_frmt  max number formatter to get max. number of characters
-    """
-    def _check(a):
-        """ check dtype and max value for formatting information"""
-        return a.shape, a.ndim, a.dtype.kind, a.max(), a.min()
-    #
-
-    def _concat(rows, r_fmt, wdth, prefix):
-        """print the subset to maximimum width"""
-        end = ["", "...."][len(r_fmt.format(*rows[0])) > wdth]
-        txt = prefix
-        rw = [r_fmt.format(*v)[:wdth] + end for v in rows]
-        txt += ("\n" + prefix).join(rw) + "\n"
-        return txt
-    #
-
-    def _row_format(d, r, c, a_kind, deci, a_min, a_max):
-        """Format the row based on input parameters
-        : d, r, c =a.shape[:-3]  last 3 dimensions of array shape
-        : a_kind - a.dtype.kind  array kind ie integer or float
-        """
-        if a_kind == 'f':
-            w_, m_ = [':{}.{}f', '{:0.{}f}']
-        else:
-            w_, m_ = [':{}.0f', '{:0.0f}']
-        m = max(len(m_.format(a_max, deci)), len(m_.format(a_min, deci))) + 1
-        w_fmt = w_.format(m, deci)
-        r_fmt = (('{' + w_fmt + '}')*c + '  ')*d
-        return r_fmt
-    #
-    # ---- begin constructing the array format ----
-    txt = ""
-    a = np.asanyarray(a)
-    if a.ndim < 3:
-        return "Array is not 3D or 4D"
-    fv = ""
-    if np.ma.isMaskedArray(a):
-        fv = ", masked array, fill value {}".format(a.get_fill_value())
-        a = a.data
-    # ---- run _check ----
-    a_shp, a_dim, a_kind, a_min, a_max = _check(a)
-    #
-    # ---- correct dtype, get formats ----
-    if (a_kind in ('i', 'f')) and (a_dim >= 3):
-        args = title, a_shp, a_dim, fv
-        txt = "{}...\n-shape {}, ndim {}{}".format(*args)
-        d, r, c = a_shp[-3:]
-        row_frmt = _row_format(d, r, c, a_kind, deci, a_min, a_max)
-        if (a_dim == 3):
-            rows = [a[..., i, :].flatten() for i in range(r)]
-            txt += "\n" + _concat(rows, row_frmt, wdth, prefix)
-        else:
-            d4, d, r, c = a_shp
-            fm = "\n--- array[{}] => ({}, {}, {})"
-            for d3 in range(d4):
-                txt += fm.format(d3, d, r, c) + "\n"
-                a_s = a[d3]
-                rows = [a_s[..., i, :].flatten() for i in range(r)]
-                txt += _concat(rows, row_frmt, wdth, prefix)
-    else:
-        txt = "Only integer and float arrays with ndim >= 3 supported"
-    if prn:
-        print(txt)
-    else:
-        return txt
-
-
-# ----------------------------------------------------------------------
-# (9) frmt_ma .... code section
-def frmt_ma(a, prn=True, prefix="  ."):
-    """Format a masked array to preserve columns widths and style.
-    :Requires
-    :--------
-    :  a - masked array
-    :  prn - True to print
-    :  prefix - can be "" for no indentation or "   " or the default
-    :Returns
-    :-------
-    :  Returns a print version of a masked array formatted with masked
-    :  values and appropriate spacing.
-    :  b = a.reshape(2,4,5) for 3d
-    :Notes
-    :-----
-    :  Get a string representation of the array.  Determine the maximum value
-    :  and format each column using that value.  Pad the result with a leader
-    :  or replace the prefix with ''
-    """
-    def _fix(v, tmp, prefix):
-        """ sub array adjust"""
-        r = [['[[', " "], ['[', ""], [']', ""], [']]', ""]]
-        for i in r:
-            tmp = tmp.replace(i[0], i[1])
-        tmp0 = [i.strip().split(' ') for i in tmp.split('\n')]
-        N = len(tmp0[0])
-        out = [""]
-        for i in range(len(tmp0)):
-            out.append((ft*N).format(*tmp0[i]))
-        jn = "\n" + prefix
-        v += jn.join([i for i in out])
-        v += '\n'
-        return v
-    # ---- main section ----
-    dim = a.ndim
-    shp = a.shape
-    a_max = len(str(np.ma.max(a)))
-    ft = '{:>' + str(a_max + 1) + '}'
-    v = "\n:Masked array... ndim: {}\n".format(dim)
-    if dim == 2:
-        v += "\n:.. a[:{}, :{}] ...".format(*shp)
-        v = _fix(v, str(a), prefix)
-    elif dim == 3:
-        for d0 in range(shp[0]):  # dimension blocks
-            v += "\n:.. a[{}, :{}, :{}] ...".format(d0, *a[d0].shape)
-            v = _fix(v, str(a[d0]), prefix)
-    if prn:
-        print(v)
-    else:
-        return v
-
-
-# ----------------------------------------------------------------------
-# (10) get_func .... code section
+# (6) get_func .... code section
 def get_func(obj, line_nums=True, verbose=True):
     """Get function (def) information.
     :Requires:
@@ -845,7 +602,7 @@ def get_func(obj, line_nums=True, verbose=True):
 
 
 # ----------------------------------------------------------------------
-# (11) get_modu .... code section
+# (7) get_modu .... code section
 def get_modu(obj):
     """Get module (script) information, including source code for
     :  documentation purposes.
@@ -884,44 +641,7 @@ def get_modu(obj):
 
 
 # ----------------------------------------------------------------------
-# (12) in_by .... code section
-def in_by(obj, hdr="", nums=False, prefix="    "):
-    """textwrap.indent variant for python 2.7 or a substitute for
-    :  any version of python.  The function stands for 'indent by'.
-    :Requires:
-    :--------
-    :  obj - obj to indent, List, tuple, ndarray converted to strings
-    :    first. You can use repr representation before using if needed.
-    :  hdr - optional header
-    :  nums - boolean, add line numbers
-    :  prefix - text to use for indent ie '  ' for 2 spaces or '....'
-    :Reference:
-    :---------
-    :  https://docs.python.org/3.7/library/textwrap.html for python >3.3
-    :Notes:
-    :-----
-    :  Header and line numbers options added.
-    """
-    if hdr != "":
-        hdr = "{}\n".format(hdr)
-    if isinstance(obj, (list, tuple, np.ndarray)):
-        obj = str(obj)
-
-    def _pre_num():
-        c = 0
-        for line in obj.splitlines(True):
-            if nums:
-                frmt = "{:>02}{}{}".format(c, prefix, line)
-            else:
-                frmt = "{}{}".format(prefix, line)
-            yield frmt
-            c += 1
-    out = hdr + "".join(_pre_num())
-    return out
-
-
-# ----------------------------------------------------------------------
-# (13) info .... code section
+# (8) info .... code section
 def info(a, prn=True):
     """Returns basic information about an numpy array.
     :Requires:
@@ -982,7 +702,7 @@ def info(a, prn=True):
 
 
 # ----------------------------------------------------------------------
-# (14) make_blocks ... code section .....
+# (9) make_blocks ... code section .....
 def make_blocks(rows=3, cols=3, r=2, c=2, dt='int'):
     """Make a block array with rows * cols containing r*c sub windows
     :Requires:
@@ -1003,7 +723,7 @@ def make_blocks(rows=3, cols=3, r=2, c=2, dt='int'):
 
 
 # ----------------------------------------------------------------------
-# (15) make_flds .... code section
+# (10) make_flds .... code section
 def make_flds(n=1, as_type='float', names=None, def_name="col"):
     """Create float fields for statistics and their names.
     :Requires:
@@ -1035,7 +755,7 @@ def make_flds(n=1, as_type='float', names=None, def_name="col"):
 
 
 # ----------------------------------------------------------------------
-# (16) nd_struct .... code section
+# (11) nd_struct .... code section
 def nd_struct(a):
     """ convert ndarray to structured/recarray
     :Requires:
@@ -1076,7 +796,7 @@ def nd_struct(a):
 
 
 # ----------------------------------------------------------------------
-# (17) reclass .... code section
+# (12) reclass .... code section
 def reclass(a, bins=[], new_bins=[], mask=False, mask_val=None):
     """Reclass an array of integer or floating point values.
     :Requires:
@@ -1113,23 +833,7 @@ def reclass(a, bins=[], new_bins=[], mask=False, mask_val=None):
 
 
 # ----------------------------------------------------------------------
-# (18) redent .... code section
-def redent(lines, spaces=4):
-    """Strip and reindent by num_spaces, a sequence of lines
-    :  lines - text or what can be made text
-    :  Use str() or repr() on the inputs if you want control on form
-    : - see in_by for more options
-    """
-    lines = str(lines).splitlines()
-    sp = [len(ln) - len(ln.lstrip()) for ln in lines]
-    spn = " "*spaces
-    out = list(zip(lines, sp))
-    ret = "\n".join(["{0}{1!s:>{2}}".format(spn, *ln) for ln in out])
-    return ret
-
-
-# ----------------------------------------------------------------------
-# (19) scale .... code section
+# (13) scale .... code section
 def scale(a, x=2, y=2, num_z=None):
     """Scale the input array repeating the array values up by the
     :  x and y factors.
@@ -1188,7 +892,7 @@ def scale(a, x=2, y=2, num_z=None):
 
 
 # ----------------------------------------------------------------------
-# (20) stride .... code section
+# (14) stride .... code section
 def _check(a, r_c, subok=False):
     """Performs the array checks necessary for stride and block.
     : a   - Array or list.
@@ -1243,7 +947,7 @@ def stride(a, r_c=(3, 3)):
 
 
 # ----------------------------------------------------------------------
-# (21) stride .... code section
+# (15) stride .... code section
 def rolling_stats(a, no_null=True, prn=True):
     """Statistics on the last two dimensions of an array.
     :Requires
@@ -1303,42 +1007,30 @@ def _help():
          break an array up into blocks
     (3)  change(a, order=[], prn=False)
          reorder and/or drop columns
-    (4)  col_hdr()
-         print numbers from 1 to 70 to show column positions
-    (5)  deline(a, prn=True)
-         remove those pesky blank lines in array output
-    (6)  doc_func(func=None)
+    (4)  doc_func(func=None)
          Documenting code using inspect
-    (7)  find(a, func, this=None, count=0, keep=[], prn=False, r_lim=2)
+    (5)  find(a, func, this=None, count=0, keep=[], prn=False, r_lim=2)
          find elements in an array using...
          func - (cumsum, eq, neq, ls, lseq, gt, gteq, btwn, btwni, byond)
                (      , ==,  !=,  <,   <=,  >,   >=,  >a<, =>a<=,  <a> )
-    (8)  frmt_(a)
-         fancy formatting arrays as rows
-    (9)  frmt_ma(a, prn=True)
-         format masked arrays
-    (10) get_func(obj, line_nums=True, verbose=True)
+    (6)  get_func(obj, line_nums=True, verbose=True)
          pull in function code
-    (11) get_modu(obj)
+    (7)  get_modu(obj)
          pull in module code
-    (12) in_by(obj, hdr="", nums=False, prefix="  ")
-         indent arrays with line numbers, spaces and/or header
-    (13) info(a)  array info
-    (14) make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
+    (8)  info(a)  array info
+    (9)  make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
          make arrays consisting of blocks
-    (15) make_flds(n=1, as_type='float', names=None, def_name='col')
+    (10) make_flds(n=1, as_type='float', names=None, def_name='col')
          make structured/recarray fields
-    (16) nd_struct(a)
+    (11) nd_struct(a)
          convert an ndarray to a structured array with fields
-    (17) reclass(a, bins=[], new_bins=[], mask=False, mask_val=None)
+    (12) reclass(a, bins=[], new_bins=[], mask=False, mask_val=None)
          reclass an array
-    (18) redent(lines, spaces=4)
-         indent lines by spaces (see in_by as well)
-    (19) scale(a, x=2, y=2, num_z=None)
+    (13) scale(a, x=2, y=2, num_z=None)
          scale an array up in size by repeating values
-    (20) stride(a, r_c=(3, 3))
+    (14) stride(a, r_c=(3, 3))
          stride an array for moving window functions
-    (21) rolling_stats((a0, no_null=True, prn=True))
+    (15) rolling_stats((a0, no_null=True, prn=True))
     :-------------------------------------------------------------------:
     """
     print(dedent(_hf))
@@ -1352,30 +1044,18 @@ def _demo():
     : - Run examples of the existing functions.
     """
     a = np.arange(3*4).reshape(3, 4)
-    a0 = np.arange(9*6).reshape(9, 6)
     b = nd_struct(a)
     c = np.arange(2*3*4).reshape(2, 3, 4)
-    d = np.arange(2*3*4*5).reshape(2, 3, 4, 5)
-    e = block_arr(a, win=[2, 2], nodata=-1)
-    f = stride(a, (3, 3))
-    f1 = in_by(arr2xyz(a, verbose=False))
-    f2 = in_by(e)
-    f3 = change(b, order=['B', 'C', 'A'], prn=False)
-    f4 = in_by(col_hdr())
-    f5 = in_by(deline(c))
-    f6 = in_by(doc_func(col_hdr))
-    f8 = frmt_(c, prn=False)
-    f9 = frmt_ma(e, prn=False)
-    f12 = in_by(a, hdr="Header information", nums=False, prefix="    ")
-    f12a = in_by(a, hdr="With line numbers...", nums=True, prefix="  ")
-    f13 = in_by(info(d, prn=False))
-    f14 = make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
-    f15 = in_by(str(make_flds(n=3, as_type='int', names=["A", "B", "C"])))
-    f16 = nd_struct(a)
-    f19 = in_by(scale(a, 2))
-    f20 = in_by(stride(a, (3, 3)))
-    f21 = rolling_stats(a0, no_null=True, prn=False)
-
+    d = np.arange(9*6).reshape(9, 6)
+    bloc = block_arr(a, win=[2, 2], nodata=-1)  # for block
+    chng = change(b, order=['B', 'C', 'A'], prn=False)
+    docf = in_by(doc_func(col_hdr))
+    scal = in_by(scale(a, 2))
+    a_inf = in_by(info(d, prn=False))
+    m_blk = make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
+    m_fld = in_by(str(make_flds(n=3, as_type='int', names=["A", "B", "C"])))
+    stri = in_by(stride(a, (3, 3)))
+    rsta = rolling_stats(d, no_null=True, prn=False)
     frmt = """
 : ----- _demo {}
 :
@@ -1385,7 +1065,8 @@ def _demo():
 {!r:}\n
 :Input ndarray, 'c' ...
 {!r:}\n
-:
+:Input ndarray, 'd' ...
+{!r:}\n
 :---- Functions by number  ---------------------------------------------
 :(1)  arr2xyz(a, verbose=False)
 {}\n
@@ -1394,42 +1075,39 @@ def _demo():
 :(3) change(b, order=['B', 'C', 'A'], prn=False
 :    Array 'b', reordered with 2 fields dropped...
 {!r:}\n
-:(4)  col_hdr() ... just return column headers
+:(3) doc_func(col_hdr) ... documenting a function...
 {}\n
-:(5) deline(c)  ... remove excessive blank lines
+:(4) scale() ... scale an array up by an integer factor...
 {}\n
-:(6) doc_func(col_hdr) ... documenting a function...
+:(5) array info ... info(a)
 {}\n
-:(8) frmt_(c) ... Array 'c' shape=(2, 3, 4) using frmt_
+:(6) make_flds() ... create default field names ...
 {}\n
-:(9) frmt_ma(e) ... Masked Array 'e' using frmt_ma
+:(7) stride() ... stride an array ....
 {}\n
-:(12) in_by(a) ... Array 'a' indent using in_by
+:(8) make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
 {}\n
-:(12a) same but with line numbers
-{}\n
-:(13) info(d) ... info for array 'd'
-{}\n
-:(14) make_blocks() ... construct a block array ...
-{}\n
-:(15) make_flds() ... create default field names ...
-{}\n
-:(16) nd_struct() ... make a structured array from another array ...
+:(9) nd_struct() ... make a structured array from another array ...
 {!r:}\n
-:(19) scale() ... scale an array up by an integer factor...
-{}\n
-:(20) stride() ... stride an array ....
-{}\n
-:(21) rolling_stats()... stats for a strided array ...
+:(10) rolling_stats()... stats for a strided array ...
 :    min, max, mean, sum, std, var, ptp
 {}
 """
-    args = ["-"*62, a, b, c,
-            f1, f2, f3.reshape(a.shape[0], -1),
-            f4, f5, f6, f8, f9, f12, f12a, f13, f14, f15, f16, f19, f20, f21
-            ]
+    args = ["-"*62, a, b, c, d,
+            arr2xyz(a),
+            in_by(bloc),
+            chng.reshape(a.shape[0], -1),
+            docf,
+            scal,
+            a_inf,
+            m_fld,
+            stri,
+            m_blk,
+            nd_struct(a),
+            rsta]  #, f21
+
     print(frmt.format(*args))
-    del args, d, e
+    # del args, d, e
 
 
 # ----------------------------------------------------------------------
