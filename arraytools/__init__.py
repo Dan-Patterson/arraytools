@@ -1,5 +1,7 @@
 # coding: utf-8
 """
+Modified: 2017-04-02
+
 arrtools
 =======
 
@@ -16,11 +18,11 @@ Available subpackages
 ---------------------
 analysis:
     Tools for calculating distance, proximity, angles.
-formating
+formats
     Format options to facilitate viewing of numpy arrays in a variety of ways.
 geom
     Geometry related function
-graph
+graphing
     Graphing capabilities using MatPlotLib as the basic graphing program
 stats
     Statistics and related
@@ -38,12 +40,12 @@ examples
 
 __all__ = ['tools']
 
+from . import format
+from .format import *
 from .tools import *
 from .tools import _help
 from . import analysis
 from .analysis import *
-from . import format
-from .format import *
 from . import geom
 from .geom import e_area, e_dist, e_leng
 # print("Final keys...\n...{}".format(list(locals().keys())))
