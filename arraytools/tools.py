@@ -6,6 +6,10 @@
 :Purpose:  tools for working with numpy arrays
 :Useage:   import arr_tools as art
 :  access in other programs using .... art.func(params) ....
+:Requires:
+: import formats which contains the frmts.py script and initializes all
+: the format options
+:
 :Notes:
 :-----
 :Basic array information:
@@ -220,6 +224,7 @@ import sys
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
 from textwrap import dedent
+from format import *
 
 __all__ = ['arr2xyz',
            'block_arr',
