@@ -2,7 +2,7 @@
 """
 :Script:   frmts.py
 :Author:   Dan.Patterson@carleton.ca
-:Modified: 2017-04-02
+:Modified: 2017-04-14
 :Purpose:
 :  The frmt_ function is used to provide a side-by-side view of 2,3, and 4D
 :  arrays.  Specifically, 3D and 4D arrays are useful and for testing
@@ -330,7 +330,10 @@ def frmt_(a, deci=4, wdth=100, title="Array", prefix="  .", prn=True):
     txt = ""
     a = np.asanyarray(a)
     if a.ndim < 3:
-        return "Array is not 3D or 4D"
+        if a.ndim == 2:
+            a = a.reshape((1,) + a.shape)
+        else:
+            return "Array is not 3D or 4D"
     fv = ""
     if np.ma.isMaskedArray(a):
         fv = ", masked array, fill value {}".format(a.get_fill_value())
@@ -454,28 +457,41 @@ def frmt_rec(in_array, deci=2, f_names=False, max_rows=-1):
 # ----------------------------------------------------------------------
 # (6) frmt_struct .... code section
 #
-def _col_format(a, deci=0):
+def _col_format(a, nme="fld", deci=0):
     """Determine column format given a desired number of decimal places.
-    :  Used by frmt_struct
+    :  Used by frmt_struct.
+    :  a - a column in an array
+    :  nme - column name
+    :  deci - desired number of decimal points if the data are numeric
+    :Notes:
+    :-----
+    :  The field is examined to determin whether it is a simple integer, a
+    :  float type or a list, array or string.  The maximum width is determined
+    :  based on this type.
     """
     a_kind = a.dtype.kind
-    if a_kind in ('f', 'c'):
-        w_, m_ = [':> {}.{}f', '{:> 0.{}f}']
-    elif a_kind in ('i', 'u'):
+    a_nm = nme
+    if a_kind in ('i', 'u'):                 # integer type
         w_, m_ = [':> {}.0f', '{:> 0.0f}']
-        deci = 0
-    if a_kind in ('f', 'i'):
+        col_wdth = len(m_.format(a.max())) + 1
+        col_wdth = max(len(a_nm), col_wdth) + 1  # + deci
+        c_fmt = w_.format(col_wdth, 0)
+        # print("name {} c_fmt {}, wdth {}".format(a_nm, c_fmt, col_wdth))
+    elif a_kind == 'f' and np.isscalar(a[0]):   # float type with rounding
+        w_, m_ = [':> {}.{}f', '{:> 0.{}f}']
         a_max, a_min = np.round(np.sort(a[[0, -1]]), deci)
         col_wdth = max(len(m_.format(a_max, deci)),
-                       len(m_.format(a_min, deci))) + 1  # m + dec if needed
+                       len(m_.format(a_min, deci))) + 1
+        col_wdth = max(len(a_nm), col_wdth) + 1
         c_fmt = w_.format(col_wdth, deci)
-    else:
-        col_wdth = max([len(i) for i in a])
+    else:                                   # lists, arrays, strings
+        col_wdth = max([len(str(i)) for i in a])
+        col_wdth = max(len(a_nm), col_wdth) + 1  # + deci
         c_fmt = "!s:>" + "{}".format(col_wdth)
     return c_fmt, col_wdth
 
 
-def frmt_struct(a, deci=2, f_names=False, prn=False):
+def frmt_struct(a, deci=2, f_names=True, prn=False):
     """Format a structured array with a mixed dtype.
     :Requires
     :-------
@@ -496,9 +512,10 @@ def frmt_struct(a, deci=2, f_names=False, prn=False):
     dts = []
     wdths = []
     for i in nms:
-        c_fmt, col_wdth = _col_format(a[i], deci)
+        c_fmt, col_wdth = _col_format(a[i], nme=i, deci=deci)
         dts.append(c_fmt)
-        wdths.append(col_wdth)
+        wdths.append(max(col_wdth, len(i)))
+        # print("name {} c_frmt {}, wdth {}".format(i, c_fmt, col_wdth))
     rf = " ".join([('{' + i + '}') for i in dts])
     hdr = ["!s:>" + "{}".format(wdths[i]) for i in range(N)]
     hdr2 = " ".join(["{" + hdr[i] + "}" for i in range(N)])
@@ -653,4 +670,4 @@ if __name__ == "__main__":
 #    row_frmt = make_row_format()
 #    a = _demo()
 #    a, b = _ma_demo()
-#    a = _struct_demo()
+    a = _struct_demo()
