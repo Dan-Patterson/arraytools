@@ -2,13 +2,12 @@
 """
 :Script:   arr_scatter.py
 :Author:   Dan.Patterson@carleton.ca
-:Modified: 2017-02-15
+:Modified: 2017-01-23
 :
-:Purpose: Basic shell for producing scatterplots
+:Purpose:
 :
-:Notes: Line 21 should be used when using pythonwin since it seems to
-:  only support tk graphing.  When using pyscripter, pycharm or iPython
-:  the QT5 option can be used
+:Notes:
+:
 :References:
 :
 :---------------------------------------------------------------------:
@@ -19,7 +18,7 @@ import sys
 import numpy as np
 import matplotlib
 #matplotlib.use('TkAgg', warn=True, force=False)  # pythonwin use TkAgg,
-matplotlib.use('QT5agg') # don't work Agg, WX, QTAgg, QT4Agg
+matplotlib.use('QT5agg')  # don't work Agg, WX, QTAgg, QT4Agg
 import matplotlib.pyplot as plt
 from matplotlib.markers import MarkerStyle
 

@@ -1,1 +1,1 @@
-from .arr_scatter import plot_pnts
+from .arr_scatter import plot_pnts_
