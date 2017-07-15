@@ -2,13 +2,14 @@
 """
 :Script:   tools.py
 :Author:   Dan.Patterson@carleton.ca
-:Modified: 2016-04-02
+:Modified: 2017-07-15
 :Purpose:  tools for working with numpy arrays
-:Useage:   import arr_tools as art
-:  access in other programs using .... art.func(params) ....
+:Useage:
+:  import arraytools as art
+:  tools.py and other scripts are part of the array tools package.
+:  Access in other programs using .... art.func(params) ....
 :Requires:
-: import formats which contains the frmts.py script and initializes all
-: the format options
+: import frmts.py which contains and initializes all the format options
 :
 :Notes:
 :-----
@@ -32,7 +33,7 @@
 :   |__uint     uint8, uint16, uint32, uint63
 :   |__others   bool, object, str, void
 :
-:Functions:  arr_tools function examples below
+:Functions:  tools function examples below
 :---------
 : (1) ---- arr2xyz(a, verbose=False) ----
 :   - convert an array to x,y,z values, using row/column values for x and y
@@ -67,7 +68,7 @@
 :
 : (3) ---- change(a, order=[], prn=False) ----
 :   - merely a convenience function
-:   - a = np.arange(4*5).reshape((4,5))
+:   - a = np.arange(4*5).reshape((4, 5))
 :   - change(a, [2, 1, 0, 3, 4])
 :   - array([[ 2,  1,  0,  3,  4],
 :            [ 7,  6,  5,  8,  9],
@@ -107,7 +108,8 @@
 :
 : (7) ---- get_modu ----
 :
-: (8) ---- info(a, prn=True) ----
+: (8) ---- group_pnts(a, key_fld='ID', keep_flds=['X', 'Y', 'Z'])
+: (9) ---- info(a, prn=True) ----
 : - example
 :   - array([(0, 1, 2, 3, 4), (5, 6, 7, 8, 9),
 :            (10, 11, 12, 13, 14), (15, 16, 17, 18, 19)],
@@ -135,12 +137,12 @@
 :   :     |__['E', '<i8']
 :   :---------------------
 :
-: (9) ---- make_blocks(rows=2, cols=4, r=2, c=2, dt='int')
+: (10) ---- make_blocks(rows=2, cols=4, r=2, c=2, dt='int')
 :    array([[0, 0, 1, 1, 2, 2, 3, 3],
 :           [0, 0, 1, 1, 2, 2, 3, 3],
 :           [4, 4, 5, 5, 6, 6, 7, 7],
 :           [4, 4, 5, 5, 6, 6, 7, 7]])
-: (10) ---- make_flds(n=1, names=None, default="col") ----
+: (11) ---- make_flds(n=1, names=None, default="col") ----
 :   - Example
 :   - make_flds(3, names='A,B,C', default='A')
 :     =>  dtype([('A', '<f8'), ('B', '<f8'), ('C', '<f8')])
@@ -151,7 +153,7 @@
 :     easy(f,names,name)
 :     =>  dtype([('A', '<f8'), ('B', '<f8'), ('A00', '<f8')]
 :
-: (11) ---- nd_struct(a) ----
+: (12) ---- nd_struct(a) ----
 :   - ndarray to structured array
 :   (a) keep the dtype the same
 :      aa = nd_struct(a)       # produce a structured array from inputs
@@ -168,7 +170,7 @@
 :             (15.0, 16.0, 17.0, 18.0, 19.0)],
 :         dtype=[('A', '<f8'), ... snip ... , ('E', '<f8')])
 :
-: (12) ---- reclass(z, bins, new_bins, mask=False, mask_val=None)
+: (13) ---- reclass(z, bins, new_bins, mask=False, mask_val=None)
 :   - reclass an array using existing class breaks (bins) and new bins
 :     both must be in ascending order
 :     z = np.arange(3*5).reshape(3,5)
@@ -181,7 +183,7 @@
 :            [10, 11, 12, 13, 14]])         [3, 3, 3, 3, 3]])
 :
 
-: (13) ---- scale(a, x=2, y=2)
+: (14) ---- scale(a, x=2, y=2)
 :   - scale an array by x, y factors
 :     a = np.array([[0, 1, 2], [3, 4, 5]]
 :     b = scale(a, x=2, y=2)
@@ -200,7 +202,7 @@
 :                                      [2, 2, 3, 3, 2, 2, 3, 3],
 :                                      [2, 2, 3, 3, 2, 2, 3, 3]])
 :
-: (14) ---- stride(a, r_c=(3, 3))
+: (15) ---- stride(a, r_c=(3, 3))
 :   - produce a strided array using a window of r_c shape
 :   - calls _check(a, r_c, subok=False) to check for array compliance
 :     a =np.arange(15).reshape(3,5)
@@ -209,7 +211,7 @@
 :             [ 5,  6,  7],   [ 6,  7,  8],   [ 7,  8,  9],
 :             [10, 11, 12]],  [11, 12, 13]],  [12, 13, 14]]])
 :
-: (15) rolling_stats()... stats for a strided array ...
+: (16) rolling_stats()... stats for a strided array ...
 :    min, max, mean, sum, std, var, ptp
 :   (0, 53, 26.5, 1431, 15.5857..., 242.9166..., 53)
 :
@@ -223,8 +225,7 @@
 import sys
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
-from textwrap import dedent
-from format import *
+from textwrap import dedent, indent
 
 __all__ = ['arr2xyz',
            'block_arr',
@@ -233,6 +234,7 @@ __all__ = ['arr2xyz',
            'find',
            'get_func',
            'get_modu',
+           'group_pnts',
            'info',
            'make_blocks',
            'make_flds',
@@ -247,7 +249,7 @@ __xtras__ = ['_func', '_check',
              'time_deco'
              ]
 
-__outside__ = ['dedent']
+__outside__ = ['dedent', 'indent']
 
 ft = {'bool': lambda x: repr(x.astype('int32')),
       'float': '{: 0.3f}'.format}
@@ -590,7 +592,7 @@ def get_func(obj, line_nums=True, verbose=True):
     :-----------------------------------------------------------------
     """
     import inspect
-    from textwrap import dedent, indent, wrap
+    from textwrap import dedent, wrap
     lines, ln_num = inspect.getsourcelines(obj)
     if line_nums:
         code = "".join(["{:4d}  {}".format(idx, line)
@@ -646,6 +648,37 @@ def get_modu(obj):
 
 
 # ----------------------------------------------------------------------
+# (8)
+def group_pnts(a, key_fld='ID', keep_flds=['X', 'Y', 'Z']):
+    """Group points for a feature that has been exploded to points by
+    :  arcpy.da.FeatureClassToNumPyArray.
+    :Requires:
+    :---------
+    : a - a structured array, assuming ID, X, Y, {Z} and whatever else
+    :   - the array is assumed to be sorted... which will be the case
+    :Returns:
+    :--------
+    : see np.unique descriptions below
+    :References:
+    :-----------
+    :  https://jakevdp.github.io/blog/2017/03/22/group-by-from-scratch/
+    :  http://esantorella.com/2016/06/16/groupby/
+    :Notes:
+    :------ split-apply-combine
+    """
+    returned = np.unique(a[key_fld],           # the unique id field
+                         return_index=True,    # first occurrence index
+                         return_inverse=True,  # indices needed to remake array
+                         return_counts=True)   # number in each group
+    uniq, idx, inv, cnt = returned
+    from_to = [[idx[i-1], idx[i]] for i in range(1, len(idx))]
+    subs = [a[keep_flds][i:j] for i, j in from_to]
+    groups = [sub.view(dtype='float').reshape(sub.shape[0], -1)
+               for sub in subs]
+    return groups
+
+
+# ----------------------------------------------------------------------
 # (8) info .... code section
 def info(a, prn=True):
     """Returns basic information about an numpy array.
@@ -679,7 +712,7 @@ def info(a, prn=True):
     :
     """
     if not isinstance(a, (np.ndarray, np.ma.core.MaskedArray)):
-        print("Requires and numpy ndarray")
+        print("Requires a numpy ndarray")
         return "Read the docs"
     frmt = """
     :---------------------
@@ -1002,10 +1035,11 @@ def rolling_stats(a, no_null=True, prn=True):
 # ----------------------------------------------------------------------
 # _help .... code section
 def _help():
-    """Help on array tools"""
+    """arraytools"""
     _hf = """
     :-------------------------------------------------------------------:
-    : ---- arr_tools functions ----
+    : ---- arrtools functions  (loaded as 'art') ----
+    : ---- from tools.py
     (1)  arr2xyz(a, verbose=False)
          array (col, rows) to (x, y) and array values for z.
     (2)  block_arr(a, win=[3, 3], nodata=-1)
@@ -1022,20 +1056,21 @@ def _help():
          pull in function code
     (7)  get_modu(obj)
          pull in module code
-    (8)  info(a)  array info
-    (9)  make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
+    (8)  group_pnts(a, key_fld='ID', keep_flds=['X', 'Y', 'Z'])
+    (9)  info(a)  array info
+    (10) make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
          make arrays consisting of blocks
-    (10) make_flds(n=1, as_type='float', names=None, def_name='col')
+    (11) make_flds(n=1, as_type='float', names=None, def_name='col')
          make structured/recarray fields
-    (11) nd_struct(a)
+    (12) nd_struct(a)
          convert an ndarray to a structured array with fields
-    (12) reclass(a, bins=[], new_bins=[], mask=False, mask_val=None)
+    (13) reclass(a, bins=[], new_bins=[], mask=False, mask_val=None)
          reclass an array
-    (13) scale(a, x=2, y=2, num_z=None)
+    (14) scale(a, x=2, y=2, num_z=None)
          scale an array up in size by repeating values
-    (14) stride(a, r_c=(3, 3))
+    (15) stride(a, r_c=(3, 3))
          stride an array for moving window functions
-    (15) rolling_stats((a0, no_null=True, prn=True))
+    (16) rolling_stats((a0, no_null=True, prn=True))
     :-------------------------------------------------------------------:
     """
     print(dedent(_hf))
@@ -1054,12 +1089,12 @@ def _demo():
     d = np.arange(9*6).reshape(9, 6)
     bloc = block_arr(a, win=[2, 2], nodata=-1)  # for block
     chng = change(b, order=['B', 'C', 'A'], prn=False)
-    docf = in_by(doc_func(col_hdr))
-    scal = in_by(scale(a, 2))
-    a_inf = in_by(info(d, prn=False))
+    docf = doc_func(stride)
+    scal = scale(a, 2)
+    a_inf = info(d, prn=False)
     m_blk = make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
-    m_fld = in_by(str(make_flds(n=3, as_type='int', names=["A", "B", "C"])))
-    stri = in_by(stride(a, (3, 3)))
+    m_fld = str(make_flds(n=3, as_type='int', names=["A", "B", "C"]))
+    stri = stride(a, (3, 3))
     rsta = rolling_stats(d, no_null=True, prn=False)
     frmt = """
 : ----- _demo {}
@@ -1100,7 +1135,7 @@ def _demo():
 """
     args = ["-"*62, a, b, c, d,
             arr2xyz(a),
-            in_by(bloc),
+            bloc,
             chng.reshape(a.shape[0], -1),
             docf,
             scal,
@@ -1109,7 +1144,7 @@ def _demo():
             stri,
             m_blk,
             nd_struct(a),
-            rsta]  #, f21
+            rsta]  # f21
 
     print(frmt.format(*args))
     # del args, d, e
