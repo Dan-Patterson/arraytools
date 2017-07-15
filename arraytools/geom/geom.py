@@ -2,8 +2,8 @@
 """
 :Script:   geom.py
 :Author:   Dan.Patterson@carleton.ca
-:Modified: 2017-02-12
-:Purpose:  tools for working with numpy arrays  
+:Modified: 2017-07-15
+:Purpose:  tools for working with numpy arrays
 :Functions: a and b are arrays
 : - e_area(a, b=None)
 : - e_dist(a, b, metric='euclidean')
@@ -61,7 +61,7 @@ def e_area(a, b=None):
 def e_dist(a, b, metric='euclidean'):
     """Distance calculation for 1D, 2D and 3D points using einsum
     : a, b   - list, tuple, array in 1,2 or 3D form
-    : metric - euclidean ('e','eu'...), sqeuclidean ('s','sq'...), 
+    : metric - euclidean ('e','eu'...), sqeuclidean ('s','sq'...),
     :-----------------------------------------------------------------------
     """
     a = np.asarray(a)
@@ -85,12 +85,12 @@ def e_dist(a, b, metric='euclidean'):
 def e_leng(a):
     """Length/distance between points in an array using einsum
     : Inputs
-    :   a list/array coordinate pairs, with ndim = 3 and the 
+    :   a list/array coordinate pairs, with ndim = 3 and the
     :   Minimum shape = (1,2,2), eg. (1,4,2) for a single line of 4 pairs
     :   The minimum input needed is a pair, a sequence of pairs can be used.
     : Returns
     :   d_arr  the distances between points forming the array
-    :   length the total length/distance formed by the points      
+    :   length the total length/distance formed by the points
     :-----------------------------------------------------------------------
     """
     def cal(diff):
@@ -102,8 +102,9 @@ def e_leng(a):
         """
         d_arr = np.sqrt(np.einsum('ijk,ijk->ij', diff, diff))
         length = np.sum(d_arr.flatten())
-        return length
+        return length, d_leng
     # ----
+    diffs = []
     a = np.atleast_2d(a)
     if a.shape[0] == 1:
         return 0.0
@@ -111,13 +112,16 @@ def e_leng(a):
         a = np.reshape(a, (1,) + a.shape)
     if a.ndim == 3:
         diff = a[:, 0:-1] - a[:, 1:]
-        length = cal(diff)
+        length, d_leng = cal(diff)
+        diffs.append(d_leng)
     if a.ndim == 4:
         length = 0.0
         for i in range(a.shape[0]):
             diff = a[i][:, 0:-1] - a[i][:, 1:]
-            length += cal(diff)
-    return length
+            leng, d_leng = cal(diff)
+            diffs.append(d_leng)
+            length += leng
+    return length, diffs
 
 
 # ----------------------------------------------------------------------
