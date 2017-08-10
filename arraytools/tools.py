@@ -2,7 +2,7 @@
 """
 :Script:   tools.py
 :Author:   Dan.Patterson@carleton.ca
-:Modified: 2017-07-15
+:Modified: 2017-08-05
 :Purpose:  tools for working with numpy arrays
 :Useage:
 :  import arraytools as art
@@ -182,7 +182,7 @@
 :            [ 5,  6,  7,  8,  9],          [2, 2, 2, 2, 2],
 :            [10, 11, 12, 13, 14]])         [3, 3, 3, 3, 3]])
 :
-
+:
 : (14) ---- scale(a, x=2, y=2)
 :   - scale an array by x, y factors
 :     a = np.array([[0, 1, 2], [3, 4, 5]]
@@ -201,6 +201,19 @@
 :                                      [0, 0, 1, 1, 0, 0, 1, 1],
 :                                      [2, 2, 3, 3, 2, 2, 3, 3],
 :                                      [2, 2, 3, 3, 2, 2, 3, 3]])
+:
+:
+: (15) ---- split_array(a, fld='Id')
+:    array 'b'
+:    array([(0, 1, 2, 3), (4, 5, 6, 7), (8, 9, 10, 11)],
+:          dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')])
+:   - split_array(b, fld='A')
+:   [array([(0, 1, 2, 3)],
+:         dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')]),
+:    array([(4, 5, 6, 7)],
+:         dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')]),
+:    array([(8, 9, 10, 11)],
+:         dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')])]
 :
 : (15) ---- stride(a, r_c=(3, 3))
 :   - produce a strided array using a window of r_c shape
@@ -930,7 +943,28 @@ def scale(a, x=2, y=2, num_z=None):
 
 
 # ----------------------------------------------------------------------
-# (14) stride .... code section
+# (14)  ---- move get_func and get_modu out
+def split_array(a, fld='ID'):
+    """Split a structured or recarray array using unique values in the
+    :  'fld' field.  It is assumed that there is a sequential ordering to
+    :  the values in the field.  If there is not, use np.where in conjunction
+    :  with np.unique or sort the array first.
+    :
+    :Requires:
+    :--------
+    : a   - a structured or recarray
+    : fld - a numeric field assumed to be sorted which indicates which group
+    :       a record belongs to.
+    :
+    :Returns:
+    :-------
+    : - a list of arrays split on the categorizing field
+    """
+    return np.split(a, np.where(np.diff(a[fld]))[0] + 1)
+
+
+# ----------------------------------------------------------------------
+# (15) stride .... code section
 def _check(a, r_c, subok=False):
     """Performs the array checks necessary for stride and block.
     : a   - Array or list.
@@ -985,7 +1019,7 @@ def stride(a, r_c=(3, 3)):
 
 
 # ----------------------------------------------------------------------
-# (15) stride .... code section
+# (16) stride .... code section
 def rolling_stats(a, no_null=True, prn=True):
     """Statistics on the last two dimensions of an array.
     :Requires
@@ -1068,9 +1102,11 @@ def _help():
          reclass an array
     (14) scale(a, x=2, y=2, num_z=None)
          scale an array up in size by repeating values
-    (15) stride(a, r_c=(3, 3))
+    (15) split_array(a, fld='ID')
+         split an array using an index field
+    (16) stride(a, r_c=(3, 3))
          stride an array for moving window functions
-    (16) rolling_stats((a0, no_null=True, prn=True))
+    (17) rolling_stats((a0, no_null=True, prn=True))
     :-------------------------------------------------------------------:
     """
     print(dedent(_hf))
@@ -1094,6 +1130,7 @@ def _demo():
     a_inf = info(d, prn=False)
     m_blk = make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
     m_fld = str(make_flds(n=3, as_type='int', names=["A", "B", "C"]))
+    spl = split_array(b, fld='A')
     stri = stride(a, (3, 3))
     rsta = rolling_stats(d, no_null=True, prn=False)
     frmt = """
@@ -1123,13 +1160,15 @@ def _demo():
 {}\n
 :(6) make_flds() ... create default field names ...
 {}\n
-:(7) stride() ... stride an array ....
+:(7) split_array() ... split an array according to an index field
 {}\n
-:(8) make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
+:(8) stride() ... stride an array ....
 {}\n
-:(9) nd_struct() ... make a structured array from another array ...
+:(9) make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
+{}\n
+:(10) nd_struct() ... make a structured array from another array ...
 {!r:}\n
-:(10) rolling_stats()... stats for a strided array ...
+:(11) rolling_stats()... stats for a strided array ...
 :    min, max, mean, sum, std, var, ptp
 {}
 """
@@ -1141,6 +1180,7 @@ def _demo():
             scal,
             a_inf,
             m_fld,
+            spl,
             stri,
             m_blk,
             nd_struct(a),
