@@ -70,12 +70,12 @@ def extent_poly(ext):
 
 
 def pnts_in_extent(pnts, ext, in_out=True):
-    """Points in polygon test using numpy and logical_and to find points
+    """Point(s) in polygon test using numpy and logical_and to find points
     :  within a box/extent.
     :
     :Requires:
     :--------
-    :  pnts - an array of points
+    :  pnts - an array of points, ndim at least 2D
     :  ext - the extent of the rectangle being tested as an array of the
     :        left bottom (LB) and upper right (RT) coordinates
     :  in_out - boolean, True to return both the inside and outside points.
@@ -89,10 +89,11 @@ def pnts_in_extent(pnts, ext, in_out=True):
     :  idx_in - indices derived using where since case will be 0 or 1
     :  inside - slice the pnts using idx_in
     """
+    pnts = np.atleast_2d(pnts)  # account for single point
     outside = None
     LB, RT = ext
     comp = np.logical_and((LB <= pnts), (pnts <= RT))
-    case = comp[:, 0] * comp[:, 1]
+    case = comp[..., 0] * comp[..., 1]
     idx_in = np.where(case)[0]
     inside = pnts[idx_in]
     if in_out:
@@ -153,8 +154,19 @@ def _demo():
                                           spatial_reference=SR)
     pnts = a.view(dtype=np.float).reshape(len(a), 2)
     poly = extent_poly(ext)
+    p0 = np.array([341999., 5021999.])
+    p1 = np.mean(poly, axis=0)
+    pnts = np.array([p0, p1])
+    return pnts, ext, poly, p0, p1
+
+
+def _demo1():
+    """Simple check for known points"""
+    ext = np.array([[342000, 5022000], [343000, 5023000]])
+    poly = extent_poly(ext)
     p0 = np.array([341999, 5021999])
     p1 = np.mean(poly, axis=0)
+    pnts = np.array([p0, p1])
     return pnts, ext, poly, p0, p1
 
 
@@ -165,4 +177,4 @@ if __name__ == "__main__":
     : %load_ext line_profiler
     : %lprun -f pnts_in_extent pnts_in_extent(pnts, ext)  # -f means function
     """
-    pnts, ext, poly, p0, p1 = _demo()
+    pnts, ext, poly, p0, p1 = _demo1()
