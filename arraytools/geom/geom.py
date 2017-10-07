@@ -97,8 +97,9 @@ def e_leng(a):
         """ perform the calculation
         :diff = g[:, :, 0:-1] - g[:, :, 1:]
         : for 4D
-        " np.sum(np.sqrt(np.einsum('ijk...,ijk...->ijk...', diff, diff)).flatten())
-        : np.sum(np.sqrt(np.einsum('ijkl,ijkl->ijk', diff, diff)).flatten())
+        " d = np.einsum('ijk..., ijk...->ijk...', diff, diff).flatten() or
+        :   = np.einsum('ijkl, ijkl->ijk', diff, diff).flatten()
+        :: d = np.sum(np.sqrt(d)
         """
         d_arr = np.sqrt(np.einsum('ijk,ijk->ij', diff, diff))
         length = np.sum(d_arr.flatten())
@@ -126,7 +127,7 @@ def e_leng(a):
 
 # ----------------------------------------------------------------------
 # __main__ .... code section
-if __name__=="__main__":
+if __name__ == "__main__":
     """Optionally...
     : - print the script source name.
     : - run the _demo
