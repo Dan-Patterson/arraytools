@@ -2,14 +2,15 @@
 """
 :Script:   geom.py
 :Author:   Dan.Patterson@carleton.ca
-:Modified: 2017-07-15
+:Modified: 2017-10-20
 :Purpose:  tools for working with numpy arrays
 :Functions: a and b are arrays
 : - e_area(a, b=None)
 : - e_dist(a, b, metric='euclidean')
 : - e_leng(a)
 :References:  See ein_geom.py for full details and examples
-:
+:  https://en.wikipedia.org/wiki/Centroid#Centroid_of_polygon
+:  https://iliauk.com/2016/03/02/centroids-and-centres-numpy-r/
 :---------------------------------------------------------------------:
 """
 # ---- imports, formats, constants ----
@@ -26,6 +27,28 @@ np.ma.masked_print_option.set_display('-')  # change to a single -
 _script = sys.argv[0]  # print this should you need to locate the script
 
 __all__ = ['e_area', 'e_dist', 'e_leng']
+
+
+def center(a, remove_dup=True):
+    """Return the center of an array. If the array represents a polygon, then
+    :  a check is made for the duplicate first and last point to remove one.
+    """
+    if remove_dup:
+        if np.all(a[0] == a[-1]):
+            a = a[:-1]
+    return a.mean(axis=0)
+
+
+def centroid(a):
+    """Return the centroid of a closed polygon
+    : e_area required
+    """
+    x, y = a.T
+    t = ((x[:-1] * y[1:]) - (y[:-1] * x[1:]))
+    a_6 = e_area(a) * 6.0  # area * 6.0
+    x_c = np.sum((x[:-1] + x[1:]) * t) / a_6
+    y_c = np.sum((y[:-1] + y[1:]) * t) / a_6
+    return np.asarray([-x_c, -y_c])
 
 
 def e_area(a, b=None):
@@ -89,11 +112,14 @@ def e_leng(a):
     :   Minimum shape = (1,2,2), eg. (1,4,2) for a single line of 4 pairs
     :   The minimum input needed is a pair, a sequence of pairs can be used.
     : Returns
-    :   d_arr  the distances between points forming the array
-    :   length the total length/distance formed by the points
+    :   d_leng - the distances between points forming the array
+    :   length - the total length/distance formed by the points
     :-----------------------------------------------------------------------
     """
-    def cal(diff):
+    #
+    d_leng = 0.0
+    # ----
+    def _cal(diff):
         """ perform the calculation
         :diff = g[:, :, 0:-1] - g[:, :, 1:]
         : for 4D
@@ -101,8 +127,8 @@ def e_leng(a):
         :   = np.einsum('ijkl, ijkl->ijk', diff, diff).flatten()
         :: d = np.sum(np.sqrt(d)
         """
-        d_arr = np.sqrt(np.einsum('ijk,ijk->ij', diff, diff))
-        length = np.sum(d_arr.flatten())
+        d_leng = np.sqrt(np.einsum('ijk,ijk->ij', diff, diff))
+        length = np.sum(d_leng.flatten())
         return length, d_leng
     # ----
     diffs = []
@@ -113,13 +139,13 @@ def e_leng(a):
         a = np.reshape(a, (1,) + a.shape)
     if a.ndim == 3:
         diff = a[:, 0:-1] - a[:, 1:]
-        length, d_leng = cal(diff)
+        length, d_leng = _cal(diff)
         diffs.append(d_leng)
     if a.ndim == 4:
         length = 0.0
         for i in range(a.shape[0]):
             diff = a[i][:, 0:-1] - a[i][:, 1:]
-            leng, d_leng = cal(diff)
+            leng, d_leng = _cal(diff)
             diffs.append(d_leng)
             length += leng
     return length, diffs
@@ -136,3 +162,5 @@ if __name__ == "__main__":
     args = [e_area.__doc__, e_dist.__doc__, e_leng.__doc__]
     print("\n{}\n{}\n{}".format(*args))
     del args
+a = np.array([[342000., 5022000.], [342000., 5023000.], [343000., 5023000.],
+              [343000., 5022000.], [342000., 5022000.]])
