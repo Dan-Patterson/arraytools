@@ -2,14 +2,16 @@
 """
 :Script:   tools.py
 :Author:   Dan.Patterson@carleton.ca
-:Modified: 2017-08-05
+:Modified: 2017-10-21
 :Purpose:  tools for working with numpy arrays
 :Useage:
 :  import arraytools as art
 :  tools.py and other scripts are part of the array tools package.
 :  Access in other programs using .... art.func(params) ....
+:
 :Requires:
-: import frmts.py which contains and initializes all the format options
+:--------
+: see import section and __init__.py
 :
 :Notes:
 :-----
@@ -75,10 +77,11 @@
 :            [12, 11, 10, 13, 14],
 :            [17, 16, 15, 18, 19]])
 :   - shortcuts
-:     b = a[:, [2,1,0,3,4]]   # reorder the columns, keeping the rows
-:     c = a[:, [0,2,3]]       # delete columns 1 and 4
-:     d = a[[0,1,3,4], :]     # delete row 2, keeping the columns
-:     e = a[[0,1,3], [1,2,3]] # keep [0,1],[1,2],[3,3] => ([ 1, 7, 18])
+:     b = a[:, [2, 1, 0, 3, 4]]    # reorder the columns, keeping the rows
+:     c = a[:, [0, 2, 3]]          # delete columns 1 and 4
+:     d = a[[0, 1, 3, 4], :]       # delete row 2, keeping the columns
+:     e = a[[0, 1, 3], [1, 2, 3]]  # keep [0, 1], [1, 2], [3, 3]
+:                                    => ([ 1, 7, 18])
 :
 : (4) ---- doc_func(func=None) ----
 :   see get_func and get_modu
@@ -109,7 +112,13 @@
 : (7) ---- get_modu ----
 :
 : (8) ---- group_pnts(a, key_fld='ID', keep_flds=['X', 'Y', 'Z'])
-: (9) ---- info(a, prn=True) ----
+:
+: (9)---- group_vals(seq, stepsize=1)
+:   - seq = [1, 2, 4, 5, 8, 9, 10]
+:     stepsize = 1
+:   - [array([1, 2]), array([4, 5]), array([ 8,  9, 10])]
+:
+: (10) ---- info(a, prn=True) ----
 : - example
 :   - array([(0, 1, 2, 3, 4), (5, 6, 7, 8, 9),
 :            (10, 11, 12, 13, 14), (15, 16, 17, 18, 19)],
@@ -136,13 +145,15 @@
 :   :     |__['D', '<i8']
 :   :     |__['E', '<i8']
 :   :---------------------
+: (11) _join_array(a, in_fc, out_fld='Result_', OID_fld='OID@')
 :
-: (10) ---- make_blocks(rows=2, cols=4, r=2, c=2, dt='int')
+: (12) ---- make_blocks(rows=2, cols=4, r=2, c=2, dt='int')
 :    array([[0, 0, 1, 1, 2, 2, 3, 3],
 :           [0, 0, 1, 1, 2, 2, 3, 3],
 :           [4, 4, 5, 5, 6, 6, 7, 7],
 :           [4, 4, 5, 5, 6, 6, 7, 7]])
-: (11) ---- make_flds(n=1, names=None, default="col") ----
+:
+: (13) ---- make_flds(n=1, names=None, default="col") ----
 :   - Example
 :   - make_flds(3, names='A,B,C', default='A')
 :     =>  dtype([('A', '<f8'), ('B', '<f8'), ('C', '<f8')])
@@ -153,7 +164,7 @@
 :     easy(f,names,name)
 :     =>  dtype([('A', '<f8'), ('B', '<f8'), ('A00', '<f8')]
 :
-: (12) ---- nd_struct(a) ----
+: (14) ---- nd_struct(a) ----
 :   - ndarray to structured array
 :   (a) keep the dtype the same
 :      aa = nd_struct(a)       # produce a structured array from inputs
@@ -170,7 +181,7 @@
 :             (15.0, 16.0, 17.0, 18.0, 19.0)],
 :         dtype=[('A', '<f8'), ... snip ... , ('E', '<f8')])
 :
-: (13) ---- reclass(z, bins, new_bins, mask=False, mask_val=None)
+: (15) ---- reclass(z, bins, new_bins, mask=False, mask_val=None)
 :   - reclass an array using existing class breaks (bins) and new bins
 :     both must be in ascending order
 :     z = np.arange(3*5).reshape(3,5)
@@ -182,8 +193,7 @@
 :            [ 5,  6,  7,  8,  9],          [2, 2, 2, 2, 2],
 :            [10, 11, 12, 13, 14]])         [3, 3, 3, 3, 3]])
 :
-:
-: (14) ---- scale(a, x=2, y=2)
+: (16) ---- scale(a, x=2, y=2)
 :   - scale an array by x, y factors
 :     a = np.array([[0, 1, 2], [3, 4, 5]]
 :     b = scale(a, x=2, y=2)
@@ -202,8 +212,7 @@
 :                                      [2, 2, 3, 3, 2, 2, 3, 3],
 :                                      [2, 2, 3, 3, 2, 2, 3, 3]])
 :
-:
-: (15) ---- split_array(a, fld='Id')
+: (17) ---- split_array(a, fld='Id')
 :    array 'b'
 :    array([(0, 1, 2, 3), (4, 5, 6, 7), (8, 9, 10, 11)],
 :          dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')])
@@ -215,7 +224,7 @@
 :    array([(8, 9, 10, 11)],
 :         dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')])]
 :
-: (15) ---- stride(a, r_c=(3, 3))
+: (18) ---- stride(a, r_c=(3, 3))
 :   - produce a strided array using a window of r_c shape
 :   - calls _check(a, r_c, subok=False) to check for array compliance
 :     a =np.arange(15).reshape(3,5)
@@ -224,7 +233,7 @@
 :             [ 5,  6,  7],   [ 6,  7,  8],   [ 7,  8,  9],
 :             [10, 11, 12]],  [11, 12, 13]],  [12, 13, 14]]])
 :
-: (16) rolling_stats()... stats for a strided array ...
+: (19) rolling_stats()... stats for a strided array ...
 :    min, max, mean, sum, std, var, ptp
 :   (0, 53, 26.5, 1431, 15.5857..., 242.9166..., 53)
 :
@@ -239,43 +248,44 @@ import sys
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
 from textwrap import dedent, indent
+import arcpy
 
-__all__ = ['arr2xyz',
-           'block_arr',
-           'change',
-           'doc_func',
-           'find',
-           'get_func',
-           'get_modu',
-           'group_pnts',
-           'info',
-           'make_blocks',
-           'make_flds',
-           'nd_struct',
-           'reclass',
-           'scale',
-           'stride',
-           'rolling_stats'
+__all__ = ['arr2xyz',     # (1)
+           'block_arr',   # (2)
+           'change',      # (3)
+           'doc_func',    # (4)
+           'find',        # (5)
+           'fc_info',     # (6)
+           'get_func',    # (7)
+           'get_modu',    # (8)
+           'group_pnts',  # (9)
+           'group_vals',  # (10)
+           '_join_array',  # (11)
+           'info',         # (12)
+           'make_blocks',  # (13)
+           'make_flds',    # (14)
+           'nd_struct',    # (15)
+           'reclass',      # (16)
+           'scale',        # (17)
+           'stride',       # (18)
+           'rolling_stats'  # (19)
            ]
-__xtras__ = ['_func', '_check',
-             '_demo', 'run_deco',
-             'time_deco'
-             ]
-
+__xtras__ = ['_func', '_check', '_demo', 'time_deco', 'run_deco']
 __outside__ = ['dedent', 'indent']
 
 ft = {'bool': lambda x: repr(x.astype('int32')),
       'float': '{: 0.3f}'.format}
 
-np.set_printoptions(edgeitems=10, linewidth=80, precision=2,
-                    suppress=True, threshold=100,
+np.set_printoptions(edgeitems=3, linewidth=80, precision=2,
+                    suppress=True, threshold=15,
                     formatter=ft)
 np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
+data_path = script.replace('tools.py', 'Data')
 
 
-# ---- decorators ----
+# ---- decorators and helpers ----
 
 def time_deco(func):  # timing originally
     """timing decorator function
@@ -289,8 +299,8 @@ def time_deco(func):  # timing originally
         t0 = time.perf_counter()        # start time
         result = func(*args, **kwargs)  # ... run the function ...
         t1 = time.perf_counter()        # end time
-        dt = t1-t0
-        print("\nTiming function for... {}\n".format(func.__name__))
+        dt = t1 - t0
+        print("\nTiming function for... {}".format(func.__name__))
         print("  Time: {: <8.2e}s for {:,} objects".format(dt, len(result)))
         return result                   # return the result of the function
         return dt                       # return delta time
@@ -315,6 +325,23 @@ def run_deco(func):
         print("{!r:}\n".format(result))  # comment out if results not needed
         return result                    # for optional use outside.
     return wrapper
+
+
+def fc_info(in_fc):
+    """Return basic featureclass information, including...
+    :
+    : shp_fld  - field name which contains the geometry object
+    : oid_fld  - the object index/id field name
+    : SR       - spatial reference object (use SR.name to get the name)
+    : shp_type - shape type (Point, Polyline, Polygon, Multipoint, Multipatch)
+    : - others: 'areaFieldName', 'baseName', 'catalogPath','featureType',
+    :   'fields', 'hasOID', 'hasM', 'hasZ', 'path'
+    : - all_flds =[i.name for i in desc['fields']]
+    """
+    desc = arcpy.da.Describe(in_fc)
+    args = ['shapeFieldName', 'OIDFieldName', 'spatialReference', 'shapeType']
+    shp_fld, oid_fld, SR, shp_type = [desc[i] for i in args]
+    return shp_fld, oid_fld, SR, shp_type
 
 
 # ---- functions ----
@@ -612,18 +639,21 @@ def get_func(obj, line_nums=True, verbose=True):
                         for idx, line in enumerate(lines)])
     else:
         code = "".join(["{}".format(line) for line in lines])
-    vars = ", ".join([i for i in obj.__code__.co_varnames])
-    vars = wrap(vars, 50)
-    vars = "\n".join([i for i in vars])
+    vars_ = ", ".join([i for i in obj.__code__.co_varnames])
+    vars_ = wrap(vars_, 50)
+    vars_ = "\n".join([i for i in vars_])
     args = [obj.__name__, ln_num, dedent(obj.__doc__), obj.__defaults__,
-            obj.__kwdefaults__, indent(vars, "    "), code]
+            obj.__kwdefaults__, indent(vars_, "    "), code]
     code_mem = dedent(frmt).format(*args)
-    return code_mem
+    if verbose:
+        print(code_mem)
+    else:
+        return code_mem
 
 
 # ----------------------------------------------------------------------
 # (7) get_modu .... code section
-def get_modu(obj):
+def get_modu(obj, verbose=True):
     """Get module (script) information, including source code for
     :  documentation purposes.
     :Requires:
@@ -657,7 +687,10 @@ def get_modu(obj):
                     for idx, line in enumerate(lines)])
     args = [obj.__name__, obj.__file__, obj.__doc__, memb, code]
     mod_mem = dedent(frmt).format(*args)
-    return mod_mem
+    if verbose:
+        print(mod_mem)
+    else:
+        return mod_mem
 
 
 # ----------------------------------------------------------------------
@@ -687,12 +720,42 @@ def group_pnts(a, key_fld='ID', keep_flds=['X', 'Y', 'Z']):
     from_to = [[idx[i-1], idx[i]] for i in range(1, len(idx))]
     subs = [a[keep_flds][i:j] for i, j in from_to]
     groups = [sub.view(dtype='float').reshape(sub.shape[0], -1)
-               for sub in subs]
+              for sub in subs]
     return groups
 
 
 # ----------------------------------------------------------------------
-# (8) info .... code section
+# (9)
+def group_vals(seq, delta=1, oper='!='):
+    """Group consecutive values separated by no more than delta
+    :
+    : seq - sequence of values
+    : delta - difference between consecutive values
+    : oper - 'eq', '==', 'ne', '!=', 'gt', '>', 'lt', '<'
+    :Reference:
+    :---------
+    :  https://stackoverflow.com/questions/7352684/
+    :    how-to-find-the-groups-of-consecutive-elements-from-an-array-in-numpy
+    :    return np.split(data, np.where(np.diff(data) != stepsize)[0]+1)
+    """
+    valid = ('eq', '==', 'ne', '!=', 'gt', '>', 'lt', '<')
+    if oper not in valid:
+        raise ValueError("operand not in {}".format(valid))
+    elif oper in ('==', 'eq'):
+        s = np.split(seq, np.where(np.diff(seq) == delta)[0]+1)
+    elif oper in ('!=', 'ne'):
+        s = np.split(seq, np.where(np.diff(seq) != delta)[0]+1)
+    elif oper in ('>', 'gt'):
+        s = np.split(seq, np.where(np.diff(seq) > delta)[0]+1)
+    elif oper in ('<', 'lt'):
+        s = np.split(seq, np.where(np.diff(seq) < delta)[0]+1)
+    else:
+        s = seq
+    return s
+
+
+# ----------------------------------------------------------------------
+# (10) info .... code section
 def info(a, prn=True):
     """Returns basic information about an numpy array.
     :Requires:
@@ -753,7 +816,32 @@ def info(a, prn=True):
 
 
 # ----------------------------------------------------------------------
-# (9) make_blocks ... code section .....
+# (11)_join_array ... code section .....
+def _join_array(a, in_fc, out_fld='Result_', OID_fld='OID@'):
+    """Join an array to a featureclass table using matching fields, usually
+    :  an object id field.
+    :
+    :Requires:
+    :--------
+    : a - an array of numbers or text with ndim=1
+    : out_fld - field name for the results
+    : in_fc - input featureclass
+    : in_flds - list of fields containing the OID@ field as a minimum
+    : - ExtendTable (in_table, table_match_field,
+    :                in_array, array_match_field, {append_only})
+    :
+    """
+    N = len(a)
+    dt_a = [('IDs', '<i4'), (out_fld, a.dtype.name)]
+    out = np.zeros((N,), dtype=dt_a)
+    out['IDs'] = [row[0] for row in arcpy.da.SearchCursor(in_fc, OID_fld)]
+    out[out_fld] = a
+    arcpy.da.ExtendTable(in_fc, OID_fld, out, 'IDs', True)
+    return out
+
+
+# ----------------------------------------------------------------------
+# (12) make_blocks ... code section .....
 def make_blocks(rows=3, cols=3, r=2, c=2, dt='int'):
     """Make a block array with rows * cols containing r*c sub windows
     :Requires:
@@ -774,7 +862,7 @@ def make_blocks(rows=3, cols=3, r=2, c=2, dt='int'):
 
 
 # ----------------------------------------------------------------------
-# (10) make_flds .... code section
+# (13) make_flds .... code section
 def make_flds(n=1, as_type='float', names=None, def_name="col"):
     """Create float fields for statistics and their names.
     :Requires:
@@ -806,7 +894,7 @@ def make_flds(n=1, as_type='float', names=None, def_name="col"):
 
 
 # ----------------------------------------------------------------------
-# (11) nd_struct .... code section
+# (14) nd_struct .... code section
 def nd_struct(a):
     """ convert ndarray to structured/recarray
     :Requires:
@@ -847,7 +935,7 @@ def nd_struct(a):
 
 
 # ----------------------------------------------------------------------
-# (12) reclass .... code section
+# (15) reclass .... code section
 def reclass(a, bins=[], new_bins=[], mask=False, mask_val=None):
     """Reclass an array of integer or floating point values.
     :Requires:
@@ -884,7 +972,7 @@ def reclass(a, bins=[], new_bins=[], mask=False, mask_val=None):
 
 
 # ----------------------------------------------------------------------
-# (13) scale .... code section
+# (16) scale .... code section
 def scale(a, x=2, y=2, num_z=None):
     """Scale the input array repeating the array values up by the
     :  x and y factors.
@@ -943,7 +1031,7 @@ def scale(a, x=2, y=2, num_z=None):
 
 
 # ----------------------------------------------------------------------
-# (14)  ---- move get_func and get_modu out
+# (17)  ---- move get_func and get_modu out
 def split_array(a, fld='ID'):
     """Split a structured or recarray array using unique values in the
     :  'fld' field.  It is assumed that there is a sequential ordering to
@@ -964,7 +1052,7 @@ def split_array(a, fld='ID'):
 
 
 # ----------------------------------------------------------------------
-# (15) stride .... code section
+# (18) stride .... code section
 def _check(a, r_c, subok=False):
     """Performs the array checks necessary for stride and block.
     : a   - Array or list.
@@ -1019,12 +1107,12 @@ def stride(a, r_c=(3, 3)):
 
 
 # ----------------------------------------------------------------------
-# (16) stride .... code section
+# (18) rolling stats .... code section
 def rolling_stats(a, no_null=True, prn=True):
     """Statistics on the last two dimensions of an array.
     :Requires
     :--------
-    : a - 2D array
+    : a - 2D array  **Note, use 'stride' above to obtain rolling stats
     : no_null - boolean, whether to use masked values (nan) or not.
     : prn - boolean, to print the results or return the values.
     :
@@ -1044,6 +1132,7 @@ def rolling_stats(a, no_null=True, prn=True):
         a_min = a.min(axis=ax)
         a_max = a.max(axis=ax)
         a_mean = a.mean(axis=ax)
+        a_med = np.median(a, axis=ax)
         a_sum = a.sum(axis=ax)
         a_std = a.std(axis=ax)
         a_var = a.var(axis=ax)
@@ -1052,18 +1141,19 @@ def rolling_stats(a, no_null=True, prn=True):
         a_min = np.nanmin(a, axis=(ax))
         a_max = np.nanmax(a, axis=(ax))
         a_mean = np.nanmean(a, axis=(ax))
+        a_med = np.nanmedian(a, axi=(ax))
         a_sum = np.nansum(a, axis=(ax))
         a_std = np.nanstd(a, axis=(ax))
         a_var = np.nanvar(a, axis=(ax))
         a_ptp = a_max - a_min
     if prn:
-        frmt = "Minimum...\n{}\nMaximum...\n{}\nMean...\n{}\n" + \
-               "Sum...\n{}\nStd...\n{}\nVar...\n{}\nRange...\n{}"
-        frmt = dedent(frmt)
-        args = [a_min, a_max, a_mean, a_sum, a_std, a_var, a_ptp]
+        s = ['Min', 'Max', 'Mean', 'Med', 'Sum', 'Std', 'Var', 'Range']
+        frmt = "...\n{}\n".join([i for i in s])
+        v = [a_min, a_max, a_mean, a_med, a_sum, a_std, a_var, a_ptp]
+        args = [indent(str(i), '... ') for i in v]
         print(frmt.format(*args))
     else:
-        return a_min, a_max, a_mean, a_sum, a_std, a_var, a_ptp
+        return a_min, a_max, a_mean, a_med, a_sum, a_std, a_var, a_ptp
 
 
 # ----------------------------------------------------------------------
@@ -1091,22 +1181,25 @@ def _help():
     (7)  get_modu(obj)
          pull in module code
     (8)  group_pnts(a, key_fld='ID', keep_flds=['X', 'Y', 'Z'])
-    (9)  info(a)  array info
-    (10) make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
+    (9)  group_vals(seq, delta=1, oper='!=')
+    (10)  info(a)  array info
+    (11) _join_array()
+    (12) make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
          make arrays consisting of blocks
-    (11) make_flds(n=1, as_type='float', names=None, def_name='col')
+    (13) make_flds(n=1, as_type='float', names=None, def_name='col')
          make structured/recarray fields
-    (12) nd_struct(a)
+    (14) nd_struct(a)
          convert an ndarray to a structured array with fields
-    (13) reclass(a, bins=[], new_bins=[], mask=False, mask_val=None)
+    (15) reclass(a, bins=[], new_bins=[], mask=False, mask_val=None)
          reclass an array
-    (14) scale(a, x=2, y=2, num_z=None)
+    (16) scale(a, x=2, y=2, num_z=None)
          scale an array up in size by repeating values
-    (15) split_array(a, fld='ID')
+    (17) split_array(a, fld='ID')
          split an array using an index field
-    (16) stride(a, r_c=(3, 3))
+    (18) stride(a, r_c=(3, 3))
          stride an array for moving window functions
-    (17) rolling_stats((a0, no_null=True, prn=True))
+    (19) rolling_stats((a0, no_null=True, prn=True))
+
     :-------------------------------------------------------------------:
     """
     print(dedent(_hf))
@@ -1133,6 +1226,11 @@ def _demo():
     spl = split_array(b, fld='A')
     stri = stride(a, (3, 3))
     rsta = rolling_stats(d, no_null=True, prn=False)
+#    arr = np.load(data_path + '/sample_20.npy')
+#    row = arr['County']
+#    col = arr['Town']
+#    ctab, a0, result, r0, c0 = crosstab(row, col)
+#    arr = arr.reshape(arr.shape[0], -1)
     frmt = """
 : ----- _demo {}
 :
@@ -1170,8 +1268,11 @@ def _demo():
 {!r:}\n
 :(11) rolling_stats()... stats for a strided array ...
 :    min, max, mean, sum, std, var, ptp
-{}
+{}\n
 """
+
+
+# """
     args = ["-"*62, a, b, c, d,
             arr2xyz(a),
             bloc,
@@ -1184,7 +1285,9 @@ def _demo():
             stri,
             m_blk,
             nd_struct(a),
-            rsta]  # f21
+            rsta]
+#            indent(repr(arr), '    '),
+#            indent(result, '    ')]  # f21
 
     print(frmt.format(*args))
     # del args, d, e
@@ -1198,4 +1301,4 @@ if __name__ == "__main__":
     : - run the _demo
     """
 #    print("Script... {}".format(script))
-    _demo()
+#    _demo()
