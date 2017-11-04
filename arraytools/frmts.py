@@ -223,17 +223,9 @@ df_opt = ", ".join(["{}={}".format(i, pr_opt[i]) for i in pr_opt])
 
 script = sys.argv[0]
 
-__all__ = ['col_hdr',
-           'deline',
-           'frmt_',
-           'frmt_ma',
-           'frmt_rec',
-           'frmt_struct',
-           'in_by',
-           'make_row_format',
-           'redent',
-           '_demo',
-           '_ma_demo']
+__all_frmt__ = ['col_hdr', 'deline', 'frmt_', 'frmt_ma', 'frmt_rec',
+                'frmt_struct', 'in_by', 'make_row_format', 'redent', '_demo',
+                '_ma_demo']
 
 
 # ----------------------------------------------------------------------
@@ -612,7 +604,7 @@ def redent(lines, spaces=4):
 # ----------------------------------------------------------------------
 # ---- demos ----
 
-def _demo():
+def _demo_frmt():
     """ small samples """
     sh = [2, 2, 4, 2]
     fac = 1
@@ -627,7 +619,7 @@ def _demo():
     return a
 
 
-def _ma_demo():
+def _demo_ma():
     """Produce a simple masked array and format it using frmt_ma
     :  Change the values to suit
     """
@@ -649,10 +641,10 @@ def _ma_demo():
     # return a, b
 
 
-def _struct_demo():
+def _demo_struct():
     """load and print a structured array
     """
-    pth = _struct_demo.__code__.co_filename  # script path
+    pth = _demo_struct.__code__.co_filename  # script path
     pth = pth.replace("frmts.py", "Data/sample_20.npy")
     aa = np.load(pth)
     a = aa[['OBJECTID', 'County', 'Town', 'Time']]
@@ -668,6 +660,6 @@ if __name__ == "__main__":
     """Main section...   """
 #    print("Script... {}".format(script))
 #    row_frmt = make_row_format()
-#    a = _demo()
-#    a, b = _ma_demo()
-#    a = _struct_demo()
+#    a = _demo_frmt()
+#    a, b = _demo_ma()
+#    a = _demo_struct()

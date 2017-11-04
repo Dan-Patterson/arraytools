@@ -5,6 +5,15 @@
 :Modified: 2018-10-17
 :Purpose: basic io tools for numpy arrays and operating system functions
 :
+:Notes:
+:  _arr_json   - array to json file
+:  _get_dir    - various function for accessing folders
+:  all_folders
+:  load_npy    - load numpy npy files
+:  read_txt    - read a text formatted array
+:  save_npy    - save array to npy format
+:  save_txt    - save array to text format
+:  sub_folders
 :---------------------------------------------------------------------:
 """
 # ---- imports, formats, constants ----
@@ -22,14 +31,8 @@ np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
 
-__all__ = ['load_npy',  # load numpy npy files
-           'save_npy',  # save array to npy format
-           'read_txt',  # read a text formatted array
-           'save_txt',  # save array to text format
-           '_arr_json',  # array to json file
-           '_get_dir',  # various function for accessing folders
-           'all_folders',
-           'sub_folders']
+__all_aio__ = ['arr_json', 'get_dir', 'load_npy', 'read_txt', 'save_npy',
+               'save_txt', 'sub_folders']
 
 
 # ----------------------------------------------------------------------
@@ -96,7 +99,7 @@ def save_txt(a, name="arr.txt", sep=", ", dt_hdr=True):
 
 # ----------------------------------------------------------------------
 # (4) save_txt .... code section ---
-def _arr_json(file_out, arr=None):
+def arr_json(file_out, arr=None):
     """Send an array out to json format. Use json_arr to read the file.
     :  no error checking
     """
@@ -109,7 +112,7 @@ def _arr_json(file_out, arr=None):
 
 # ----------------------------------------------------------------------
 # (5) general file functions ... code section ---
-def _get_dir(path):
+def get_dir(path):
     """Get the directory list from a path, excluding geodatabase folders
     :  Used by.. print_folders
     """
@@ -134,7 +137,7 @@ def all_folders(path, first=True, prefix=""):
         prefix = "|-"
         first = False
         cprev = path
-    dirlist = _get_dir(path)
+    dirlist = get_dir(path)
     for d in dirlist:
         fullname = os.path.join(path, d)  # Turn name into full pathname
         if os.path.isdir(fullname):       # If a directory, recurse.
@@ -158,7 +161,7 @@ def sub_folders(path):
     print("{}".format(f))
 
 
-def _demo():
+def _demo_a_io():
     """
     : -
     """
@@ -175,5 +178,5 @@ if __name__ == "__main__":
     : - run the _demo
     """
 #    print("Script... {}".format(script))
-    _npy_file = _demo()
+#    _npy_file = _demo_a_io()
 #    x = "C:/Git_Dan/arraytools/Data/x.txt"

@@ -248,29 +248,14 @@ import sys
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
 from textwrap import dedent, indent
-import arcpy
 
-__all__ = ['arr2xyz',     # (1)
-           'block_arr',   # (2)
-           'change',      # (3)
-           'doc_func',    # (4)
-           'find',        # (5)
-           'fc_info',     # (6)
-           'get_func',    # (7)
-           'get_modu',    # (8)
-           'group_pnts',  # (9)
-           'group_vals',  # (10)
-           '_join_array',  # (11)
-           'info',         # (12)
-           'make_blocks',  # (13)
-           'make_flds',    # (14)
-           'nd_struct',    # (15)
-           'reclass',      # (16)
-           'scale',        # (17)
-           'stride',       # (18)
-           'rolling_stats'  # (19)
-           ]
-__xtras__ = ['_func', '_check', '_demo', 'time_deco', 'run_deco']
+
+__all_art__ = ['_demo_tools', 'arr2xyz', 'block_arr', 'change', 'doc_func',
+               'find', 'get_func', 'get_modu', 'group_pnts',
+               'group_vals', '_join_array', 'info', 'make_blocks', 'make_flds',
+               'nd_struct', 'reclass', 'scale', 'stride', 'rolling_stats',
+               'uniq']
+__xtras__ = ['_func', '_check', 'time_deco', 'run_deco']
 __outside__ = ['dedent', 'indent']
 
 ft = {'bool': lambda x: repr(x.astype('int32')),
@@ -325,23 +310,6 @@ def run_deco(func):
         print("{!r:}\n".format(result))  # comment out if results not needed
         return result                    # for optional use outside.
     return wrapper
-
-
-def fc_info(in_fc):
-    """Return basic featureclass information, including...
-    :
-    : shp_fld  - field name which contains the geometry object
-    : oid_fld  - the object index/id field name
-    : SR       - spatial reference object (use SR.name to get the name)
-    : shp_type - shape type (Point, Polyline, Polygon, Multipoint, Multipatch)
-    : - others: 'areaFieldName', 'baseName', 'catalogPath','featureType',
-    :   'fields', 'hasOID', 'hasM', 'hasZ', 'path'
-    : - all_flds =[i.name for i in desc['fields']]
-    """
-    desc = arcpy.da.Describe(in_fc)
-    args = ['shapeFieldName', 'OIDFieldName', 'spatialReference', 'shapeType']
-    shp_fld, oid_fld, SR, shp_type = [desc[i] for i in args]
-    return shp_fld, oid_fld, SR, shp_type
 
 
 # ---- functions ----
@@ -695,7 +663,7 @@ def get_modu(obj, verbose=True):
 
 # ----------------------------------------------------------------------
 # (8)
-def group_pnts(a, key_fld='ID', keep_flds=['X', 'Y', 'Z']):
+def group_pnts(a, key_fld='IDs', keep_flds=['Xs', 'Ys']):
     """Group points for a feature that has been exploded to points by
     :  arcpy.da.FeatureClassToNumPyArray.
     :Requires:
@@ -816,30 +784,6 @@ def info(a, prn=True):
 
 
 # ----------------------------------------------------------------------
-# (11)_join_array ... code section .....
-def _join_array(a, in_fc, out_fld='Result_', OID_fld='OID@'):
-    """Join an array to a featureclass table using matching fields, usually
-    :  an object id field.
-    :
-    :Requires:
-    :--------
-    : a - an array of numbers or text with ndim=1
-    : out_fld - field name for the results
-    : in_fc - input featureclass
-    : in_flds - list of fields containing the OID@ field as a minimum
-    : - ExtendTable (in_table, table_match_field,
-    :                in_array, array_match_field, {append_only})
-    :
-    """
-    N = len(a)
-    dt_a = [('IDs', '<i4'), (out_fld, a.dtype.name)]
-    out = np.zeros((N,), dtype=dt_a)
-    out['IDs'] = [row[0] for row in arcpy.da.SearchCursor(in_fc, OID_fld)]
-    out[out_fld] = a
-    arcpy.da.ExtendTable(in_fc, OID_fld, out, 'IDs', True)
-    return out
-
-
 # ----------------------------------------------------------------------
 # (12) make_blocks ... code section .....
 def make_blocks(rows=3, cols=3, r=2, c=2, dt='int'):
@@ -1157,6 +1101,56 @@ def rolling_stats(a, no_null=True, prn=True):
 
 
 # ----------------------------------------------------------------------
+# (19) uniq  ---- np.unique for versions < 1.13 ----
+def uniq(ar, return_index=False, return_inverse=False,
+         return_counts=False, axis=0):
+    """Taken from, but modified for simple axis 0 and 1 and structured
+    :arrays in (N,m) or (N,) format.
+    :  https://github.com/numpy/numpy/blob/master/numpy/lib/arraysetops.py
+    :To enable determination of unique values in uniform arrays with
+    :uniform dtypes.  np.unique in versions < 1.13 need to use this.
+    """
+    ar = np.asanyarray(ar)
+    if axis is None:
+        return np.unique(ar, return_index, return_inverse, return_counts)
+    if not (-ar.ndim <= axis < ar.ndim):
+        raise ValueError('Invalid axis kwarg specified for unique')
+
+    ar = np.swapaxes(ar, axis, 0)
+    orig_shape, orig_dtype = ar.shape, ar.dtype
+    # Must reshape to a contiguous 2D array for this to work...
+    ar = ar.reshape(orig_shape[0], -1)
+    ar = np.ascontiguousarray(ar)
+
+    t_codes = (np.typecodes['AllInteger'] + np.typecodes['Datetime'] + 'S')
+    if ar.dtype.char in t_codes:
+        dtype = np.dtype((np.void, ar.dtype.itemsize * ar.shape[1]))
+    else:
+        dtype = [('f{i}'.format(i=i), ar.dtype) for i in range(ar.shape[1])]
+
+    try:
+        consolidated = ar.view(dtype)
+    except TypeError:
+        # There's no good way to do this for object arrays, etc...
+        msg = 'The axis argument to unique is not supported for dtype {dt}'
+        raise TypeError(msg.format(dt=ar.dtype))
+
+    def reshape_uniq(uniq):
+        uniq = uniq.view(orig_dtype)
+        uniq = uniq.reshape(-1, *orig_shape[1:])
+        uniq = np.swapaxes(uniq, 0, axis)
+        return uniq
+
+    output = np.unique(consolidated, return_index,
+                       return_inverse, return_counts)
+    if not (return_index or return_inverse or return_counts):
+        return reshape_uniq(output)
+    else:
+        uniq = reshape_uniq(output[0])
+        return (uniq,) + output[1:]
+
+
+# ----------------------------------------------------------------------
 # _help .... code section
 def _help():
     """arraytools"""
@@ -1208,7 +1202,7 @@ def _help():
 # ----------------------------------------------------------------------
 # _demo .... code section
 # @run_deco
-def _demo():
+def _demo_tools():
     """
     : - Run examples of the existing functions.
     """
@@ -1301,4 +1295,4 @@ if __name__ == "__main__":
     : - run the _demo
     """
 #    print("Script... {}".format(script))
-#    _demo()
+#    _demo_tools()
