@@ -250,17 +250,15 @@ from numpy.lib.stride_tricks import as_strided
 from textwrap import dedent, indent
 
 
-__all_art__ = ['_demo_tools', 'arr2xyz', 'block_arr', 'change', 'doc_func',
-               'find', 'get_func', 'get_modu', 'group_pnts',
-               'group_vals', '_join_array', 'info', 'make_blocks', 'make_flds',
-               'nd_struct', 'reclass', 'scale', 'stride', 'rolling_stats',
-               'uniq']
+__all__ = ['_demo_tools', 'arr2xyz', 'block_arr', 'change', 'doc_func', 'find',
+           'get_func', 'get_modu', 'group_pnts',  'group_vals', 'info',
+           'make_blocks', 'make_flds', 'nd_struct', 'reclass', 'scale',
+           'stride', 'rolling_stats', 'uniq']
 __xtras__ = ['_func', '_check', 'time_deco', 'run_deco']
 __outside__ = ['dedent', 'indent']
 
 ft = {'bool': lambda x: repr(x.astype('int32')),
       'float': '{: 0.3f}'.format}
-
 np.set_printoptions(edgeitems=3, linewidth=80, precision=2,
                     suppress=True, threshold=15,
                     formatter=ft)
@@ -975,7 +973,7 @@ def scale(a, x=2, y=2, num_z=None):
 
 
 # ----------------------------------------------------------------------
-# (17)  ---- move get_func and get_modu out
+# (17) split_array .... code section
 def split_array(a, fld='ID'):
     """Split a structured or recarray array using unique values in the
     :  'fld' field.  It is assumed that there is a sequential ordering to

@@ -81,10 +81,10 @@ import numpy as np
 import arcpy
 
 
-__all_apt__ = ['_arr_common', 'shapes_fc', 'arr_pnts', 'arr_polygon',
-               'arr_polyline', 'array_fc', 'array_struct', 'change_fld',
-               'fc_array', 'pnts_arr', 'polygons_arr', 'polylines_arr',
-               'tbl_arr', 'to_fc']
+__all__ = ['_arr_common', '_split_array', 'shapes_fc', 'arr_pnts',
+           'arr_polygon', 'arr_polyline', 'array_fc', 'array_struct',
+           'change_fld', 'fc_array', 'pnts_arr', 'polygons_arr',
+           'polylines_arr', 'tbl_arr', 'to_fc']
 
 ft = {'bool': lambda x: repr(x.astype('int32')),
       'float': '{: 0.3f}'.format}
@@ -96,15 +96,6 @@ script = sys.argv[0]  # print this should you need to locate the script
 
 
 # ---- Array to featureclass section ----
-
-# @time_deco
-def _split_array(a, fld='ID'):
-    """Split a structured/recarray array, using unique values in a numeric id
-    :  'fld' assumed to be sorted in the correct order which indicates the
-    :  group a record belongs to.  From 'arraytools split_array'.
-    """
-    return np.split(a, np.where(np.diff(a[fld]))[0] + 1)
-
 
 def _arr_common(a, oid_fld, shp_fld):
     """Common structure for polyline, polygon and multipoint features.
@@ -127,24 +118,13 @@ def _arr_common(a, oid_fld, shp_fld):
     return pts
 
 
-def shapes_fc(shps, out_fc):
-    """Create a featureclass/shapefile from poly* shapes.
-    :
-    :Requires:
-    :--------
-    :  shps   - point geometry objects needed to create the featureclass
-    :  out_fc - full path and name to the output container (gdb or folder)
+# @time_deco
+def _split_array(a, fld='ID'):
+    """Split a structured/recarray array, using unique values in a numeric id
+    :  'fld' assumed to be sorted in the correct order which indicates the
+    :  group a record belongs to.  From 'arraytools split_array'.
     """
-    msg0 = "\nCreated..\n{}".format(out_fc)
-    msg1 = "\nCan't overwrite the {}... rename it".format(out_fc)
-    arcpy.overwriteOutput = True
-    try:
-        if arcpy.Exists(out_fc):
-            arcpy.Delete_management(out_fc)
-        arcpy.CopyFeatures_management(shps, out_fc)
-        tweet(msg0)
-    except:
-        tweet(msg1)
+    return np.split(a, np.where(np.diff(a[fld]))[0] + 1)
 
 
 def arr_pnts(a, out_fc, shp_fld, SR):
@@ -316,6 +296,26 @@ def pnts_arr(in_fc, as_struct=True, shp_fld=None, SR=None):
     else:
         shps = a[shp_fld]
     return shps
+
+
+def shapes_fc(shps, out_fc):
+    """Create a featureclass/shapefile from poly* shapes.
+    :
+    :Requires:
+    :--------
+    :  shps   - point geometry objects needed to create the featureclass
+    :  out_fc - full path and name to the output container (gdb or folder)
+    """
+    msg0 = "\nCreated..\n{}".format(out_fc)
+    msg1 = "\nCan't overwrite the {}... rename it".format(out_fc)
+    arcpy.overwriteOutput = True
+    try:
+        if arcpy.Exists(out_fc):
+            arcpy.Delete_management(out_fc)
+        arcpy.CopyFeatures_management(shps, out_fc)
+        tweet(msg0)
+    except:
+        tweet(msg1)
 
 
 # ---- ******* main conversion section ***** ----

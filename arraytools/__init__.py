@@ -1,6 +1,6 @@
 # coding: utf-8
 """
-Modified: 2017-09-29
+Modified: 2017-11-04
 
 arrtools
 =======
@@ -31,8 +31,8 @@ apt.py  (15)
 fc.py  (11)
   tools for working with featureclasses
   __all_fc__
-    '_describe', '_get_shapes', '_ndarray', '_props', '_two_arrays', '_xy',
-    '_xyID', '_xy_idx', 'change_fld', 'fc_info', 'fld_info']
+    '_get_shapes', '_ndarray', '_props', '_two_arrays', '_xy',
+    '_xyID', '_xy_idx', 'change_fld'
 
 frmts.py  (11)
   Format options to facilitate viewing of numpy arrays in a variety of ways.
@@ -56,7 +56,7 @@ analysis:  (5)
 geom:  (12)
   Geometry related function
   __all_geo__
-    '_view', '_reshape_', 'areas', 'center', 'centroid',  'e_area',
+    '_view_', '_reshape_', 'areas', 'center', 'centroid',  'e_area',
     'obj_array', 'e_dist', 'e_leng', 'seg_lengths', 'total_length', 'lengths'
 
 graphing:
@@ -75,7 +75,7 @@ examples:
 """
 from textwrap import dedent
 from . import _common
-from ._common import _describe, fc_info, fld_info
+from ._common import _describe, fc_info, fld_info, tweet
 from . import a_io
 from .a_io import *
 from . import tools
@@ -117,9 +117,9 @@ Use ... dir(art.module) ... where 'module' is in...
 
 __art_version__ = "Arraytools version 1.0"
 __all__ = ['__art_version__', '__art_modules__']
-__args = [_common.__all_common__, a_io.__all_aio__, analysis.__all__,
-          apt.__all_apt__, fc.__all_fc__, frmts.__all_frmt__,
-          geom.__all_geo__, tools.__all_art__]
+__args = [_common.__all__, a_io.__all__, analysis.__all__,
+          apt.__all__, fc.__all__, frmts.__all__,
+          geom.__all__, tools.__all__]
 for _arg in __args:
     __all__.extend(_arg)
 

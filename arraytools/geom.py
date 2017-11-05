@@ -21,43 +21,16 @@ import numpy as np
 
 ft = {'bool': lambda x: repr(x.astype('int32')),
       'float': '{: 0.3f}'.format}
-
 np.set_printoptions(edgeitems=3, linewidth=80, precision=2, suppress=True,
                     threshold=10, formatter=ft)
 np.ma.masked_print_option.set_display('-')  # change to a single -
 
 _script = sys.argv[0]  # print this should you need to locate the script
 
-__all_geo__ = ['_view', '_reshape_', 'areas', 'center', 'centroid',  'e_area',
-               'obj_array', 'e_dist', 'e_leng', 'seg_lengths', 'total_length',
-               'lengths']
+__all__ = ['_view_', '_reshape_', 'areas', 'center', 'centroid',  'e_area',
+           'e_dist', 'e_leng', 'seg_lengths', 'total_length', 'lengths']
 
 
-# ---- centers --------------------------------------------------------------
-def center(a, remove_dup=True):
-    """Return the center of an array. If the array represents a polygon, then
-    :  a check is made for the duplicate first and last point to remove one.
-    """
-    if remove_dup:
-        if np.all(a[0] == a[-1]):
-            a = a[:-1]
-    return a.mean(axis=0)
-
-
-def centroid(a):
-    """Return the centroid of a closed polygon
-    : e_area required
-    """
-    x, y = a.T
-    t = ((x[:-1] * y[1:]) - (y[:-1] * x[1:]))
-    a_6 = e_area(a) * 6.0  # area * 6.0
-    x_c = np.sum((x[:-1] + x[1:]) * t) / a_6
-    y_c = np.sum((y[:-1] + y[1:]) * t) / a_6
-    return np.asarray([-x_c, -y_c])
-
-
-# ---- distance, length and area --------------------------------------------
-# ----
 # ---- _view and _reshape_ are helper functions -----------------------------
 def _view_(a):
     """return a view of the array using the dtype and length"""
@@ -111,6 +84,31 @@ def _reshape_(a):
     return a
 
 
+# ---- centers --------------------------------------------------------------
+def center(a, remove_dup=True):
+    """Return the center of an array. If the array represents a polygon, then
+    :  a check is made for the duplicate first and last point to remove one.
+    """
+    if remove_dup:
+        if np.all(a[0] == a[-1]):
+            a = a[:-1]
+    return a.mean(axis=0)
+
+
+def centroid(a):
+    """Return the centroid of a closed polygon
+    : e_area required
+    """
+    x, y = a.T
+    t = ((x[:-1] * y[1:]) - (y[:-1] * x[1:]))
+    a_6 = e_area(a) * 6.0  # area * 6.0
+    x_c = np.sum((x[:-1] + x[1:]) * t) / a_6
+    y_c = np.sum((y[:-1] + y[1:]) * t) / a_6
+    return np.asarray([-x_c, -y_c])
+
+
+# ---- distance, length and area --------------------------------------------
+# ----
 def e_area(a, b=None):
     """Area calculation, using einsum.
     :  Some may consider this overkill, but consider a huge list of polygons,
@@ -325,10 +323,7 @@ if __name__ == "__main__":
     """
     from fc import _xyID
     from tools import group_pnts
-#    print("Script... {}".format(_script))
-#    args = [e_area.__doc__, e_dist.__doc__, e_leng.__doc__]
-#    print("\n{}\n{}\n{}".format(*args))
-#
+
     a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11 = _samples_()
 #    in_fc = r'C:\Git_Dan\a_Data\arcpytools_demo.gdb\Can_geom_sp_LCC'
     in_fc = r"C:\Git_Dan\a_Data\testdata.gdb\Carp_5x5km"   # full 25 polygons

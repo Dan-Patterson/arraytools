@@ -144,8 +144,10 @@ np.ma.masked_print_option.set_display('-')  # change to a single -
 script = sys.argv[0]  # print this should you need to locate the script
 
 
-__all_fc__ = ['_describe', '_get_shapes', '_ndarray', '_props', '_two_arrays',
-              '_xy', '_xyID', '_xy_idx', 'change_fld', 'fc_info', 'fld_info']
+__all__ = ['_cursor_array', '_geo_array', '_get_shapes', '_join_array',
+           '_ndarray', '_props', '_two_arrays', '_xy', '_xyID', '_xy_idx',
+           'obj_array', 'change_fld']
+
 
 # ----------------------------------------------------------------------------
 # ---- Functions to get geometry and attributes ------------------------------

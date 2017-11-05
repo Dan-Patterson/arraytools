@@ -31,8 +31,8 @@ np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
 
-__all_aio__ = ['arr_json', 'get_dir', 'load_npy', 'read_txt', 'save_npy',
-               'save_txt', 'sub_folders']
+__all__ = ['arr_json', 'get_dir', 'load_npy', 'read_txt', 'save_npy',
+           'save_txt', 'sub_folders']
 
 
 # ----------------------------------------------------------------------

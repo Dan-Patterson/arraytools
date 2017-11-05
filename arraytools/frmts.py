@@ -223,9 +223,9 @@ df_opt = ", ".join(["{}={}".format(i, pr_opt[i]) for i in pr_opt])
 
 script = sys.argv[0]
 
-__all_frmt__ = ['col_hdr', 'deline', 'frmt_', 'frmt_ma', 'frmt_rec',
-                'frmt_struct', 'in_by', 'make_row_format', 'redent', '_demo',
-                '_ma_demo']
+__all__ = ['col_hdr', 'deline', 'frmt_', 'frmt_ma', 'frmt_rec', 'frmt_struct',
+           'in_by', 'make_row_format', 'redent', '_demo_frmt', '_demo_struct',
+           '_demo_ma']
 
 
 # ----------------------------------------------------------------------

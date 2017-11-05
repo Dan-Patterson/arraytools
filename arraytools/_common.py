@@ -17,14 +17,14 @@ import arcpy
 
 ft = {'bool': lambda x: repr(x.astype('int32')),
       'float': '{: 0.3f}'.format}
-
 np.set_printoptions(edgeitems=10, linewidth=80, precision=2, suppress=True,
                     threshold=100, formatter=ft)
 np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
 
-__all_common__ = ['_describe', 'fc_info', 'fld_info', 'tweet']
+__all__ = ['_describe', 'fc_info', 'fld_info', 'tweet']
+
 
 # ----------------------------------------------------------------------------
 # ---- Geometry objects and generic geometry/featureclass functions ----------
@@ -95,13 +95,6 @@ def tweet(msg):
     print(arcpy.GetMessages())
 
 
-def _demo():
-    """
-    : -
-    """
-    pass
-
-
 # ----------------------------------------------------------------------
 # __main__ .... code section
 if __name__ == "__main__":
@@ -110,4 +103,3 @@ if __name__ == "__main__":
     : - run the _demo
     """
 #    print("Script... {}".format(script))
-#    _demo()
