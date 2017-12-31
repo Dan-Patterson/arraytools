@@ -16,7 +16,7 @@
 :Notes:
 :-----
 :Basic array information:
-: - np.typecodes
+: - np.typecodes ie np.typecodes.items()... np.typecodes['AllInteger']
 :   All: '?bhilqpBHILQPefdgFDGSUVOMm'
 :   |__AllFloat: 'efdgFDG'
 :      |__Float: 'efdg'
@@ -113,7 +113,7 @@
 :
 : (8) ---- group_pnts(a, key_fld='ID', keep_flds=['X', 'Y', 'Z'])
 :
-: (9)---- group_vals(seq, stepsize=1)
+: (9) ---- group_vals(seq, stepsize=1)
 :   - seq = [1, 2, 4, 5, 8, 9, 10]
 :     stepsize = 1
 :   - [array([1, 2]), array([4, 5]), array([ 8,  9, 10])]
@@ -233,14 +233,30 @@
 :             [ 5,  6,  7],   [ 6,  7,  8],   [ 7,  8,  9],
 :             [10, 11, 12]],  [11, 12, 13]],  [12, 13, 14]]])
 :
+    - _pad  to pad an array prior to striding or blocking
+    - block  calls stride with non-overlapping blocks with no padding
+
 : (19) rolling_stats()... stats for a strided array ...
 :    min, max, mean, sum, std, var, ptp
 :   (0, 53, 26.5, 1431, 15.5857..., 242.9166..., 53)
 :
+: (20)  uniq(ar, return_index=False, return_inverse=False,
+:            return_counts=False, axis=0)
+:
+: (21) n_largest(a, n)... n largest in an array
+:      n_smallest(a, n).. n smallest counterpart
+:
+: (22) a_filter(a, mode=1, ignore_ndata=True)  # mode is a 3x3 filter
+"
 :References
 : - https://github.com/numpy/numpy
 : - https://github.com/numpy/numpy/blob/master/numpy/lib/_iotools.py
+:          striding
 : - https://github.com/numpy/numpy/blob/master/numpy/lib/stride_tricks.py
+: - http://www.johnvinyard.com/blog/?p=268  for strided arrays
+: - https://stackoverflow.com/questions/47469947/
+:           as-strided-linking-stepsize-strides-of-conv2d-with-as-strided-
+:           strides-paramet#47470711
 :---------------------------------------------------------------------:
 """
 # ---- imports, formats, constants ----
@@ -250,17 +266,22 @@ from numpy.lib.stride_tricks import as_strided
 from textwrap import dedent, indent
 
 
-__all__ = ['_demo_tools', 'arr2xyz', 'block_arr', 'change', 'doc_func', 'find',
-           'get_func', 'get_modu', 'group_pnts',  'group_vals', 'info',
-           'make_blocks', 'make_flds', 'nd_struct', 'reclass', 'scale',
-           'stride', 'rolling_stats', 'uniq']
+__all__ = ['_demo_tools', 'arr2xyz', 'block', 'block_arr', 'change',
+           'doc_func', 'find', 'get_func', 'get_modu', 'group_pnts',
+           'group_vals', 'info', 'make_blocks', 'make_flds', 'nd_struct',
+           'reclass', 'num_to_nan',
+           'scale',
+           'stride', '_even_odd', '_pad_even_odd', '_pad_nan', '_pad_zero',
+           'rolling_stats',
+           'uniq',
+           'is_in', 'n_largest', 'n_smallest', 'a_filter']
 __xtras__ = ['_func', '_check', 'time_deco', 'run_deco']
 __outside__ = ['dedent', 'indent']
 
 ft = {'bool': lambda x: repr(x.astype('int32')),
       'float': '{: 0.3f}'.format}
 np.set_printoptions(edgeitems=3, linewidth=80, precision=2,
-                    suppress=True, threshold=15,
+                    suppress=True, threshold=200,
                     formatter=ft)
 np.ma.masked_print_option.set_display('-')  # change to a single -
 
@@ -328,7 +349,7 @@ def arr2xyz(a, verbose=False):
         a = a.reshape(np.product(a.shape[:-1]), a.shape[-1])
     r, c = a.shape
     XX, YY = np.meshgrid(np.arange(c), np.arange(r))
-    tbl = np.vstack((XX.ravel(), YY.ravel(), a.ravel())).T
+    tbl = np.stack((XX.ravel(), YY.ravel(), a.ravel()), axis=1)
     return tbl
 
 
@@ -419,7 +440,7 @@ def change(a, order=[], prn=False):
 
 # ----------------------------------------------------------------------
 # (4) doc_func ... code section ...
-def doc_func(func=None):
+def doc_func(func=None, verbose=True):
     """(doc_func)...Documenting code using inspect
     :Requires:
     :--------
@@ -447,7 +468,7 @@ def doc_func(func=None):
         func = demo_func
     script = sys.argv[0]  # a useful way to get a file's name
     lines, line_num = inspect.getsourcelines(func)
-    code = "".join(["{:4d}  {}".format(idx, line)
+    code = "".join(["{:4d}  {}".format(idx+line_num, line)
                     for idx, line in enumerate(lines)])
     args = [line_num, code,
             inspect.getcomments(func), inspect.isfunction(func),
@@ -461,13 +482,15 @@ def doc_func(func=None):
     :Comments preceeding function
     {}
     :function?... {} ... or method? {}
-    :Module name...
-    {}
+    :Module name... {}
     :
     :----------------------------------------------------------------------
     """
     out = dedent(frmt).format(*args)
-    return out
+    if verbose:
+        print(out)
+    else:
+        return out
 
 
 # ----------------------------------------------------------------------
@@ -581,6 +604,11 @@ def get_func(obj, line_nums=True, verbose=True):
     :-------
     :  The function information includes arguments and source code.
     :  A string is returned for printing.
+    :Useage:
+    :  import the module containing the function and put the object
+    :  name in without quotes... ie
+    :  from tools import get_func
+    :  get_func(get_func)  # returns this source code etc.
     """
     frmt = """
     :-----------------------------------------------------------------
@@ -591,7 +619,7 @@ def get_func(obj, line_nums=True, verbose=True):
     :Defaults: {}
     :Keyword Defaults: {}
     :Variable names:
-    {}
+    {}\n
     :Source code:
     {}
     :
@@ -601,7 +629,7 @@ def get_func(obj, line_nums=True, verbose=True):
     from textwrap import dedent, wrap
     lines, ln_num = inspect.getsourcelines(obj)
     if line_nums:
-        code = "".join(["{:4d}  {}".format(idx, line)
+        code = "".join(["{:4d}  {}".format(idx + ln_num, line)
                         for idx, line in enumerate(lines)])
     else:
         code = "".join(["{}".format(line) for line in lines])
@@ -628,7 +656,13 @@ def get_modu(obj, verbose=True):
     :  import inspect
     :Returns:
     :-------
-    :  A string is returned for printing.
+    :  A string is returned for printing.  It will be the whole module
+    :  so use with caution.
+    :Useage:
+    :------
+    :  import tools
+    :  tools.get_modu(tools, verbose=True)  # NOTE... no quotes around module
+    :
     """
     frmt = """
     :-----------------------------------------------------------------
@@ -661,7 +695,7 @@ def get_modu(obj, verbose=True):
 
 # ----------------------------------------------------------------------
 # (8)
-def group_pnts(a, key_fld='IDs', keep_flds=['Xs', 'Ys']):
+def group_pnts(a, key_fld='IDs', shp_flds=['Xs', 'Ys']):
     """Group points for a feature that has been exploded to points by
     :  arcpy.da.FeatureClassToNumPyArray.
     :Requires:
@@ -682,9 +716,10 @@ def group_pnts(a, key_fld='IDs', keep_flds=['Xs', 'Ys']):
                          return_index=True,    # first occurrence index
                          return_inverse=True,  # indices needed to remake array
                          return_counts=True)   # number in each group
-    uniq, idx, inv, cnt = returned
-    from_to = [[idx[i-1], idx[i]] for i in range(1, len(idx))]
-    subs = [a[keep_flds][i:j] for i, j in from_to]
+    uni, idx, inv, cnt = returned
+#    from_to = [[idx[i-1], idx[i]] for i in range(1, len(idx))]
+    from_to = list(zip(idx, np.cumsum(cnt)))
+    subs = [a[shp_flds][i:j] for i, j in from_to]
     groups = [sub.view(dtype='float').reshape(sub.shape[0], -1)
               for sub in subs]
     return groups
@@ -729,7 +764,7 @@ def info(a, prn=True):
     : a - an array
     :Return example:
     :--------------
-    :  a = np.arange(2.*3.).reshape(2,3) # quick float64 array
+    :  a = np.arange(2. * 3.).reshape(2, 3) # quick float64 array
     :  arr_info(a)
     : ---------------------
     : Array information....
@@ -759,6 +794,9 @@ def info(a, prn=True):
     frmt = """
     :---------------------
     :Array information....
+    : OWNDATA: if 'False', data are a view
+    :flags....
+    {}
     :array
     :  |__shape {}\n    :  |__ndim  {}\n    :  |__size  {}
     :  |__bytes {}\n    :  |__type  {}\n    :  |__strides  {}
@@ -766,12 +804,14 @@ def info(a, prn=True):
     :  |__kind  {}\n    :  |__char  {}\n    :  |__num   {}
     :  |__type  {}\n    :  |__name  {}\n    :  |__shape {}
     :  |__description
-    :     |__name, itemsize"""
+    :  |  |__name, itemsize"""
     dt = a.dtype
-    info = [a.shape, a.ndim, a.size, a.nbytes, type(a), a.strides, dt,
-            dt.kind, dt.char, dt.num, dt.type, dt.name, dt.shape]
+    flg = indent(a.flags.__str__(), prefix=':   ')
+    info_ = [flg, a.shape, a.ndim, a.size,
+             a.nbytes, type(a), a.strides, dt,
+             dt.kind, dt.char, dt.num, dt.type, dt.name, dt.shape]
     flds = sorted([[k, v] for k, v in dt.descr])
-    out = dedent(frmt).format(*info) + "\n"
+    out = dedent(frmt).format(*info_) + "\n"
     leader = "".join([":     |__{}\n".format(i) for i in flds])
     leader = leader + ":---------------------"
     out = out + leader
@@ -781,7 +821,6 @@ def info(a, prn=True):
         return out
 
 
-# ----------------------------------------------------------------------
 # ----------------------------------------------------------------------
 # (12) make_blocks ... code section .....
 def make_blocks(rows=3, cols=3, r=2, c=2, dt='int'):
@@ -827,11 +866,12 @@ def make_flds(n=1, as_type='float', names=None, def_name="col"):
     else:
         as_type = 'str'
     f = ",".join([as_type for i in range(n)])
-    names = ", ".join(["{}_{:>02}".format(def_name, i) for i in range(n)])
     if names is None:
-        dt = easy(f, names=names)
-    else:
+        names = ", ".join(["{}_{:>02}".format(def_name, i) for i in range(n)])
         dt = easy(f, names=names, defaultfmt=def_name)
+    else:
+        names = ", ".join(["{}_{:>02}".format(def_name, i) for i in range(n)])
+        dt = easy(f, names=names)
     return dt
 
 
@@ -911,6 +951,16 @@ def reclass(a, bins=[], new_bins=[], mask=False, mask_val=None):
         q2 = (a < rc[1])
         a_rc = a_rc + np.where(q1 & q2, rc[2], 0)
     return a_rc
+
+
+def num_to_nan(a, num=None, copy=True):
+    """reverse of nan_to_num introduced in numpy 1.13
+    """
+    a = a.astype('float64')
+    if isinstance(num, (list, tuple, np.array)):
+        a = np.where(a in num, np.nan, a)
+    a = np.where(a == num, np.nan, a)
+    return a
 
 
 # ----------------------------------------------------------------------
@@ -994,62 +1044,118 @@ def split_array(a, fld='ID'):
 
 
 # ----------------------------------------------------------------------
-# (18) stride .... code section
-def _check(a, r_c, subok=False):
-    """Performs the array checks necessary for stride and block.
-    : a   - Array or list.
-    : r_c - tuple/list/array of rows x cols.
-    : subok - from numpy 1.12 added, keep for now
-    :Returns:
-    :------
-    :Attempts will be made to ...
-    :  produce a shape at least (1*c).  For a scalar, the
-    :  minimum shape will be (1*r) for 1D array or (1*c) for 2D
-    :  array if r<c.  Be aware
+# (18) stride, block and pad .... code section
+#
+def _even_odd(a):
+    """Even/odd from modulus.  Returns 0 for even, 1 for odd"""
+    prod = np.cumprod(a.shape)[0]
+    return np.mod(prod, 2)
+
+
+def _pad_even_odd(a):
+    """To use when padding a strided array for window construction
     """
-    if isinstance(r_c, (int, float)):
-        r_c = (1, int(r_c))
-    r, c = r_c
-    if a.ndim == 1:
-        a = np.atleast_2d(a)
-    r, c = r_c = (min(r, a.shape[0]), min(c, a.shape[1]))
-    a = np.array(a, copy=False, subok=subok)
-    return a, r, c, tuple(r_c)
+    p = _even_odd(a)
+    ap = np.pad(a, pad_width=(1, p), mode="constant", constant_values=(0, 0))
+    return ap
 
 
-def _pad(a, nan_edge=False):
-    """Pad a sliding array to allow for stats"""
+def _pad_nan(a, nan_edge=True):
+    """Pad a sliding array to allow for stats, padding uses np.nan
+    : see also: num_to_nan(a, num=None, copy=True)
+    """
+    a = a.astype('float64')
     if nan_edge:
-        a = np.pad(a, pad_width=(1, 2), mode="constant",
-                   constant_values=(np.NaN, np.NaN))
-    else:
-        a = np.pad(a, pad_width=(1, 1), mode="reflect")
+        cv = (np.NaN, np.NaN)
+        a = np.pad(a, pad_width=(1, 1), mode="constant", constant_values=cv)
     return a
 
 
-def stride(a, r_c=(3, 3)):
+def _pad_zero(a, n=1):
+    """To use when padding a strided array for window construction. n = number
+    : of zeros to pad arround the array
+    : see also: nan_to_num (1.13)
+    """
+    ap = np.pad(a, pad_width=(n, n), mode="constant", constant_values=(0, 0))
+    return ap
+
+
+def stride(a, win=(3, 3), stepby=(1, 1)):
     """Provide a 2D sliding/moving view of an array.
-    :  There is no edge correction for outputs.
+    :  There is no edge correction for outputs. Use _pad first.
     :
     :Requires:
     :--------
-    : _check(a, r_c) ... Runs the checks on the inputs.
+    : as_strided - from numpy.lib.stride_tricks import as_strided
     : a - array or list, usually a 2D array.  Assumes rows is >=1,
     :     it is corrected as is the number of columns.
-    : r_c - tuple/list/array of rows x cols.  Attempts  to
-    :     produce a shape at least (1*c).  For a scalar, the
-    :     minimum shape will be (1*r) for 1D array or 2D
-    :     array if r<c.  Be aware
+    : win, stepby - tuple/list/array of window strides by dimensions
+    :    1D -    (3,)       (1,)    3 elements, step by 1
+    :    2D -    (3, 3)     (1, 1)  3x3 window, step by 1 rows and col.
+    :    3D - (1, 3, 3)  (1, 1, 1) 1x3x3, step by 1 row, col, depth
+    :Examples:
+    :--------
+    : - a = np.arange(10)
+    :    stride(a, (3,), (1,)) 3 value moving window, step by 1
+    :    stride(z, (3,), (2,))
+    : array([[0, 1, 2],
+    :        [2, 3, 4],
+    :        [4, 5, 6],
+    :        [6, 7, 8]])
+    : - a = np.arange(6*6).reshape(6, 6)
+    :    stride(a, (3, 3), (1, 1))  sliding window
+    :    stride(a, (3, 3), (3, 3))  block an array
+    :
+    :Strided variants:
+    :----------------
+    : a = np.arange(3*5*5).reshape(3, 5, 5)
+    : patchify2
+    :  x, y   (3, 3)     x, y = patch_shape
+    :  n      (3,)       n = a.shape[:-2]
+    :  p, q   (5, 5)     p, q = a.shape[-2:]
+    :  sn     (100,)     sn = a.strides[:-2]
+    :  sp, sq (20, 4)    sp, sq = a.strides[-2:]
+    :  l1, l2 (3, 3)     l1, l2 = p - x + 1, q - y + 1
+    : out_shp ( n  + ((p - x + 1), (q - y + 1), x, y)
+    : out_shp (3,) + ((5 - 3 + 1), (5 - 3 + 1), 3, 3)
+    : out_shp (3, 3, 3, 3, 3)         out_shp = n + (l1, l2, x, y)
+    : out_stride (100, 20, 4, 20, 4)  out_stride = sn + (sp, sq, sp, sq)
+    :
+    :Notes:
+    :-----
+    : - np.product(a.shape) == a.size   # shape product equals array size
+    : - To check if the base array and the strided version share memory
+    : np.may_share_memory(a, a_s)     # True
+    :----------------------------------------------------------
     """
-    a, r, c, r_c = _check(a, r_c)
-    shape = (a.shape[0] - r + 1, a.shape[1] - c + 1) + r_c
-    strides = a.strides * 2
-    a_s = (as_strided(a, shape=shape, strides=strides)).squeeze()
+    err = """Array shape, window and/or step size error.
+    Use win=(3,3) with stepby=(1,1) for 2D array
+    or win=(1,3,3) with stepby=(1,1,1) for 3D
+    ----    a.ndim != len(win) != len(stepby) ----
+    """
+    assert (a.ndim == len(win)) and (len(win) == len(stepby)), err
+    shape = np.array(a.shape)  # array shape (r, c) or (d, r, c)
+    win_shp = np.array(win)    # window      (3, 3) or (1, 3, 3)
+    ss = np.array(stepby)      # step by     (1, 1) or (1, 1, 1)
+    newshape = tuple(((shape - win_shp) // ss) + 1) + tuple(win_shp)
+#    newshape += tuple(win_shp)
+    newstrides = tuple(np.array(a.strides) * ss) + a.strides
+    a_s = as_strided(a, shape=newshape, strides=newstrides).squeeze()
     return a_s
 
 
+def block(a, win=(3, 3)):
+    """Calls stride with step_by equal to win size.
+    :no padding of the array, so this works best when win size is divisible
+    : in both directions
+    :Note:  see block_arr if you want padding
+    """
+    a_b = stride(a, win=win, stepby=win)
+    return a_b
+
+
 # ----------------------------------------------------------------------
-# (18) rolling stats .... code section
+# (19) rolling stats .... code section
 def rolling_stats(a, no_null=True, prn=True):
     """Statistics on the last two dimensions of an array.
     :Requires
@@ -1083,7 +1189,7 @@ def rolling_stats(a, no_null=True, prn=True):
         a_min = np.nanmin(a, axis=(ax))
         a_max = np.nanmax(a, axis=(ax))
         a_mean = np.nanmean(a, axis=(ax))
-        a_med = np.nanmedian(a, axi=(ax))
+        a_med = np.nanmedian(a, axis=(ax))
         a_sum = np.nansum(a, axis=(ax))
         a_std = np.nanstd(a, axis=(ax))
         a_var = np.nanvar(a, axis=(ax))
@@ -1099,7 +1205,7 @@ def rolling_stats(a, no_null=True, prn=True):
 
 
 # ----------------------------------------------------------------------
-# (19) uniq  ---- np.unique for versions < 1.13 ----
+# (20) uniq  ---- np.unique for versions < 1.13 ----
 def uniq(ar, return_index=False, return_inverse=False,
          return_counts=False, axis=0):
     """Taken from, but modified for simple axis 0 and 1 and structured
@@ -1149,6 +1255,161 @@ def uniq(ar, return_index=False, return_inverse=False,
 
 
 # ----------------------------------------------------------------------
+# (21) equivalent to np.isin() for numpy versions < 1.13
+#
+def is_in(find_in, using, not_in=False):
+    """Equivalent to np.isin for numpy versions < 1.13
+    : find_in - the array to check for the elements
+    : using - what to use for the check
+    :Note:
+    : from numpy.lib import NumpyVersion
+    : if NumpyVersion(np.__version__) < '1.13.0'):
+    """
+    find_in = np.asarray(find_in)
+    shp = find_in.shape
+    using = np.asarray(using)
+    uni = False
+    inv = False
+    if not_in:
+        inv = True
+    r = np.in1d(find_in, using, assume_unique=uni, invert=inv).reshape(shp)
+    return r
+
+
+# (22) size-based ---- n largest and Smallest
+def n_largest(a, num=1, by_row=True):
+    """Return the 'num' largest entries in an array by row sorted by column
+    :  Array dimensions <=3 supported
+    """
+    assert a.ndim <= 3, "Only arrays with ndim <=3 supported"
+    if not by_row:
+        a = a.T
+    num = min(num, a.shape[-1])
+    if a.ndim == 1:
+        b = np.sort(a)[-num:]
+    elif a.ndim >= 2:
+        b = np.sort(a)[..., -num:]
+    else:
+        return None
+    return b
+
+
+def n_smallest(a, num=1, by_row=True):
+    """Return the 'n' smallest entries in an array by row sorted by column
+    :  Array dimensions <=3 supported
+    """
+    assert a.ndim <= 3, "Only arrays with ndim <=3 supported"
+    if not by_row:
+        a = a.T
+    num = min(num, a.shape[-1])
+    if a.ndim == 1:
+        b = np.sort(a)[:num]
+    elif a.ndim >= 2:
+        b = np.sort(a)[..., :num]
+    else:
+        return None
+    return b
+
+
+# ----------------------------------------------------------------------
+# (22) filter array ---- convolution filters
+def a_filter(a, mode=1, ignore_nodata=True, nodata=None):
+    """Various filters applied to an array
+    :Requires:
+    :--------
+    : make_blocks  => make_blocks()
+    :
+    : a - an array that will be strided using a 3x3 window
+    : ignore_nodata - True, all values used, False, array contains nodata
+    : nodata - ignored if ignore_nodata=False, otherwise when
+    :          None - max int or float used
+    :          value - use this value in integer or float form otherwise
+    : mode - a dictionary containing a choice from
+    :   d = 1: all_f     # all 1's
+    :       2: no_cnt    # no center
+    :       3: cross_f   # cross filter, corners
+    :       4: plus_f    # plus filter, up/down, left/right
+    :       5: grad_e, n, ne, nw, s, w  (6, 7, 8, 9, 10) directional gradients
+    :      11: lap_33    # laplacian
+    :      12: line_h    # line detection, horizonal
+    :      13: line_ld   # line detection, left diagonal
+    :      14: line_rd   # line detection, right diagonal
+    :      15: line_v    # line detection, vertical
+    :      16: high
+    :      17: sob_hor   # Sobel horizontal
+    :      18: sob_vert  # Sobel vertical
+    :      19: emboss
+    :      20: sharp1    # sharpen 1
+    :      22: sharp2    # sharpen 2
+    :      23: sharp3    # sharpen 3 highpass 3x3
+    :      24: lowpass   # lowpass filter
+    :
+    :Notes:
+    :-----
+    :  Only 3x3 filters covered here.  The output array is padded with np.nan
+    :  and the array is returned as a masked array.
+    :
+    :  a0 = pyramid(core=4, steps=5, incr=(1, 1))
+    :  a0 = a0 * 2  # multiply by a number to increase slope
+    :  a0 = (pyramid(core=4, steps=5, incr=(1, 1)) + 1) * 2  # is also good!
+    :Reference:
+    :---------
+    :  http://desktop.arcgis.com/en/arcmap/latest/tools/
+    :       spatial-analyst-toolbox/how-filter-works.htm
+    :  http://desktop.arcgis.com/en/arcmap/latest/manage-data/
+    :       raster-and-images/convolution-function.htm
+    :
+    """
+    n = np.nan
+    all_f = [1, 1, 1, 1, 1, 1, 1, 1, 1]
+    no_cnt = [1, 1, 1, 1, n, 1, 1, 1, 1]
+    cross_f = [1, 0, 1, 0, 0, 0, 1, 0, 1]
+    plus_f = [0, 1, 0, 1, 0, 1, 0, 1, 0]
+    grad_e = [1, 0, -1, 2, 0, -2, 1, 0, -1]
+    grad_n = [-1, -2, -1, 0, 0, 0, 1, 2, 1]
+    grad_ne = [0, -1, -2, 1, 0, -1, 2, 1, 0]
+    grad_nw = [2, -1, 0, -1, 0, 1, 0, 1, 2]
+    grad_s = [1, 2, 1, 0, 0, 0, -1, -2, -1]
+    grad_w = [-1, 0, 1, -2, 0, 2, -1, 0, 1]
+    lap_33 = [0, -1, 0, -1, 4, -1, 0, -1, 0]
+    line_h = [-1, -1, -1, 2, 2, 2, -1, -1, -1]
+    line_ld = [2, -1, -1, -1, 2, -1, -1, -1, 2]
+    line_rd = [-1, -1, 2, -1, 2, -1, 2, -1, -1]
+    line_v = [-1, 0, -1, -1, 2, -1, -1, 2, -1]
+    high = [-0.7, -1.0, -0.7, -1.0, 6.8, -1.0, -0.7, -1.0, -0.7]
+    sob_hor = [-1, -2, -1, 0, 0, 0, 1, 2, 1]   # sobel y
+    sob_vert = [-1, 0, 1, -2, 0, 2, -1, 0, 1]  # sobel x
+    emboss = [-1, -1, 0, -1, 0, 1, 0, 1, 1]
+    sharp1 = [0., -0.25, 0., -0.25, 2.0, -0.25, 0., -0.25, 0.]
+    sharp2 = [-0.25, -0.25, -0.25, -0.25, 3.0, -0.25, -0.25, -0.25, -0.25]
+    sharp3 = [-1, -1, -1, -1, 9, -1, -1, -1, -1]
+    lowpass = [1, 2, 1, 2, 4, 2, 1, 2, 1]
+    # ---- assemble the dictionary ----
+    d = {1: all_f, 2: no_cnt, 3: cross_f, 4: plus_f, 5: grad_e,
+         6: grad_n, 7: grad_ne, 8: grad_nw, 9: grad_s, 10: grad_w,
+         11: lap_33, 12: line_h, 13: line_ld, 14: line_rd, 15: line_v,
+         16: high, 17: sob_hor, 18: sob_vert, 19: emboss, 20: sharp1,
+         21: sharp2, 23: sharp3, 24: lowpass}
+    filter_ = np.array(d[mode]).reshape(3, 3)
+    # ---- stride the input array ----
+    a_strided = stride(a)
+    if ignore_nodata:
+        c = (np.sum(a_strided * filter_, axis=(2, 3)))
+    else:
+        c = (np.nansum(a_strided * filter_, axis=(2, 3)))
+    pad_ = nodata
+    if nodata is None:
+        if c.dtype.name in ('int', 'int32', 'int64'):
+            pad_ = min([0, -1, a.min()-1])
+        else:
+            pad_ = min([0.0, -1.0, a.min()-1])
+    c = np.lib.pad(c, (1, 1), "constant", constant_values=(pad_, pad_))
+    m = np.where(c == pad_, 1, 0)
+    c = np.ma.array(c, mask=m, fill_value=None)
+    return filter_, c   # z, a_strided
+
+
+# ----------------------------------------------------------------------
 # _help .... code section
 def _help():
     """arraytools"""
@@ -1191,6 +1452,10 @@ def _help():
     (18) stride(a, r_c=(3, 3))
          stride an array for moving window functions
     (19) rolling_stats((a0, no_null=True, prn=True))
+    (20) uniq(ar, return_index=False, return_inverse=False,
+              return_counts=False, axis=0)
+    (21) n_largest(a, num=1, by_row=True)
+         n_smallest(a, num=1, by_row=True)
 
     :-------------------------------------------------------------------:
     """
@@ -1204,7 +1469,7 @@ def _demo_tools():
     """
     : - Run examples of the existing functions.
     """
-    a = np.arange(3*4).reshape(3, 4)
+    a = np.arange(3*4).reshape(3, 4).copy()
     b = nd_struct(a)
     c = np.arange(2*3*4).reshape(2, 3, 4)
     d = np.arange(9*6).reshape(9, 6)
@@ -1262,28 +1527,71 @@ def _demo_tools():
 :    min, max, mean, sum, std, var, ptp
 {}\n
 """
-
-
-# """
-    args = ["-"*62, a, b, c, d,
-            arr2xyz(a),
-            bloc,
-            chng.reshape(a.shape[0], -1),
-            docf,
-            scal,
-            a_inf,
-            m_fld,
-            spl,
-            stri,
-            m_blk,
-            nd_struct(a),
-            rsta]
-#            indent(repr(arr), '    '),
-#            indent(result, '    ')]  # f21
-
+    args = ["-"*62, a, b, c, d, arr2xyz(a), bloc,
+            chng.reshape(a.shape[0], -1), docf, scal, a_inf, m_fld, spl, stri,
+            m_blk, nd_struct(a), rsta]
     print(frmt.format(*args))
     # del args, d, e
 
+
+def pyramid(core=9, steps=10, incr=(1, 1), posi=True):
+    """Create a pyramid see pyramid_demo.py"""
+    a = np.array([core])
+    a = np.atleast_2d(a)
+    for i in range(1, steps):
+        val = core - i
+        if posi and (val <= 0):
+            val = 0
+        a = np.lib.pad(a, incr, "constant", constant_values=(val, val))
+    return a
+
+
+def _demo_kernels():
+    """
+    :Requires:
+    :--------
+    :
+    :Returns:
+    :-------
+    :
+    """
+    frmt = """
+    :------------------------------------------------------------------
+    :{} ... filter...
+    {}
+    :array...
+    {}
+    :filtered...
+    {}
+    :converted to 0,1
+    {}
+    :------------------------------------------------------------------
+    """
+    a0 = make_blocks(rows=2, cols=2, r=5, c=5, dt='int') + 1  # add 1
+    # s0 = np.diag(np.arange(1, 6))
+    # s0 = np.vstack((s0, np.flipud(s0)))
+    # a1 = np.hstack((s0, np.fliplr(s0)))
+    # a1 = np.vstack((a0,s1))
+    # a = np.copy(a1)
+    # ---- gradient east ----
+    b, c, z, filter_ = a_filter(a0, mode=1)
+    args = ["gradient east", filter_, a0, c, z]
+    print(dedent(frmt).format(*args))
+    # ---- gradient north ----
+    b, c, z, filter = a_filter(a0, mode=2)
+    args = ["gradient north", filter_, a0, c, z]
+    print(dedent(frmt).format(*args))
+    # ---- emboss ----
+    a0 = pyramid(core=4, steps=6, incr=(1, 1))
+    b, c, z, filter_ = a_filter(a0, mode=14)
+    args = ["emboss", filter_, a0, c, z]
+    print(dedent(frmt).format(*args))
+    # ---- laplacian 3x3 ----
+    a0 = pyramid(core=4, steps=5, incr=(1, 2))
+    b, c, z, filter = a_filter(a0, mode=6)
+    args = ["laplacian 3x3", filter_, a0, c, z]
+    print(dedent(frmt).format(*args))
+    return a0, b, filter_
 
 # ----------------------------------------------------------------------
 # __main__ .... code section
