@@ -23,7 +23,8 @@ np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
 
-__all__ = ['_describe', 'fc_info', 'fld_info', 'tweet']
+__all__ = ['_describe', '_flatten', 'fc_info', 'flatten_shape', 'fld_info',
+           'pack', 'tweet', 'unpack']
 
 
 # ----------------------------------------------------------------------------
@@ -94,6 +95,64 @@ def tweet(msg):
     print(m)
     print(arcpy.GetMessages())
 
+
+# ---- extras ----------------------------------------------------------------
+def _flatten(a_list, flat_list=None):
+    """Change the isinstance as appropriate
+    :  Flatten an object using recursion
+    :  see: itertools.chain() for an alternate method of flattening.
+    """
+    if flat_list is None:
+        flat_list = []
+    for item in a_list:
+        if isinstance(item, (list, tuple, np.ndarray, np.void)):
+            _flatten(item, flat_list)
+        else:
+            flat_list.append(item)
+    return flat_list
+
+
+def flatten_shape(shp, completely=False):
+    """Flatten a shape using itertools.
+    : shp - shape, polygon, polyline, point
+    : completely - True, returns points for all objects
+    :            - False, returns Array for polygon or polyline objects
+    : Notes:
+    :------
+    : __iter__ - Polygon, Polyline, Array all have this property... Points
+    :            do not.
+    """
+    import itertools
+    if completely:
+        vals = [i for i in itertools.chain(shp)]
+    else:
+        vals = [i for i in itertools.chain.from_iterable(shp)]
+    return vals
+
+
+def pack(a, param='__iter__'):
+    """Pack an iterable into an ndarray or object array
+    :
+    """
+    return np.asarray([np.asarray(i) for i in a])
+
+
+def unpack(iterable, param='__iter__'):
+    """Unpack an iterable based on the param(eter) condition using recursion.
+    :Notes:
+    : - Use 'flatten' for recarrays or structured arrays'
+    : ---- see main docs for more information and options ----
+    : To produce uniform array from this, use the following after this is done.
+    :   out = np.array(xy).reshape(len(xy)//2, 2)
+    : isinstance(x, (list, tuple, np.ndarray, np.void)) like in flatten above
+    """
+    xy = []
+    for x in iterable:
+        if hasattr(x, '__iter__'):
+            xy.extend(unpack(x))
+        else:
+            xy.append(x)
+    return xy
 
 # ----------------------------------------------------------------------
 # __main__ .... code section

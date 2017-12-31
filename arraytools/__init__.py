@@ -37,13 +37,13 @@ fc.py  (11)
 frmts.py  (11)
   Format options to facilitate viewing of numpy arrays in a variety of ways.
   __all_frmt__
-    'col_hdr', 'deline', 'frmt_', 'frmt_ma', 'frmt_rec', 'frmt_struct',
+    'col_hdr', 'deline', 'frmt_', 'frmt_ma', 'frmt_rec',
     'in_by', 'make_row_format', 'redent', '_demo', '_ma_demo']
 
 tools.py  (19)
   Main tool set containing the following functions...
   __all_art__:
-    'arr2xyz', 'block_arr', 'change', 'doc_func', 'find', 'fc_info',
+    'arr2xyz', 'block, 'block_arr', 'change', 'doc_func', 'find', 'fc_info',
     'get_func', 'get_modu', 'group_pnts', 'group_vals', '_join_array',
     'info', 'make_blocks', 'make_flds', 'nd_struct', 'reclass', 'scale',
     'stride', 'rolling_stats']
@@ -59,6 +59,10 @@ geom:  (12)
     '_view_', '_reshape_', 'areas', 'center', 'centroid',  'e_area',
     'obj_array', 'e_dist', 'e_leng', 'seg_lengths', 'total_length', 'lengths'
 
+-------- folder tools
+geomtools:  from arraytools.geomtools import *** either name or *
+  Special computational geometry tools, including:
+      circular, mesh_pnts, mst, n_spaced, pip
 graphing:
   Graphing capabilities using MatPlotLib as the basic graphing program
      plot_pnts_
@@ -74,6 +78,7 @@ examples:
 
 """
 from textwrap import dedent
+# ---- import *.py scripts and functions ----
 from . import _common
 from ._common import _describe, fc_info, fld_info, tweet
 from . import a_io
@@ -88,6 +93,9 @@ from . import frmts
 from .frmts import *
 from . import geom
 from .geom import *
+# ---- imports from subfolders
+from . import geomtools
+from .geomtools import circular, mesh_pnts, mst, n_spaced, pip
 from . import analysis
 from .analysis import *
 from . import graphing
