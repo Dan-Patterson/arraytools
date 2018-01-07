@@ -1,7 +1,12 @@
 
-**Arraytools**
+***Arraytools***
+================
 
-Consolidating the various array scripts into one location.
+2018-01-06 - I added some array format examples in the arraytools/examples folder
+
+
+**Purpose**
+I have consolidate various array scripts into one location.
 
 Eventually it will become a package when I get done with it.
 
@@ -10,7 +15,7 @@ Some information from __init__.py
 
 Modified: 2017-11-04
 
-arrtools
+arraytools
 =======
 
 Provides tools to facilitate working with numpy and geometry and attributes
@@ -19,7 +24,8 @@ largely derived from ArcMap and ArcGIS Pro.
 Documentation notes
 -------------------
 It is assumed throughout that numpy has been imported as
-   >>> import numpy as np
+
+import numpy as np
 
 Available modules and subpackages
 ---------------------------------
