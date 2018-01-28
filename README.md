@@ -29,33 +29,34 @@ import numpy as np
 
 Available modules and subpackages
 ---------------------------------
-a_io.py  (7)   io tools for numpy arrays and operating system access
+**a_io.py**  (7)   io tools for numpy arrays and operating system access
 
-  __all_aio__
+:__all_aio__
 
     'arr_json', 'get_dir', 'load_npy', 'read_txt', 'save_npy', 'save_txt',
     'sub_folders']
 
-apt.py  (15)    tools for arcpy tools
+**apt.py  (15)**    tools for arcpy tools
 
-__all_apt__
+:__all_apt__
 
     '_arr_common', '_shapes_fc', 'arr_pnts', 'arr_polygon', 'arr_polyline',
     'array_fc', 'array_struct', 'change_fld', 'fc_array', 'pnts_arr',
     'polygons_arr', 'polylines_arr', 'tbl_arr', 'to_fc', 'tweet'
-fc.py  (11)     tools for working with featureclasses
+
+**fc.py**  (11)     tools for working with featureclasses
  
-__all_fc__
+:__all_fc__
     '_get_shapes', '_ndarray', '_props', '_two_arrays', '_xy',
     '_xyID', '_xy_idx', 'change_fld'
 
 **frmts.py**  (11)    Format options to facilitate viewing of numpy arrays in a variety of ways.
-  __all_frmt__
+:__all_frmt__
     'col_hdr', 'deline', 'frmt_', 'frmt_ma', 'frmt_rec', 'frmt_struct',
     'in_by', 'make_row_format', 'redent', '_demo', '_ma_demo']
 
 **tools.py**  (30)    Main tool set containing the following functions...
-  __all_art__:
+:__all_art__:
  'doc_func', 'get_func', 'get_modu', 'info', 'num_to_nan', 'num_to_mask', 'make_blocks',
  'make_flds', 'rec_arr', 'arr2xyz', 'change_arr', 'nd2struct', 'scale', 'split_array', 'stride',
  '_pad_', 'block', 'block_arr', 'find', '_func', 'group_pnts', 'group_vals', 'reclass',
@@ -143,33 +144,33 @@ __all_fc__
 (29) sort_rows_by_col
 
 (30)sort_cols_by_row
- ---  _help  this function
+: ---  _help  this function
 :-------------------------------------------------------------------:
  
  
 
-analysis:  (5)
+**analysis:**  (5)
     Tools for calculating distance, proximity, angles.
-  __all__
+:__all__
   'compass', 'line_dir', 'not_closer', 'n_near', 'vincenty'
 
-geom:  (12)
+**geom:**  (12)
   Geometry related function
-  __all_geo__
+:__all_geo__
     '_view_', '_reshape_', 'areas', 'center', 'centroid',  'e_area',
     'obj_array', 'e_dist', 'e_leng', 'seg_lengths', 'total_length', 'lengths'
 
-graphing:
+**graphing:**
 
   Graphing capabilities using MatPlotLib as the basic graphing program
      plot_pnts_
 
-stats:
+**stats:**
 
   Statistics and related
     crosstab
 
-other:
+**other:**
     Placeholder
 
 examples:
