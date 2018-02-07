@@ -31,8 +31,11 @@ np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
 
-__all__ = ['arr_json', 'get_dir', 'load_npy', 'read_txt', 'save_npy',
-           'save_txt', 'sub_folders']
+__all__ = ['load_npy', 'save_npy',
+           'read_txt', 'save_txt',
+           'arr_json',
+           'array2raster', 'rasters2nparray',
+           'get_dir',  'all_folders', 'sub_folders']
 
 
 # ----------------------------------------------------------------------
@@ -98,7 +101,7 @@ def save_txt(a, name="arr.txt", sep=", ", dt_hdr=True):
 
 
 # ----------------------------------------------------------------------
-# (4) save_txt .... code section ---
+# (4) arr_json .... code section ---
 def arr_json(file_out, arr=None):
     """Send an array out to json format. Use json_arr to read the file.
     :  no error checking
@@ -108,6 +111,51 @@ def arr_json(file_out, arr=None):
     json.dump(arr.tolist(), codecs.open(file_out, 'w', encoding='utf-8'),
               sort_keys=True, indent=4)
     # ----
+
+def array2raster(a, folder, fname, LL_corner, cellsize):
+    """It is easier if you have a raster to derive the values from.
+    : - r01 = rasters[1]  # --- get one of the original rasters since they will
+    : - rast = arcpy.Raster(r01)  # ---  have the same extent and cell size
+    : - lower_left = rast.extent.lowerLeft  # --- needed to produce output
+    :     this is a Point object... ie LL = arcpy.Point(10, 10)
+    : - cell_size = rast.meanCellHeight     # --- we will use this for x and y
+    : - f = r"c:\temp\result.tif"  # --- don't forget the extention
+    """
+    import os
+    import arcpy
+    if not os.path.exists(folder):
+        return None
+    r = arcpy.NumPyArrayToRaster(a, LL_corner, cellsize, cellsize)
+    f = os.path.join(folder, fname)
+    r.save(f)
+    print("Array saved to...{}".format(f))
+
+
+def rasters2nparray(folder=None, to3D=False):
+    """Batch the RasterToNumPyArray arcpy function to produce 3D or a list
+    : of 2D arrays
+    :NOTE:  edit the code... far simpler than accounting for everything
+    :  There is a reasonable expectation that rasters exist in the folder
+    :Requires:  os, arcpy if not already loaded
+    :---------
+    : folder - a folder on disk... a real one
+    : to3D - if False, a list of arrays, if True a 3D array
+    """
+    import os
+    import arcpy  # needed if not already done
+    arrs = []
+    if folder is None:
+        return None
+    if not os.path.exists(folder):
+        return None
+    arcpy.env.workspace = folder
+    rasters = arcpy.ListRasters("*", "TIF")
+    for raster in rasters:
+        arrs.append(arcpy.RasterToNumPyArray(raster))
+    if to3D:
+        return np.array(arrs)
+    else:
+        return arrs
 
 
 # ----------------------------------------------------------------------

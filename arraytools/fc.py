@@ -1,13 +1,16 @@
 # -*- coding: UTF-8 -*-
 """
-:Script:   fc.py
+:Script:   fc.py  (featureclass.py)
 :Author:   Dan.Patterson@carleton.ca
 :Modified: 2017-10-21
-:Purpose:  Tools for working with arcpy geometry objects and conversion to
-:          numpy arrays.
+:Purpose:  Tools for working with featureclass arcpy geometry objects and
+:          conversion to numpy arrays.
 :
 :Notes:
 :-----
+: - do not rely on the OBJECTID field for anything
+:    http://support.esri.com/en/technical-article/000010834
+:
 : see ... /arcpytools/Notes_etc/fc_py_output.txt for sample output for the
 :   functions below.
 :  _describe',  # arcpy describe object
@@ -134,9 +137,10 @@ from textwrap import indent
 import numpy as np
 import arcpy
 
+#from arraytools._common import fc_info, tweet
 
-ft = {'bool': lambda x: repr(x.astype('int32')),
-      'float': '{: 0.3f}'.format}
+ft = {'bool': lambda x: repr(x.astype(np.int32)),
+      'float_kind': '{: 0.3f}'.format}
 np.set_printoptions(edgeitems=3, linewidth=80, precision=3, suppress=True,
                     threshold=50, formatter=ft)
 np.ma.masked_print_option.set_display('-')  # change to a single -
@@ -144,9 +148,15 @@ np.ma.masked_print_option.set_display('-')  # change to a single -
 script = sys.argv[0]  # print this should you need to locate the script
 
 
-__all__ = ['_cursor_array', '_geo_array', '_get_shapes', '_join_array',
-           '_ndarray', '_props', '_two_arrays', '_xy', '_xyID', '_xy_idx',
-           'obj_array', 'change_fld']
+__all__ = ['_cursor_array', '_geo_array', '_get_shapes',
+           '_ndarray', '_two_arrays', '_xy', '_xyID', '_xy_idx',
+           'orig_dest_pnts',
+           'obj_array',
+           'change_fld', '_props',
+           'join_arr_fc',
+           'concat_flds',
+           'arrays_cols'
+           ]
 
 
 # ----------------------------------------------------------------------------
@@ -262,6 +272,7 @@ def _xy(in_fc):
     N = len(a)
     a = a.view(dtype='float64')
     a = a.reshape(N, 2)
+    a = np.copy(a, order='C')
     del cur
     return a
 
@@ -301,18 +312,59 @@ def _xy_idx(in_fc):
     return a, idx
 
 
+def orig_dest_pnts(fc):
+    """Convert sequential points to origin-destination pairs to enable
+    :  construction of a line.
+    :
+    :Notes:
+    :------
+    :- a = arcpy.da.FeatureClassToNumPyArray(
+    :      in_table=fc,
+    :      field_names=["OID@","Shape@X", "Shape@Y"],  # bring in ids, Xs, Ys
+    :      where_clause=None
+    :      spatial_reference="2951")
+    :      explode_to_points=False, skip_nulls=False,
+    :      null_value=None, sql_clause=(None, None)
+    : - out = from_to_pnts(fc)
+    : - arcpy.da.ExtendTable(
+    :      in_table=fc,
+    :      table_match_field='OBJECTID',  # normally
+    :      in_array = out,                # the array you created
+    :      array_match_field='IDs',       # created by this script
+    :      append_only=True)
+    """
+    fc = r"C:\Git_Dan\a_Data\arcpytools_demo.gdb\polylines_pnts"
+    SR = "2951"
+    a = arcpy.da.FeatureClassToNumPyArray(fc, ["OID@", "Shape@X", "Shape@Y"],
+                                          spatial_reference=SR)
+    in_names = list(a.dtype.names)
+    kinds = ['<i4', '<f8', '<f8', '<f8', '<f8']
+    out_names = ['IDs', 'X_0', 'Y_0', 'X_1', 'Y_1']
+    dt = list(zip(out_names, kinds))
+    out = np.zeros(a.shape[0], dtype=dt)
+    arrs = [a[i] for i in in_names]
+    X_t = np.roll(a[in_names[-2]], -1)
+    Y_t = np.roll(a[in_names[-1]], -1)
+    arrs.append(X_t)
+    arrs.append(Y_t)
+    for i in range(len(out_names)):
+        out[out_names[i]] = arrs[i]
+    return out
+
+
 def obj_array(in_fc):
-    """Convert an featureclass to an object array.
+    """Convert an featureclass geometry to an object array.
     :  The array must have an ID field.  Remove any other fields except
     :  IDs, Xs and Ys or whatever is used by the featureclass.
     :Requires _xyID and a variant of group_pnts
     """
-    def _group_pnts_(a, key_fld='IDs', keep_flds=['Xs', 'Ys']):
+    def _group_pnts_(a, key_fld='IDs', shp_flds=['Xs', 'Ys']):
         """see group_pnts in tool.py"""
         returned = np.unique(a[key_fld], True, True, True)
         uniq, idx, inv, cnt = returned
-        from_to = [[idx[i-1], idx[i]] for i in range(1, len(idx))]
-        subs = [a[keep_flds][i:j] for i, j in from_to]
+        from_to = list(zip(idx, np.cumsum(cnt)))
+#        from_to = [[idx[i-1], idx[i]] for i in range(1, len(idx))]
+        subs = [a[shp_flds][i:j] for i, j in from_to]
         groups = [sub.view(dtype='float').reshape(sub.shape[0], -1)
                   for sub in subs]
         return groups
@@ -321,30 +373,6 @@ def obj_array(in_fc):
     a_s = _group_pnts_(a, key_fld='IDs', shp_flds=['Xs', 'Ys'])
     a_s = np.asarray(a_s)
     return a_s
-
-
-# (11)_join_array ... code section .....
-def _join_array(a, in_fc, out_fld='Result_', OID_fld='OID@'):
-    """Join an array to a featureclass table using matching fields, usually
-    :  an object id field.
-    :
-    :Requires:
-    :--------
-    : a - an array of numbers or text with ndim=1
-    : out_fld - field name for the results
-    : in_fc - input featureclass
-    : in_flds - list of fields containing the OID@ field as a minimum
-    : - ExtendTable (in_table, table_match_field,
-    :                in_array, array_match_field, {append_only})
-    :
-    """
-    N = len(a)
-    dt_a = [('IDs', '<i4'), (out_fld, a.dtype.name)]
-    out = np.zeros((N,), dtype=dt_a)
-    out['IDs'] = [row[0] for row in arcpy.da.SearchCursor(in_fc, OID_fld)]
-    out[out_fld] = a
-    arcpy.da.ExtendTable(in_fc, OID_fld, out, 'IDs', True)
-    return out
 
 
 def change_fld(flds):
@@ -387,57 +415,73 @@ def _props(a_shape, prn=True):
         return tt
 
 
-# ----------------------------------------------------------------------
-# ---- extras ----
-def _flatten(a_list, flat_list=None):
-    """Change the isinstance as appropriate
-    :  Flatten an object using recursion
-    :  see: itertools.chain() for an alternate method of flattening.
+# (11)_join_array ... code section .....
+def join_arr_fc(a, in_fc, out_fld='Result_', OID_fld='OID@'):
+    """Join an array to a featureclass table using matching fields, usually
+    :  an object id field.
+    :
+    :Requires:
+    :--------
+    : a - an array of numbers or text with ndim=1
+    : out_fld - field name for the results
+    : in_fc - input featureclass
+    : in_flds - list of fields containing the OID@ field as a minimum
+    : - ExtendTable (in_table, table_match_field,
+    :                in_array, array_match_field, {append_only})
+    :
     """
-    if flat_list is None:
-        flat_list = []
-    for item in a_list:
-        if isinstance(item, (list, tuple, np.ndarray, np.void)):
-            _flatten(item, flat_list)
-        else:
-            flat_list.append(item)
-    return flat_list
+    N = len(a)
+    dt_a = [('IDs', '<i4'), (out_fld, a.dtype.str)]
+    out = np.zeros((N,), dtype=dt_a)
+    out['IDs'] = [row[0] for row in arcpy.da.SearchCursor(in_fc, OID_fld)]
+    out[out_fld] = a
+    arcpy.da.ExtendTable(in_fc, OID_fld, out, 'IDs', True)
+    return out
 
 
-def flatten_shape(shp, completely=False):
-    """Flatten a shape using itertools.
-    : shp - shape, polygon, polyline, point
-    : completely - True, returns points for all objects
-    :            - False, returns Array for polygon or polyline objects
-    : Notes:
-    :------
-    : __iter__ - Polygon, Polyline, Array all have this property... Points
-    :            do not.
+def concat_flds(arrs, sep=" ", name=None, with_ids=True):
+    """Concatenate a sequence of arrays to string format and return a
+    :  structured array or ndarray
+    :  arrs - a list single arrays of the same length
+    :  sep - the separator between lists
+    :  name - used for structured array
     """
-    import itertools
-    if completely:
-        vals = [i for i in itertools.chain(shp)]
+    N = len(arrs)
+    if N < 2:
+        return arrs
+    a, b = arrs[0], arrs[1]
+    c = ["{}{}{}".format(i, sep, j) for i, j in list(zip(a, b))]
+    if N > 2:
+        for i in range(2, len(arrs)):
+            c = ["{}{}{}".format(i, sep, j) for i, j in list(zip(c, arrs[i]))]
+    c = np.asarray(c)
+    sze = c.dtype.str
+    if name is not None:
+        c.dtype = [(name, sze)]
     else:
-        vals = [i for i in itertools.chain.from_iterable(shp)]
-    return vals
+        name = 'f'
+    if with_ids:
+        tmp = np.copy(c)
+        dt = [('IDs', '<i8'), (name, sze)]
+        c = np.empty((tmp.shape[0], ), dtype=dt)
+        c['IDs'] = np.arange(1, tmp.shape[0] + 1)
+        c[name] = tmp
+    return c
 
 
-def unpack(iterable, param='__iter__'):
-    """Unpack an iterable based on the param(eter) condition using recursion.
-    :Notes:
-    : - Use 'flatten' for recarrays or structured arrays'
-    : ---- see main docs for more information and options ----
-    : To produce uniform array from this, use the following after this is done.
-    :   out = np.array(xy).reshape(len(xy)//2, 2)
-    : isinstance(x, (list, tuple, np.ndarray, np.void)) like in flatten above
+def arrays_cols(arrs):
+    """Stack arrays of any dtype to form a structured array, stacked in
+    :  columns format.
     """
-    xy = []
-    for x in iterable:
-        if hasattr(x, '__iter__'):
-            xy.extend(unpack(x))
-        else:
-            xy.append(x)
-    return xy
+    if len(arrs) < 2:
+        return arrs
+    out_dt = [i.dtype.descr[0] for i in arrs]
+    N = arrs[0].shape[0]
+    out = np.empty((N,), dtype=out_dt)
+    names = np.dtype(out_dt).names
+    for i in range(len(names)):
+        out[names[i]] = arrs[i]
+    return out
 
 
 # ----------------------------------------------------------------------
@@ -475,7 +519,14 @@ if __name__ == "__main__":
 #    in_fc = r'C:\Git_Dan\a_Data\arcpytools_demo.gdb\Can_geom_sp_LCC'
 #    in_fc = r"C:\Git_Dan\a_Data\arcpytools_demo.gdb\Can_0_big_3"
 #    in_fc = r"C:\Data\Canada\CAN_adm0.gdb\CAN_0_sp"
-    in_fc = r"C:\Git_Dan\a_Data\testdata.gdb\Polygon_pnts"
-    flds = ['OBJECTID', 'Text_fld']
-    oid, vals = flds[0], flds[1:]
-    arr = arcpy.da.TableToNumPyArray(in_fc, flds)
+#    in_fc = r"C:\Git_Dan\a_Data\testdata.gdb\Polygon_pnts"
+#    flds = ['OBJECTID', 'Text_fld']
+#    oid, vals = flds[0], flds[1:]
+#    arr = arcpy.da.TableToNumPyArray(in_fc, flds)
+#
+#    in_tbl = r"C:\Git_Dan\arraytools\Data\numpy_demos.gdb\sample_10k"
+#    in_flds = ['OBJECTID', 'County', 'Town']
+#    a = arcpy.da.TableToNumPyArray(in_tbl, in_flds)
+#    c = concat_flds(a['County'], a['Town'], sep='...', name='Locale')
+#    c_id = np.zeros((len(c), ), dtype=[('IDs', '<i8')])
+#    c_id['IDs'] = np.arange(1, len(c) + 1)

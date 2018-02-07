@@ -1,15 +1,14 @@
 # -*- coding: UTF-8 -*-
 """
-:Script:   arcpytools.py
+:Script:   apt.py ... (arcpytools.py)
 :Author:   Dan.Patterson@carleton.ca
 :Modified: 2017-10-21
 :Purpose:  tools for working with arcpy and numpy arrays
 :
 :Notes:
-:  tweet         # tweet to python and arcpy
 :  _arr_common',    # common function for poly* features
 :  _shapes_fc',     # convert shapes to featureclass
-:  'arr_pnts',       # array to points
+:  'arr_pnts',      # array to points
 :  arr_polyline',   # to polyline
 :  arr_polygon',    # to polygon
 :  array_fc',       # to featureclass
@@ -18,7 +17,7 @@
 :  polylines_arr',  # polylines to array
 :  polygons_arr',   # polygons to array
 :  fc_array',       # featureclass to array
-:  change_fld',    # convert arc to np field types
+:  change_fld',     # convert arc to np field types
 :  tbl_arr',        # convert a table to an array
 :  to_fc',          # convert the results back to a featureclass
 :
@@ -108,7 +107,6 @@ def _arr_common(a, oid_fld, shp_fld):
     : oid_fld -  the object index/id field name
     : shp_fld - the table field which contains the geometry
     """
-    arcpy.overwriteOutput = True
     pts = []
     keys = np.unique(a[oid_fld])
     for k in keys:
@@ -148,7 +146,25 @@ def arr_pnts(a, out_fc, shp_fld, SR):
         tweet(msg1)
 
 
-def arr_polyline(a, out_fc, oid_fld, shp_fld, SR):
+def obj_polyline(pnts, SR=None):
+    """Object array of point geometry X, Y coordinates to a polyline"""
+    f = []
+    for pt in pnts:
+        f.append(arcpy.Polyline(arcpy.Array([arcpy.Point(*p)
+                                            for p in pt.tolist()]), SR))
+    return f
+
+
+def obj_polygon(pnts, SR=None):
+    """Object array of point geometry X, Y coordinates to a polyline"""
+    f = []
+    for pt in pnts:
+        f.append(arcpy.Polygon(arcpy.Array([arcpy.Point(*p)
+                                            for p in pt.tolist()]), SR))
+    return f
+
+
+def struct_polyline(a, oid_fld, shp_fld, SR):
     """Make polyline features from a structured array.
     :
     :Requires:
@@ -166,12 +182,12 @@ def arr_polyline(a, out_fc, oid_fld, shp_fld, SR):
     pts = _arr_common(a, oid_fld, shp_fld)
     f = []
     for pt in pts:
-        f.append(arcpy.Polygon(arcpy.Array([arcpy.Point(*p)
+        f.append(arcpy.Polyline(arcpy.Array([arcpy.Point(*p)
                                             for p in pt.tolist()]), SR))
-    return shapes_fc(f, out_fc)
+    return f
 
 
-def arr_polygon(a, out_fc, oid_fld, shp_fld, SR):
+def struct_polygon(a, out_fc, oid_fld, shp_fld, SR):
     """Make polygon features from a structured array.
     :
     :Requires:
@@ -191,7 +207,7 @@ def arr_polygon(a, out_fc, oid_fld, shp_fld, SR):
     for pt in pts:
         f.append(arcpy.Polygon(arcpy.Array([arcpy.Point(*p)
                                             for p in pt.tolist()]), SR))
-    return shapes_fc(f, out_fc)
+    return f
 
 
 def array_fc(a, out_fc=None, shp_fld=['Shape'], SR=None):
@@ -296,6 +312,19 @@ def pnts_arr(in_fc, as_struct=True, shp_fld=None, SR=None):
     else:
         shps = a[shp_fld]
     return shps
+
+
+# ---- piece the geometry to featureclasses --------------------------------
+def arr_polyline_fc(a, out_fc, oid_fld, shp_fld, SR):
+    """Make polyline featureclass from a structured array."""
+    f = arr_polyline(a, oid_fld, shp_fld, SR)
+    return shapes_fc(f, out_fc)
+
+
+def arr_polygon_fc(a, out_fc, oid_fld, shp_fld, SR):
+    """Make polyline featureclass from a structured array."""
+    f = arr_polygon(a, oid_fld, shp_fld, SR)
+    return shapes_fc(f, out_fc)
 
 
 def shapes_fc(shps, out_fc):
@@ -426,8 +455,6 @@ def tbl_arr(in_fc):
 
 # ---- functions to convert between array and featureclass ----
 #
-
-
 def to_fc(out_fc, a, b=None, dim=2, flds=['Id', 'X', 'Y'], SR_code=None):
     """Reconstruct a featureclass from a deconstructed pair of arrays.
     :  This function reverses the functionality of to_array which splits a
@@ -497,14 +524,13 @@ if __name__ == "__main__":
     # from arcpytools import array_fc, array_struct, tweet
 #    print("Script... {}".format(script))
 #    _demo()
-    # in_fc0 = r"C:\Git_Dan\a_Data\testdata.gdb\Points_10"
-    # in_fc1 = r"C:\Git_Dan\a_Data\testdata.gdb\Polyline_connected"
+#    in_fc0 = r"C:\Git_Dan\a_Data\testdata.gdb\Points_10"
+#    in_fc1 = r"C:\Git_Dan\a_Data\testdata.gdb\Polyline_connected"
 #    in_fc = r"C:\Git_Dan\a_Data\testdata.gdb\Carp_5x5km"   # full 25 polygons
 #    in_fc = r"C:\Git_Dan\a_Data\testdata.gdb\polygon"
-    # in_fc = r"C:\Git_Dan\a_Data\arcpytools_demo.gdb\Can_0_big_3"
-    # in_fc = r"C:\Data\Canada\CAN_adm0.gdb\CAN_0_sp"
-    # a0, _ = two_arrays(in_fc, both=False, split=False)
-    # a1, *_ = _to_ndarray(in_fc, to_pnts=True)
+#    in_fc = r"C:\Git_Dan\a_Data\arcpytools_demo.gdb\Can_0_big_3"
+#    in_fc = r"C:\Data\Canada\CAN_adm0.gdb\CAN_0_sp"
+#    a0, _ = two_arrays(in_fc, both=False, split=False)
 
 #    fc_array(in_fc1, flds="", allpnts=True)
 #    out_fc = r"C:\Git_Dan\a_Data\testdata.gdb\test_1"

@@ -297,33 +297,14 @@ from textwrap import dedent, indent
 import warnings
 warnings.simplefilter('ignore', FutureWarning)
 
-__all__ = ['doc_func', 'get_func', 'get_modu', 'info',
-           'num_to_nan', 'num_to_mask',
-           'make_blocks',
-           'make_flds',
-           'rec_arr',
-           'arr2xyz',
-           'change_arr',
-           'nd2struct',
-           'scale',
-           'split_array'
-           'stride', '_pad_',
-           'block', 'block_arr',
-           'find', '_func',
-           'group_pnts',
-           'group_vals',
-           'reclass',
-           'rolling_stats',
-           'uniq',
-           'is_in',
-           'n_largest',
-           'n_smallest',
-           'rc_vals',
-           'xy_vals',
-           'sort_rows_by_col',
-           'sort_cols_by_row',
-            '_help'
-           ]
+__all__ = ['_func', '_help', '_pad_', 'arr2xyz', 'block', 'block_arr',
+           'change_arr', 'doc_func', 'find', 'get_func', 'get_modu',
+           'group_pnts', 'group_vals', 'info', 'is_in', 'make_blocks',
+           'make_flds', 'n_largest', 'n_smallest', 'nd2struct',
+           'num_to_mask', 'num_to_nan', 'rc_vals', 'rec_arr', 'reclass',
+           'rolling_stats', 'scale', 'sort_cols_by_row', 'sort_rows_by_col',
+           'split_array', 'stride', 'uniq', 'xy_vals']
+
 __xtras__ = ['_check', 'time_deco', 'run_deco', '_demo_tools']
 __outside__ = ['dedent', 'indent']
 
@@ -354,7 +335,9 @@ def time_deco(func):  # timing originally
         t1 = time.perf_counter()        # end time
         dt = t1 - t0
         print("\nTiming function for... {}".format(func.__name__))
-        print("  Time: {: <8.2e}s for {:,} objects".format(dt, len(result)))
+        if result is None:
+            result = 0
+        print("  Time: {: <8.2e}s for {:,} objects".format(dt, result))
         return result                   # return the result of the function
         return dt                       # return delta time
     return wrapper
