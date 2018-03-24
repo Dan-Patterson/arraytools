@@ -93,7 +93,6 @@ def tweet(msg):
     m = "\n{}\n".format(msg)
     arcpy.AddMessage(m)
     print(m)
-    print(arcpy.GetMessages())
 
 
 # ---- extras ----------------------------------------------------------------
@@ -153,6 +152,7 @@ def unpack(iterable, param='__iter__'):
         else:
             xy.append(x)
     return xy
+
 
 # ----------------------------------------------------------------------
 # __main__ .... code section

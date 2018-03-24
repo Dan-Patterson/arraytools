@@ -2,7 +2,7 @@
 """
 :Script:   apt.py ... (arcpytools.py)
 :Author:   Dan.Patterson@carleton.ca
-:Modified: 2017-10-21
+:Modified: 2018-03-04
 :Purpose:  tools for working with arcpy and numpy arrays
 :
 :Notes:
@@ -80,13 +80,18 @@ import numpy as np
 import arcpy
 
 
-__all__ = ['_arr_common', '_split_array', 'shapes_fc', 'arr_pnts',
-           'arr_polygon', 'arr_polyline', 'array_fc', 'array_struct',
-           'change_fld', 'fc_array', 'pnts_arr', 'polygons_arr',
-           'polylines_arr', 'tbl_arr', 'to_fc']
+__all__ = ['_arr_common', '_split_array', 'shapes_fc',
+           'arr_pnts', 'obj_polyline', 'obj_polyline',
+           'struct_polyline', 'struct_polygon',
+           'array_fc', 'array_struct', 'arc_np',
+           'pnts_arr', 'arr_polyline_fc', 'arr_polygon_fc',
+           'shapes_fc', '_id_geom_array',
+           'polylines_arr', 'polygons_arr',
+           'fc_array', 'change_fld', 'tbl_arr', 'to_fc'
+           ]
 
-ft = {'bool': lambda x: repr(x.astype('int32')),
-      'float': '{: 0.3f}'.format}
+ft = {'bool': lambda x: repr(x.astype(np.int32)),
+      'float_kind': '{: 0.3f}'.format}
 np.set_printoptions(edgeitems=3, linewidth=80, precision=3, suppress=True,
                     threshold=20, formatter=ft)
 np.ma.masked_print_option.set_display('-')  # change to a single -
@@ -142,8 +147,8 @@ def arr_pnts(a, out_fc, shp_fld, SR):
             arcpy.Delete_management(out_fc)
         arcpy.da.NumPyArrayToFeatureClass(a, out_fc, shp_fld, SR)
         tweet(msg0)
-    except:
-        tweet(msg1)
+    except Exception as e:
+        tweet(msg1 + str(e))
 
 
 def obj_polyline(pnts, SR=None):
@@ -314,16 +319,71 @@ def pnts_arr(in_fc, as_struct=True, shp_fld=None, SR=None):
     return shps
 
 
+# ---- points to point, polyline or polygon featureclass----------------------
+#
+def output_points(out_fc, SR, pnts):
+    """Produce the output point featureclass"""
+    msg = '\nRead the script header... A projected coordinate system required'
+    assert (SR is not None), msg
+    pnts_lst = []
+    for pnt in pnts:                 # create the point geometry
+        pnts_lst.append(arcpy.PointGeometry(arcpy.Point(*pnt), SR))
+    if arcpy.Exists(out_fc):     # overwrite any existing versions
+        arcpy.Delete_management(out_fc)
+    arcpy.CopyFeatures_management(pnts_lst, out_fc)
+    return out_fc
+
+
+def output_polylines(out_fc, SR, pnts):
+    """Produce the output polygon featureclass.
+    :Requires:
+    :--------
+    : - A list of lists of points
+    :   aline = [[0, 0], [1, 1]]  # a list of points
+    :   aPolyline = [aline]       # a list of lists of points
+    """
+    msg = '\nRead the script header... A projected coordinate system required'
+    assert (SR is not None), msg
+    polylines = []
+    for pair in pnts:
+        pl = arcpy.Polyline(arcpy.Array([arcpy.Point(*xy) for xy in pair]), SR)
+        polylines.append(pl)
+    if arcpy.Exists(out_fc):     # overwrite any existing versions
+        arcpy.Delete_management(out_fc)
+    arcpy.CopyFeatures_management(polylines, out_fc)
+    return
+
+
+def output_polygons(out_fc, SR, pnts):
+    """Produce the output polygon featureclass.
+    :Requires:
+    :--------
+    : - A list of lists of points
+    :   aline = [[0, 0], [1, 1]]  # a list of points
+    :   aPolygon = [aline]       # a list of lists of points
+    """
+    msg = '\nRead the script header... A projected coordinate system required'
+    assert (SR is not None), msg
+    polygons = []
+    for pair in pnts:
+        pl = arcpy.Polygon(arcpy.Array([arcpy.Point(*xy) for xy in pair]), SR)
+        polygons.append(pl)
+    if arcpy.Exists(out_fc):     # overwrite any existing versions
+        arcpy.Delete_management(out_fc)
+    arcpy.CopyFeatures_management(polygons, out_fc)
+    return
+
+
 # ---- piece the geometry to featureclasses --------------------------------
 def arr_polyline_fc(a, out_fc, oid_fld, shp_fld, SR):
     """Make polyline featureclass from a structured array."""
-    f = arr_polyline(a, oid_fld, shp_fld, SR)
+    f = obj_polyline(a, oid_fld, shp_fld, SR)
     return shapes_fc(f, out_fc)
 
 
 def arr_polygon_fc(a, out_fc, oid_fld, shp_fld, SR):
     """Make polyline featureclass from a structured array."""
-    f = arr_polygon(a, oid_fld, shp_fld, SR)
+    f = obj_polygon(a, oid_fld, shp_fld, SR)
     return shapes_fc(f, out_fc)
 
 
@@ -343,7 +403,7 @@ def shapes_fc(shps, out_fc):
             arcpy.Delete_management(out_fc)
         arcpy.CopyFeatures_management(shps, out_fc)
         tweet(msg0)
-    except:
+    except ValueError:
         tweet(msg1)
 
 
@@ -498,9 +558,9 @@ def to_fc(out_fc, a, b=None, dim=2, flds=['Id', 'X', 'Y'], SR_code=None):
     geom = np.split(a, np.where(np.diff(a[oid_fld]))[0] + 1)
     prts = [i[['Xs', 'Ys']].tolist() for i in geom]
     if dim == 1:
-        arr_polyline(geom, out_fc, oid_fld, shp_fld, SR)
+        arr_polyline_fc(geom, out_fc, oid_fld, shp_fld, SR)
     else:
-        # arr_polygon(geom, out_fc, oid_fld, shp_fld, SR)
+        # arr_polygon_fc(geom, out_fc, oid_fld, shp_fld, SR)
         # pts = _arr_common(a, oid_fld, shp_fld)
         f = []
         for pt in prts:  # g

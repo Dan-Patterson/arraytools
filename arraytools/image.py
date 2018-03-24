@@ -15,6 +15,7 @@
 """
 # ---- imports, formats, constants ----
 import sys
+import warnings
 import numpy as np
 from arraytools.tools import stride, block
 
@@ -26,6 +27,14 @@ np.set_printoptions(edgeitems=5, linewidth=80, precision=2,
 np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
+
+warnings.filterwarnings('ignore')
+
+__all__ = ['_even_odd',
+           '_pad_even_odd', '_pad_nan', '_pad_zero',
+           'a_filter',
+           'plot_img',
+           'rgb_gray', 'normalize', 'equalize']
 
 
 # ----------------------------------------------------------------------
@@ -174,41 +183,63 @@ def a_filter(a, mode=1, pad_output=True, ignore_nodata=True, nodata=None):
     return c
 
 
+def plot_img(img):
+    """rgb to gray scale"""
+    import matplotlib.pyplot as plt
+    plt.imshow(img, cmap=plt.get_cmap('gray'))
+#    plt.show()
+
+
+def rgb_gray(a):
+    """ """
+    shp = a.shape
+    if shp[2] == 3:
+        r, g, b = a[:, :, 0], a[:, :, 1], a[:, :, 2]
+    else:
+        r, g, b = a
+    gray = 0.2989 * r + 0.5870 * g + 0.1140 * b
+    return gray
+
+
+def normalize(f):
+    """ """
+    lmin = f.min()
+    lmax = f.max()
+    nor = np.floor((f - lmin) / (lmax - lmin)*255.)
+    nor = nor.astype('uint8')
+    return nor
+
+
+def equalize(a):
+    """Produce a raster equalization for a 2D array.
+    :Notes:
+    :------
+    : - derive the histogram, produce the ogive, then normalize it.
+    https://en.wikipedia.org/wiki/Histogram_equalization
+    """
+    hist, bins = np.histogram(a.flatten(), bins=256, range=[0, 256])
+    cdf = hist.cumsum()
+    cdf_m = np.ma.masked_equal(cdf, 0)
+    cdf_m = (cdf_m - cdf_m.min())*255 / (cdf_m.max() - cdf_m.min())
+    cdf = np.ma.filled(cdf_m, 0).astype('uint8')
+    img2 = cdf[a]
+    return img2
+
+
 def _demo():
     """
-    :Requires:
-    :--------
-    :
-    :Returns:
-    :-------
-    :
-    """
-    frmt = """
-    :------------------------------------------------------------------
-    :{} ... filter...
-    {}
-    :array...
-    {}
-    :filtered...
-    {}
-    :converted to 0,1
-    {}
     :------------------------------------------------------------------
     """
-    rows, cols = (3, 3)
+    rows, cols = (4, 4)
     a = np.arange(rows*cols, dtype='int32').reshape(rows, cols)
-    x, y = (3, 3)
+    x, y = (4, 4)
     a = np.tile(a.repeat(x), y)
     a = np.hsplit(a, y)         # split into y parts horizontally
     a = np.vstack(a)
     a = np.hsplit(a, a.shape[0])
     a = np.vstack(a).copy(order='C')
-#    a0 = make_blocks(rows=2, cols=2, r=5, c=5, dt='int') + 1  # add 1
-    # s0 = np.diag(np.arange(1, 6))
-    # s0 = np.vstack((s0, np.flipud(s0)))
-    # a1 = np.hstack((s0, np.fliplr(s0)))
-    # a1 = np.vstack((a0,s1))
-    # a = np.copy(a1)
+    print("array 'a'\n{}".format(a))
+    print("equalized 'a'\n{}".format(equalize(a)))
     return a
 
 

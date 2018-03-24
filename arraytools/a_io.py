@@ -22,9 +22,8 @@ import os
 import numpy as np
 
 
-ft = {'bool': lambda x: repr(x.astype('int32')),
-      'float': '{: 0.3f}'.format}
-
+ft = {'bool': lambda x: repr(x.astype(np.int32)),
+      'float_kind': '{: 0.3f}'.format}
 np.set_printoptions(edgeitems=10, linewidth=80, precision=2, suppress=True,
                     threshold=100, formatter=ft)
 np.ma.masked_print_option.set_display('-')  # change to a single -
@@ -42,7 +41,8 @@ __all__ = ['load_npy', 'save_npy',
 # (1) load_npy .... code section ---
 def load_npy(f_name, all_info=False):
     """load a well formed npy file representing a structured array
-    :
+    :Returns:
+    : the array, the description, field names and their size
     """
     a = np.load(f_name)
     if all_info:
@@ -58,8 +58,8 @@ def load_npy(f_name, all_info=False):
 # (1) read_npy .... code section ---
 def save_npy(a, f_name):
     """Save an array as an npy file
-    :    The type of data in each column is arbitrary
-    :    It will be cast to the given dtype at runtime
+    :  The type of data in each column is arbitrary
+    :  It will be cast to the given dtype at runtime
     """
     np.save(f_name, a)
 
@@ -112,6 +112,9 @@ def arr_json(file_out, arr=None):
               sort_keys=True, indent=4)
     # ----
 
+
+# ----------------------------------------------------------------------
+# (5) batch load and save to/from arrays and rasters
 def array2raster(a, folder, fname, LL_corner, cellsize):
     """It is easier if you have a raster to derive the values from.
     : - r01 = rasters[1]  # --- get one of the original rasters since they will
@@ -159,7 +162,7 @@ def rasters2nparray(folder=None, to3D=False):
 
 
 # ----------------------------------------------------------------------
-# (5) general file functions ... code section ---
+# (6) general file functions ... code section ---
 def get_dir(path):
     """Get the directory list from a path, excluding geodatabase folders
     :  Used by.. print_folders

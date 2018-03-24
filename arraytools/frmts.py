@@ -249,7 +249,7 @@ df_opt = ", ".join(["{}={}".format(i, pr_opt[i]) for i in pr_opt])
 
 script = sys.argv[0]
 
-__all__ = ['col_hdr', 'deline', 'frmt_', 'frmt_ma', 'frmt_rec',
+__all__ = ['col_hdr', 'deline', 'frmt_', 'frmt_ma', 'frmt_rec', 'form_',
            'in_by', 'make_row_format', 'redent', '_demo_frmt', '_demo_rec',
            '_demo_ma']
 
@@ -510,6 +510,7 @@ def frmt_ma(a, prn=True, prefix="  ."):
         N = len(tmp0[0])
         out = [""]
         for i in range(len(tmp0)):
+            N = len(tmp0[i])
             out.append((frmt*N).format(*tmp0[i]))
         jn = "\n" + prefix
         v += jn.join([i for i in out])

@@ -137,7 +137,10 @@ from textwrap import indent
 import numpy as np
 import arcpy
 
-#from arraytools._common import fc_info, tweet
+import warnings
+warnings.simplefilter('ignore', FutureWarning)
+
+# from arraytools._common import fc_info, tweet
 
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
       'float_kind': '{: 0.3f}'.format}
@@ -154,7 +157,7 @@ __all__ = ['_cursor_array', '_geo_array', '_get_shapes',
            'obj_array',
            'change_fld', '_props',
            'join_arr_fc',
-           'concat_flds',
+           'concat_arrs',
            'arrays_cols'
            ]
 
@@ -439,7 +442,7 @@ def join_arr_fc(a, in_fc, out_fld='Result_', OID_fld='OID@'):
     return out
 
 
-def concat_flds(arrs, sep=" ", name=None, with_ids=True):
+def concat_arrs(arrs, sep=" ", name=None, with_ids=True):
     """Concatenate a sequence of arrays to string format and return a
     :  structured array or ndarray
     :  arrs - a list single arrays of the same length

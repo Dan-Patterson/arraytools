@@ -1,14 +1,10 @@
 # -*- coding: UTF-8 -*-
 """
 :Script:   geom.py
-:Author:   Dan.Patterson@carleton.ca
-:Modified: 2017-10-20
+:Author:   Dan_Patterson@carleton.ca
+:Modified: 2018-01-15
 :Purpose:  tools for working with numpy arrays
-:Functions: a and b are arrays
-: - e_area(a, b=None)
-: - e_dist(a, b, metric='euclidean')
-: - e_leng(a)
-:
+:Functions: see __all__ for a complete listing
 :Notes:
 :-----
 : - do not rely on the OBJECTID field for anything
@@ -23,32 +19,58 @@
 """
 # ---- imports, formats, constants ----
 import sys
+from textwrap import dedent
 import numpy as np
+
+# from arraytools.tools import arr2xyz
+# from arraytools.fc import _xy
 import arcpy
-# from fc import _xyID
+
 # from tools import group_pnts
 
-ft = {'bool': lambda x: repr(x.astype('int32')),
-      'float': '{: 0.2f}'.format}
-np.set_printoptions(edgeitems=3, linewidth=80, precision=2, suppress=True,
-                    threshold=50, formatter=ft)
+ft = {'bool': lambda x: repr(x.astype(np.int32)),
+      'float_kind': '{: 0.2f}'.format}
+np.set_printoptions(edgeitems=3, linewidth=80, precision=3, suppress=True,
+                    threshold=100, formatter=ft)
 np.ma.masked_print_option.set_display('-')  # change to a single -
 
-_script = sys.argv[0]  # print this should you need to locate the script
+script = sys.argv[0]  # print this should you need to locate the script
 
-# '_center', '_centroid', '_convert', '_densify_2D', '_extent', '_max',
-# '_min', '_new_view_', '_reshape_', '_samples_', '_script', '_test',
-# '_unpack', '_view_', 'angle_2pnts', 'angle_np', 'angles_poly', 'areas',
-# 'azim_np', 'centers', 'centroids', 'densify', 'dx_dy_np', 'e_area',
-# 'e_dist', 'e_leng', 'ft', 'lengths', 'np', 'seg_lengths', 'total_length'
-
-__all__ = ['_view_', '_reshape_', '_min', '_max', '_extent', '_center',
-           '_centroid',  'areas', 'centers', 'centroids', 'e_area', 'e_dist',
-           'e_leng', 'seg_lengths', 'areas', 'total_length', 'lengths']
+__all__ = ['_flat_', '_unpack',
+           '_new_view_', '_view_', '_reshape_',
+           '_min', '_max', '_extent',
+           '_center', '_centroid', 'centers', 'centroids',
+           'e_area', 'e_dist', 'e_leng',
+           'areas', 'lengths',
+           'total_length', 'seg_lengths',
+           'radial_sort',
+           'dx_dy_np', 'angle_np', 'azim_np',
+           'angle_2pnts', 'angle_seq', 'angles_poly', 'dist_bearing',
+           '_densify_2D', '_convert', 'densify',
+           'simplify',
+           'rotate',  'repeat',
+           'circle', 'ellipse',
+           'rectangle', 'hex_flat', 'hex_pointy'
+           ]
 
 
 # ---- array functions -------------------------------------------------------
 #
+def _flat_(a_list, flat_list=None):
+    """Change the isinstance as appropriate
+    :  Flatten an object using recursion
+    :  see: itertools.chain() for an alternate method of flattening.
+    """
+    if flat_list is None:
+        flat_list = []
+    for item in a_list:
+        if isinstance(item, (list, tuple, np.ndarray, np.void)):
+            _flat_(item, flat_list)
+        else:
+            flat_list.append(item)
+    return flat_list
+
+
 def _unpack(iterable, param='__iter__'):
     """Unpack an iterable based on the param(eter) condition using recursion.
     :From 'unpack' in _common.py
@@ -62,8 +84,13 @@ def _unpack(iterable, param='__iter__'):
     return xy
 
 
+# ---- _view and _reshape_ are helper functions -----------------------------
+#
 def _new_view_(a):
-    """view a structured array x,y coordinates"""
+    """View a structured array x,y coordinates as an ndarray to facilitate
+    :some array calculations.
+    :NOTE:  see _view_ for the same functionality
+    """
     if (len(a.dtype) > 1):
         shp = a.shape[0]
         a = a.view(dtype='float64')
@@ -71,8 +98,6 @@ def _new_view_(a):
     return a
 
 
-# ---- _view and _reshape_ are helper functions -----------------------------
-#
 def _view_(a):
     """return a view of the array using the dtype and length"""
     return a.view((a.dtype[0], len(a.dtype.names)))
@@ -404,8 +429,27 @@ def seg_lengths(a):
     return result[0]
 
 
+# ---- sorting based on geometry --------------------------------------------
+#
+def radial_sort(pnts, cent=None):
+    """Sort about the point cloud center or from a given point
+    : pnts - an array of points (x,y) as array or list
+    : cent - list, tuple, array of the center's x,y coordinates
+    :      - cent = [0, 0] or np.array([0, 0])
+    :Returns: the angles in the range -180, 180 x-axis oriented
+    """
+    pnts = np.asarray(pnts, dtype=np.float64)
+    if cent is None:
+        cent = _center(pnts, remove_dup=False)
+    ba = pnts - cent
+    ang_ab = np.arctan2(ba[:, 1], ba[:, 0])
+    ang_ab = np.degrees(ang_ab)
+    sort_order = np.argsort(ang_ab)
+    return ang_ab, sort_order
+
+
 # ---- angle related functions ----------------------------------------------
-# ---- field-based calculations
+# ---- structured arrays
 def dx_dy_np(a, fld):
     """Sequential difference in the x/y pairs from a table/array
     :
@@ -435,26 +479,26 @@ def azim_np(a, fld):
     return azim
 
 
-# ---- array-based calculations
-#
+# ---- ndarrays
 def angle_2pnts(p0, p1):
     """Two point angle
     : angle = atan2(vector2.y, vector2.x) - atan2(vector1.y, vector1.x);
     : Accepted answer from the poly_angles link
     """
+    p0, p1 = [np.asarray(i) for i in [p0, p1]]
     ba = p0 - p1
     ang_ab = np.arctan2(*ba[::-1])
     return np.rad2deg(ang_ab % (2 * np.pi))
 
 
-def angle_seq(p0, p1):
-    """Two point angle
+def angle_seq(a):
+    """sequential angles for a points list
     : angle = atan2(vector2.y, vector2.x) - atan2(vector1.y, vector1.x);
     : Accepted answer from the poly_angles link
     """
-    ba = p0 - p1
-    ang_ab = np.arctan2(*ba[::-1])
-    return np.rad2deg(ang_ab % (2 * np.pi))
+    ba = a[1:] - a[:-1]
+    ang_ab = np.arctan2(ba[:, 1], ba[:, 0])
+    return np.degrees(ang_ab % (2 * np.pi))
 
 
 def angles_poly(a, inside=True, in_deg=True):
@@ -510,12 +554,67 @@ def angles_poly(a, inside=True, in_deg=True):
     return angles
 
 
+def dist_bearing(orig=(0, 0), bearings=None, dists=None, prn=False):
+    """point locations given distance and bearing
+    :  Now only distance and angle are known.  Calculate the point coordinates
+    :  from distance and angle
+    :References:
+    :----------
+    : - https://community.esri.com/thread/66222
+    : - https://community.esri.com/blogs/dan_patterson/2018/01/21/
+    :           origin-distances-and-bearings-geometry-wanderings
+    :Notes:
+    :-----
+    : - bearings = np.arange(0, 361, 10.)  # 37 bearings
+    : - dists = np.random.randint(10, 500, len(bearings)) * 1.0
+    : - dists = np.ones((len(bearings),))
+    :   dists.fill(100.)
+    :data = dist_bearing(orig=orig, bearings=bearings, dists=dists)
+    :
+    :Create a featureclass from the results
+    :-------------------------------------
+    :  shapeXY = ['X_f', 'Y_f']
+    :  fc_name = r"C:\path\Geodatabase.gdb\featureclassname"
+    :  arcpy.da.NumPyArrayToFeatureClass(out, fc_name, ['Xn', 'Yn'], "2951")
+    :.... syntax
+    :  arcpy.da.NumPyArrayToFeatureClass(
+    :                     in_array=out, out_table=fc_name,
+    :                     shape_fields=shapeXY, spatial_reference=SR)
+    """
+    orig = np.array(orig)
+    rads = np.deg2rad(bearings)
+    dx = np.sin(rads) * dists
+    dy = np.cos(rads) * dists
+    x_t = np.cumsum(dx) + orig[0]
+    y_t = np.cumsum(dy) + orig[1]
+    xy_f = np.array(list(zip(x_t[:-1], y_t[:-1])))
+    xy_f = np.vstack((orig, xy_f))
+    stack = (xy_f[:, 0], xy_f[:, 1], x_t, y_t, dx, dy, dists, bearings)
+    data = np.vstack(stack).T
+    names = ['X_f', 'Y_f', "X_t", "Yt", "dx", "dy", "dist", "bearing"]
+    N = len(names)
+    if prn:  # ---- just print the results ----------------------------------
+        frmt = "Origin (0,0)\n" + "{:>10s}"*N
+        print(frmt.format(*names))
+        frmt = "{: 10.2f}"*N
+        for i in data:
+            print(frmt.format(*i))
+        return data
+    else:  # ---- produce a structured array from the output ----------------
+        names = ", ".join(names)
+        kind = ["<f8"]*N
+        kind = ", ".join(kind)
+        out = data.transpose()
+        out = np.core.records.fromarrays(out, names=names, formats=kind)
+        return out
+
+
 # ---- densify functions -----------------------------------------------------
 #
 def _densify_2D(a, fact=2):
     """Densify a 2D array using np.interp.
     :fact - the factor to density the line segments by
-    :Notes
+    :Notes:
     :-----
     :original construction of c rather than the zero's approach
     :  c0 = c0.reshape(n, -1)
@@ -564,7 +663,7 @@ def densify(polys, fact=2, sp_ref=None):
     :
     :Requires:
     :--------
-    : _den - the function that is called for each shape part
+    : _densify_2D - the function that is called for each shape part
     : _unpack - unpack objects
     """
     # ---- main section ----
@@ -576,8 +675,147 @@ def densify(polys, fact=2, sp_ref=None):
     return out
 
 
+# ---- simplify functions -----------------------------------------------------
+#
+def simplify(a, deviation=10):
+    """Simplify array
+    """
+    angles = angles_poly(a, inside=True, in_deg=True)
+    idx = (np.abs(angles - 180.) >= deviation)
+    sub = a[1: -1]
+    p = sub[idx]
+    return a, p, angles
+
+
+# ---- Create geometries -----------------------------------------------------
+#
+def pnt_(p=np.nan):
+    """Create a point object for null points, center points etc\n
+    : pnt_((1., 2.)\n
+    : pnt_(1) => array([1., 1.])
+    """
+    p = np.atleast_1d(p)
+    if p.dtype.kind not in ('f', 'i'):
+        raise ValueError("Numeric points supported, not {}".format(p))
+    if np.any(np.isnan(p)):
+        return np.array([np.nan, np.nan])
+    elif isinstance(p, (np.ndarray, list, tuple)):
+        if len(p) == 2:
+            p = np.array([p[0], p[1]])
+        else:
+            p = np.array([p[0], p[0]])
+        return p
+
+
+def rotate(pnts, angle=0):
+    """rotate points about the origin in degrees, (+ve for clockwise) """
+    angle = np.deg2rad(angle)                 # convert to radians
+    s = np.sin(angle)
+    c = np.cos(angle)    # rotation terms
+    aff_matrix = np.array([[c, s], [-s, c]])  # rotation matrix
+    XY_r = np.dot(pnts, aff_matrix)           # numpy magic to rotate pnts
+    return XY_r
+
+
+def repeat(seed=None, corner=[0, 0], cols=1, rows=1, angle=0):
+    """Create the array of pnts to pass on to arcpy using numpy magic to
+    :  produce a fishnet of the desired in_shp.
+    :seed - use grid_array, hex_flat or hex_pointy.  You specify the width
+    :       and height or its ratio when making the shapes
+    :corner - lower left corner of the shape pattern
+    :dx, dy - offset of the shapes... this is different
+    :rows, cols - the number of rows and columns to produce
+    :angle - rotation angle in degrees
+    """
+    if seed is None:
+        a = rectangle(dx=1, dy=1, cols=3, rows=3)
+    else:
+        a = np.asarray(seed)
+    if angle != 0:
+        a = [rotate(p, angle) for p in a]      # rotate the scaled points
+    pnts = [p + corner for p in a]            # translate them
+    return pnts
+
+
+def circle(radius=1.0, theta=10.0, xc=0.0, yc=0.0):
+    """Produce a circle/ellipse depending on parameters.
+    :  radius - distance from centre
+    :  theta - angle of densification of the shape around 360 degrees
+    """
+    angles = np.deg2rad(np.arange(180.0, -180.0-theta, step=-theta))
+    x_s = radius*np.cos(angles) + xc    # X values
+    y_s = radius*np.sin(angles) + yc    # Y values
+    pnts = np.c_[x_s, y_s]
+    return pnts
+
+
+def ellipse(x_radius=1.0, y_radius=1.0,  theta=10., xc=0.0, yc=0.0):
+    """Produce an ellipse depending on parameters.
+    :  radius - distance from centre in the X and Y directions
+    :  theta - angle of densification of the shape around 360 degrees
+    """
+    angles = np.deg2rad(np.arange(180.0, -180.0-theta, step=-theta))
+    x_s = x_radius*np.cos(angles) + xc    # X values
+    y_s = y_radius*np.sin(angles) + yc    # Y values
+    pnts = np.c_[x_s, y_s]
+    return pnts
+
+
+def rectangle(dx=1, dy=1, cols=1, rows=1):
+    """Create the array of pnts to pass on to arcpy using numpy magic
+    :  dx - increment in x direction, +ve moves west to east, left/right
+    :  dy - increment in y direction, -ve moves north to south, top/bottom
+    """
+    X = [0.0, 0.0, dx, dx, 0.0]       # X, Y values for a unit square
+    Y = [0.0, dy, dy, 0.0, 0.0]
+    seed = np.array(list(zip(X, Y)))  # [dx0, dy0] keep for insets
+    a = [seed + [j * dx, i * dy]       # make the shapes
+         for i in range(0, rows)   # cycle through the rows
+         for j in range(0, cols)]  # cycle through the columns
+    a = np.asarray(a)
+    return a
+
+
+def hex_flat(dx=1, dy=1, cols=1, rows=1):
+    """generate the points for the flat-headed hexagon
+    :dy_dx - the radius width, remember this when setting hex spacing
+    :  dx - increment in x direction, +ve moves west to east, left/right
+    :  dy - increment in y direction, -ve moves north to south, top/bottom
+    """
+    f_rad = np.deg2rad([180., 120., 60., 0., -60., -120., -180.])
+    X = np.cos(f_rad) * dy
+    Y = np.sin(f_rad) * dy            # scaled hexagon about 0, 0
+    seed = np.array(list(zip(X, Y)))  # array of coordinates
+    dx = dx * 1.5
+    dy = dy * np.sqrt(3.)/2.0
+    hexs = [seed + [dx * i, dy * (i % 2)] for i in range(0, cols)]
+    m = len(hexs)
+    for j in range(1, rows):  # create the other rows
+        hexs += [hexs[h] + [0, dy * 2 * j] for h in range(m)]
+    return hexs
+
+
+def hex_pointy(dx=1, dy=1, cols=1, rows=1):
+    """pointy hex angles, convert to sin, cos, zip and send
+    :dy_dx - the radius width, remember this when setting hex spacing
+    :  dx - increment in x direction, +ve moves west to east, left/right
+    :  dy - increment in y direction, -ve moves north to south, top/bottom
+    """
+    p_rad = np.deg2rad([150., 90, 30., -30., -90., -150., 150.])
+    X = np.cos(p_rad) * dx
+    Y = np.sin(p_rad) * dy      # scaled hexagon about 0, 0
+    seed = np.array(list(zip(X, Y)))
+    dx = dx * np.sqrt(3.)/2.0
+    dy = dy * 1.5
+    hexs = [seed + [dx * i * 2, 0] for i in range(0, cols)]
+    m = len(hexs)
+    for j in range(1, rows):  # create the other rows
+        hexs += [hexs[h] + [dx * (j % 2), dy * j] for h in range(m)]
+    return hexs
+
+
 # ---- Extras ----------------------------------------------------------------
-# ------------------------------------------------------------------------
+#
 def _test(a0):
     """testing stuff using a0"""
     import math
@@ -595,36 +833,148 @@ def _test(a0):
     step = 2.0
     stop = 10.0 + step/2
     x2 = np.arange(start, stop + step, step)
+    return dist, xc, yc, pc, slope, xn, yn, x2
 
 
-def _samples_():
-    """Sample arrays to test verious cases
+def adjacency_edge():
+    """keep... adjacency-edge list association
+    : the columns are 'from', the rows are 'to' the cell value is the 'weight'.
     """
-    a0 = np.array([[10., 10.], [10., 20.], [20., 20.], [10., 10.]])
+    adj = np.random.randint(1, 4, size=(5, 5))
+    r, c = adj.shape
+    mask = ~np.eye(r, c, dtype='bool')
+    dt = [('Source', '<i4'), ('Target', '<i4'), ('Weight', '<f8')]
+    m = mask.ravel()
+    XX, YY = np.meshgrid(np.arange(c), np.arange(r))
+    mmm = np.stack((m, m, m), axis=1)
+    XX = np.ma.masked_array(XX, mask=m)
+    YY = np.ma.masked_array(YY, mask=m)
+    edge = np.stack((XX.ravel(), YY.ravel(), adj.ravel()), axis=1)
+    edge = np.stack((XX.ravel(), YY.ravel(), adj.ravel()), axis=1)
+#    edge = arr2xyz(adj)
+    frmt = """
+    :Adjacency edge list association...
+    {}
+    :edge...
+    {}
+    """
+    print(dedent(frmt).format(adj, edge))
+
+
+def _arrs_(prn=True):
+    """Sample arrays to test various cases
+    """
+    a0 = np.array([[10, 10], [10, 20], [20, 20], [10, 10]])
     a1 = np.array([[20., 20.], [20., 30.], [30., 30.], [30., 20.], [20., 20.]])
-    a2 = np.array([[30., 30.], [30., 40.], [40., 40.], [40., 30.], [30., 30.]])
-    a3 = np.asarray([a1, a2])
-    a4 = np.array([(10., 10.), (10., 20.), (20., 20.), (10., 10.)],
+    a2 = np.array([(20., 20.), (20., 30.), (30., 30.), (30., 20.), (20., 20.)],
                   dtype=[('X', '<f8'), ('Y', '<f8')])
-    a5 = np.array([(20., 20.), (20., 30.), (30., 30.), (30., 20.), (20., 20.)],
-                  dtype=[('X', '<f8'), ('Y', '<f8')])
-    a6 = np.array([([20.0, 20.0],), ([20.0, 30.0],), ([30.0, 30.0],),
+    a3 = np.array([([20.0, 20.0],), ([20.0, 30.0],), ([30.0, 30.0],),
                    ([30.0, 20.0],), ([20.0, 20.0],)],
                   dtype=[('Shape', '<f8', (2,))])
-    a7 = np.array([([10.0, 10.0],), ([10.0, 20.0],), ([20.0, 20.0],),
-                   ([10.0, 10.0],)],
-                  dtype=[('Shape', '<f8', (2,))])
-    a8 = np.asarray([a4, a4])
-    a9 = np.asarray([a4, a5])
-    a10 = np.asarray([a6, a6])
-    a11 = np.asarray([a6, a7])
+    a_1a = np.asarray([a1, a1])
+    a_1b = np.asarray([a1, a1[:-1]])
+    a_2a = np.asarray([a2, a2])
+    a_2b = np.asarray([a2, a2[:-1]])
+    a_3a = np.asarray([a3, a3])
+    a_3b = np.asarray([a3, a3[:-1]])
     a0 = a0 - [10, 10]
     a1 = a1 - [10, 10]
-    a = [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11]
-#    sze = [i.size for i in a]
-#    shp = [len(i.shape) for i in a]
-#    dt = [len(i.dtype) for i in a]
+    a = [a0, a1, a2, a3, a_1a, a_1b, a_2a, a_2b, a_3a, a_3b]
+    sze = [i.size for i in a]
+    shp = [len(i.shape) for i in a]
+    dtn = [len(i.dtype) for i in a]
+    if prn:
+        a = [a0, a1, a2, a3, a_1a, a_1b, a_2a, a_2b, a_3a, a_3b]
+        n = ['a0', 'a1', 'a2', 'a3',
+             'a_1a', 'a_1b',
+             'a_2a', 'a_2b',
+             'a_3a', 'a_3b']
+        args = ['array', 'kind', 'size', 'ndim', 'shape', 'dtype']
+        frmt = "{!s:<6} {!s:<5} {!s:<5} {!s:<4} {!s:<10} {!s:<20}"
+        print(frmt.format(*args))
+        cnt = 0
+        for i in a:
+            args = [n[cnt], i.dtype.kind, i.size, i.ndim, i.shape, i.dtype]
+            print(dedent(frmt).format(*args))
+            cnt += 1
+    a.extend([sze, shp, dtn])
     return a
+
+
+def _demo(prn=True):
+    """Demo the densify function using Ontario boundary polyline
+    :
+    : ---- Ontario boundary polyline, shape (49,874, 2) ----
+    :  x = "...script location.../Data/Ontario.npy"
+#   : a = np.load(x)
+    :
+    """
+    x = "/".join(script.split("/")[:-1]) + "/Data/Ontario.npy"
+    a = np.load(x)
+    fact = 2
+    b = _densify_2D(a, fact=fact)
+    t0, avl = e_leng(a)  # first is total, 2nd is all lengths
+    t1 = t0/1000.
+    min_l = avl.min()
+    avg_l = avl.mean()
+    max_l = avl.max()
+    ar = e_area(a)
+    ar1 = ar/1.0e04
+    ar2 = ar/1.0e06
+    if prn:
+        frmt = """
+        Original number of points... {:,}
+        Densified by a factor of ... {}
+        New point count ............ {:,}
+        Ontario perimeter .......... {:,.1f} m  {:,.2f} km
+        Segments lengths ... min  {:,.2f} m
+                             mean {:,.2f} m
+                             max  {:,.2f} m
+        Ontario area ............... {:,.2f} ha.  {:,.1f} sq.km.
+        """
+        args = [a.shape[0], fact, b.shape[0], t0, t1, min_l,
+                avg_l, max_l, ar1, ar2]
+        print(dedent(frmt).format(*args))
+    else:
+        return a
+
+
+def angle_between(p0, p1, p2):
+    """angle between 3 sequential points
+    :p0, p1, p2 = np.array([[0, 0],[1, 1], [1, 0]])
+    """
+    d1 = p0 - p1
+    d2 = p2 - p1
+    ang1 = np.arctan2(*d1[::-1])
+    ang2 = np.arctan2(*d2[::-1])
+    ang = (ang2 - ang1)  # % (2 * np.pi)
+    ang, ang1, ang2 = [np.degrees(i) for i in [ang, ang1, ang2]]
+    return ang, ang1, ang2
+
+
+def intersect_pnt(p0, p1, p2, p3):
+    """Returns the point of intersection of the segment passing through two
+    :  line segments (p0, p1) and (p2, p3)
+    :Notes:
+    :------
+    :         p0,            p1,             p2,            p3
+    : (array([0, 0]), array([10, 10]),array([0, 5]), array([5, 0]))
+    : s: array([[ 0,  0],    h: array([[  0.,   0.,   1.],
+    :           [10, 10],              [ 10.,  10.,   1.],
+    :           [ 0,  5],              [  0.,   5.,   1.],
+    :           [ 5,  0]])             [  5.,   0.,   1.]])
+    :Reference:
+    :---------
+    : https://stackoverflow.com/questions/3252194/numpy-and-line-intersections
+    """
+    s = np.vstack([p0, p1, p2, p3])      # s for stacked
+    h = np.hstack((s, np.ones((4, 1))))  # h for homogeneous
+    l1 = np.cross(h[0], h[1])            # get first line
+    l2 = np.cross(h[2], h[3])            # get second line
+    x, y, z = np.cross(l1, l2)           # point of intersection
+    if z == 0:                           # lines are parallel
+        return (float('inf'), float('inf'))
+    return (x/z, y/z)
 
 
 # ----------------------------------------------------------------------
@@ -638,15 +988,29 @@ if __name__ == "__main__":
 #    from fc import _xyID, obj_array, _two_arrays
 #    from tools import group_pnts
 
-#    a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11 = _samples_()
+#    args = _arrs_(prn=False)  # prn=True to see array properties
+#    a0, a1, a2, a3, a_1a, a_1b, a_2a, a_2b, a_3a, a_3b = args[:10]
+#    sze, shp, dtn = args[10:]
+    a = np.array([[0, 0.05], [1, 1.05], [2, 1.95], [3, 3.0],
+                  [4, 4.1], [5, 5.2], [6, 5.9]])
+#    dist, xc, yc, pc, slope, xn, yn, x2 = _test(a0)
+    fc = r"C:\Git_Dan\a_Data\arcpytools_demo.gdb\polylines_pnts"
+
+# for Ontario_LCC
+# total_length(a)  #: 6804096.2018476073  same as arcmap
+# areas(a)  #: [1074121438784.0]  1074121438405.34021
+
+
+#     ---- end ----
 #    in_fc = r'C:\Git_Dan\a_Data\arcpytools_demo.gdb\Can_geom_sp_LCC'
 #    in_fc = r"C:\Git_Dan\a_Data\testdata.gdb\Carp_5x5"   # full 25 polygons
-#    a = _xyID(in_fc)
+#    a = _xy(in_fc)
 #    a_s = group_pnts(a, key_fld='IDs', shp_flds=['Xs', 'Ys'])
 #    a_s = np.asarray(a_s)
 #    a_area = areas(a_s)
 #    a_tot_leng = total_length(a_s)
 #    a_seg_leng = seg_lengths(a_s)
-#    v = r'C:\Git_Dan\arraytools\Data\array_100K.npy'  # 20, 1000, 10k, 100K
+#    a_ng = angles_poly(a1)
+#    v = r'C:\Git_Dan\arraytools\Data\sample_100K.npy'  # 20, 1000, 10k, 100K
 #    oa = obj_array(in_fc)
 #    ta = _two_arrays(in_fc, both=True, split=True)

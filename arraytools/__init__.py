@@ -1,6 +1,7 @@
 # coding: utf-8
 """
-Modified: 2017-11-04
+:Author:   Dan.Patterson@carleton.ca
+Modified: 2018-03-24
 
 arrtools
 =======
@@ -14,7 +15,7 @@ It is assumed throughout that numpy has been imported as
    >>> import numpy as np
 
 Available modules and subpackages
----------------------
+---------------------------------
 a_io.py  (7)
   io tools for numpy arrays and operating system access
   __all_aio__
@@ -40,26 +41,32 @@ frmts.py  (11)
     'col_hdr', 'deline', 'frmt_', 'frmt_ma', 'frmt_rec',
     'in_by', 'make_row_format', 'redent', '_demo', '_ma_demo']
 
-tools.py  (19)
-  Main tool set containing the following functions...
-  __all_art__:
-    'arr2xyz', 'block, 'block_arr', 'change', 'doc_func', 'find', 'fc_info',
-    'get_func', 'get_modu', 'group_pnts', 'group_vals', '_join_array',
-    'info', 'make_blocks', 'make_flds', 'nd_struct', 'reclass', 'scale',
-    'stride', 'rolling_stats']
-
-analysis:  (5)
-    Tools for calculating distance, proximity, angles.
-  __all__
-  'compass', 'line_dir', 'not_closer', 'n_near', 'vincenty'
-
 geom:  (12)
   Geometry related function
   __all_geo__
     '_view_', '_reshape_', 'areas', 'center', 'centroid',  'e_area',
     'obj_array', 'e_dist', 'e_leng', 'seg_lengths', 'total_length', 'lengths'
 
+image:  (9)
+  __all_img__
+    '_even_odd', '_pad_even_odd', '_pad_nan', '_pad_zero', 'a_filter',
+    'plot_img', 'rgb_gray', 'normalize', 'equalize'
+
+tools.py  (19)
+  Main tool set containing the following functions...
+  __all_art__
+    'arr2xyz', 'block, 'block_arr', 'change', 'doc_func', 'find', 'fc_info',
+    'get_func', 'get_modu', 'group_pnts', 'group_vals', '_join_array',
+    'info', 'make_blocks', 'make_flds', 'nd_struct', 'reclass', 'scale',
+    'stride', 'rolling_stats'
+
 -------- folder tools
+
+
+
+analysis:
+  Tools for calculating distance, proximity, angles.
+  'compass', 'line_dir', 'not_closer', 'n_near', 'vincenty'
 geomtools:  from arraytools.geomtools import *** either name or *
   Special computational geometry tools, including:
       circular, mesh_pnts, mst, n_spaced, pip
@@ -70,21 +77,20 @@ stats:
   Statistics and related
     crosstab
 other:
-    Placeholder
+  Placeholder
 
 examples:
-    Documentation for *.py script, will have the same name but end with *.txt.
+  Documentation for *.py script, will have the same name but end with *.txt.
 
 
 """
-from textwrap import dedent
+from textwrap import dedent, indent, wrap
 # ---- import *.py scripts and functions ----
 from . import _common
 from ._common import _describe, fc_info, fld_info, tweet
+
 from . import a_io
 from .a_io import *
-from . import tools
-from .tools import *
 from . import apt
 from .apt import *
 from . import fc
@@ -93,13 +99,20 @@ from . import frmts
 from .frmts import *
 from . import geom
 from .geom import *
+from . import image
+from .image import *
+from . import tools
+from .tools import *
+#
 # ---- imports from subfolders
-from . import geomtools
-from .geomtools import circular, mesh_pnts, mst, n_spaced, pip
 from . import analysis
 from .analysis import *
+from . import geomtools
+from .geomtools import circular, mesh_pnts, mst, n_spaced, pip
 from . import graphing
 from .graphing import plot_pnts_
+from . import rasters
+from .rasters import  conversion, rasters, rasterstats, surface
 from . import stats
 from .stats.cross_tab import crosstab
 
@@ -118,6 +131,7 @@ Use ... dir(art.module) ... where 'module' is in...
 - fc\n....{}
 - frmts\n....{}
 - geom\n....{}
+- image\n...{}
 - tools\n....{}
 """
     print(dedent(frmt).format(*__args))
@@ -125,9 +139,16 @@ Use ... dir(art.module) ... where 'module' is in...
 
 __art_version__ = "Arraytools version 1.0"
 __all__ = ['__art_version__', '__art_modules__']
-__args = [_common.__all__, a_io.__all__, analysis.__all__,
-          apt.__all__, fc.__all__, frmts.__all__,
-          geom.__all__, tools.__all__]
+__args = [_common.__all__,
+          a_io.__all__,
+          analysis.__all__,
+          apt.__all__,
+          fc.__all__,
+          frmts.__all__,
+          geom.__all__,
+          image.__all__,
+          tools.__all__
+          ]
 for _arg in __args:
     __all__.extend(_arg)
 
