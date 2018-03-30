@@ -44,13 +44,13 @@ Purpose:
   The middle part of the shape should also be reasonable should you want
   to print the results:
 
-  How it works
+How it works
 
-  >>> a[...,0,:].flatten()
-  array([ 0,  1,  2,  3,  4, 20, 21, 22, 23, 24, 40, 41, 42, 43, 44])
+>>> a[...,0,:].flatten()
+array([ 0,  1,  2,  3,  4, 20, 21, 22, 23, 24, 40, 41, 42, 43, 44])
 
-  >>> a[...,0,(0, 1, -2, -1)].flatten()
-  array([ 0,  1,  3,  3, 20, 21, 23, 23, 40, 41, 43, 43])
+>>> a[...,0,(0, 1, -2, -1)].flatten()
+array([ 0,  1,  3,  3, 20, 21, 23, 23, 40, 41, 43, 43])
 
 
 Functions:
