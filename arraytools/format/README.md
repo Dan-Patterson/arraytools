@@ -215,7 +215,6 @@ Notes:
 
 
 ::
-
     Row format given
     d 3, r 2, c 3
     kind i decimals 1
