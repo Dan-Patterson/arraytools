@@ -2,7 +2,7 @@
 
 plus some samples
 
-"""
+
 frmts.py  formatting arrays
 ===========================
 
@@ -275,6 +275,3 @@ References:
 >>> # ** tip *** reorder from after transpose or even a swapaxes
 >>> # the ::-1 does the reversing... same as [...,::-1]
 
-
-----------
-"""
