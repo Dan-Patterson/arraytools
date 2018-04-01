@@ -12,7 +12,7 @@
 :  compass - the conversion function
 :  _demo  -  demo function ...
 :
-:Notes:   
+:Notes:
 :  Cardinal direction and degree ranges.........
 :  N 348.75- 11.25  NNE  11.25- 33.75  NE  33.75- 56.2   ENE  56.25- 78.75
 :  E  78.75-101.25  ESE 101.25-123.75  SE 123.75-146.25  SSE 146.25-168.75
@@ -25,7 +25,7 @@
 :References
 :
 """
-#---- imports, formats, constants ----
+# ---- imports, formats, constants ----
 
 import sys
 import numpy as np
@@ -34,37 +34,42 @@ from textwrap import dedent
 ft = {'bool': lambda x: repr(x.astype('int32')),
       'float': '{: 0.3f}'.format}
 np.set_printoptions(edgeitems=10, linewidth=80, precision=2,
-                    suppress=True, threshold=100, 
+                    suppress=True, threshold=100,
                     formatter=ft)
 
 script = sys.argv[0]
 
-#---- functions ----
+# ---- functions ----
 
 
 def compass(angle):
     """Return the compass direction based on supplied angle.
-    :Requires:
-    :--------
-    :  angle - angle(s) in degrees, no check made for other formats.
-    :        - a single value, list or np.ndarray can be used as input.
-    :        - angles are assumed to be from compass north, alter to suit.
-    :
-    :Returns:  The compass direction.
-    :-------
-    :
-    :Notes:
-    :-----
-    :  Compass ranges can be altered to suit the desired format.  
-    :  See various wiki's for other options.  This incarnation uses 22.5
-    :  degree ranges with the compass centered on the range.
-    :  ie. N  between 348.75 and 11.25 degrees, range equals 22.5)
-    :
-    :----------------------------------------------------------------------
+
+    Requires:
+    --------
+    `angle` : number
+        Angle(s) in degrees, no check made for other formats.  a single value,
+        list or np.ndarray can be used as input.
+
+        Angles are assumed to be from compass north, alter to suit.
+
+    Returns:
+    -------
+        The compass direction.
+    Notes:
+    -----
+        Compass ranges can be altered to suit the desired format.
+        See various wiki's for other options.
+
+        This incarnation uses 22.5 degree ranges with the compass centered
+        on the range.
+
+        ie. N  between 348.75 and 11.25 degrees, range equals 22.5)
+
     """
-    c = np.array(['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 
+    c = np.array(['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
                   'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW', 'N'])
-    a = np.arange(11.25, 360., 22.5) 
+    a = np.arange(11.25, 360., 22.5)
     if isinstance(angle, (float, int, list, np.ndarray)):
         angle = np.atleast_1d(angle)
     comp_dir = c[np.digitize(angle, a)]
@@ -72,10 +77,10 @@ def compass(angle):
         comp_dir[0]
     return comp_dir
 
-    
+
 def run_demo():
     """A sample run of compass returning compass notations for 20 deg
-       increments.  Change to suit
+    increments.  Change to suit
     """
     angles = np.arange(0, 360, 20)
     rose = compass(angles)
@@ -86,16 +91,16 @@ def run_demo():
     print("\nCompass rose examples\n{}".format(comp_rose))
     return comp_rose
 
-#n = np.arange(-10,10.)
-#v = np.where(n >= 0, np.PZERO, np.NZERO)
+# n = np.arange(-10, 10.)
+# v = np.where(n >= 0, np.PZERO, np.NZERO)
 
-#a = "Hello there my friend"
-#b = "".join([[i, "\n"][i == " "] for i in a])
-#print(b)
+# a = "Hello there my friend"
+# b = "".join([[i, "\n"][i == " "] for i in a])
+# print(b)
 
-#----------------------
+
+# ----------------------
 if __name__ == "__main__":
     """Main section...   """
-    #print("Script... {}".format(script))
+    # print("Script... {}".format(script))
     comp_rose = run_demo()
-

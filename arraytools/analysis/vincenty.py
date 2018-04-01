@@ -63,13 +63,20 @@ script = sys.argv[0]
 
 def vincenty(long0, lat0, long1, lat1, verbose=False):
     """return the distance on the ellipsoid between two points using
-    :  Vincenty's Inverse method
-    : a, b - semi-major and minor axes WGS84 model
-    : f - inverse flattening
-    : L, dL - delta longitude, initial and subsequent
-    : u0, u1 - reduced latitude
-    : s_sig - sine sigma
-    : c_sig - cosine sigma
+    Vincenty's Inverse method
+
+    `a`, `b` : numbers
+        semi-major and minor axes WGS84 model
+    `f` : number
+        inverse flattening
+    `L`, `dL` : number
+        delta longitude, initial and subsequent
+    `u0`, `u1` : number
+        reduced latitude
+    `s_sig` : number
+        sine sigma
+    `c_sig` : number
+        cosine sigma
     """
     a = 6378137.0
     b = 6356752.314245
@@ -124,7 +131,7 @@ def vincenty(long0, lat0, long1, lat1, verbose=False):
     uSq = c_alpha2 * ab_b
     A = 1 + uSq/16384.0 * (4096 + uSq*(-768 + uSq*(320 - 175*uSq)))  # eq 3
     B = uSq/1024.0 * (256 +  uSq*(-128 + uSq*(74 - 47*uSq)))         # eq 4
-    d_sigma = B*s_sig*(c_sigM2 + 
+    d_sigma = B*s_sig*(c_sigM2 +
                       (B/4.0)*(c_sig*(-1 + 2*c_sigM2**2) -
                       (B/6.0)*c_sigM2*(-3 + 4*s_sig**2)*(-3 +
                       4*c_sigM2**2)))

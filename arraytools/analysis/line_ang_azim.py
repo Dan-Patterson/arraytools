@@ -49,10 +49,11 @@ script = sys.argv[0]
 
 def line_dir(orig, dest, fromNorth=False):
     """Direction of a line given 2 points
-    : orig, dest - two points representing the start and end of a line.
-    : fromNorth - True or False gives angle relative to x-axis)
-    :Notes:
-    :
+
+    `orig`, `dest` : point coordinates
+        Two points representing the start and end of a line.
+    `fromNorth` : boolean
+        True or False gives angle relative to x-axis)
     """
     orig = np.atleast_2d(orig)
     dest = np.atleast_2d(dest)
@@ -87,6 +88,7 @@ def _demo(xc=0, yc=0, fromNorth=True):
         args = [orig, dest, dir, ang]
         print("orig: {}: dest: {!s:<8} {}: {!s:>6}".format(*args))
     return od
+
 
 # ---------------------------------------------------------------------
 if __name__ == "__main__":

@@ -1,31 +1,62 @@
 # -*- coding: UTF-8 -*-
 """
-:Script:   near.py
-:Author:   Dan.Patterson@carleton.ca
-:Modified: 2017-01-18
-:
-:Purpose:  Determine the nearest points based on euclidean distance within
-:  a point file.  Also, a function to ensure points have a minimum spacing.
-:
-:References:
-:----------
-: - creating meshgrids from x,y data and plotting ....
-:  http://stackoverflow.com/questions/30764955/python-numpy-create-2d
-:        -array-of-values-based-on-coordinates
-:  https://github.com/numpy/numpy/issues/7317
-:
-: - distance calculations and related.... (scipy, skikit-learn)
-:  https://github.com/scipy/scipy/blob/v0.18.1/scipy/spatial/distance.py
-:        #L1744-L2211
-:  http://stackoverflow.com/questions/32154475/einsum-and-distance-
-:       calculations
-:  http://stackoverflow.com/questions/23983748/possible-optimizations
-:       -for-calculating-squared-euclidean-distance
-:  http://scikit-learn.org/stable/modules/generated/
-:         sklearn.metrics.pairwise.euclidean_distances.html
-:  http://stackoverflow.com/questions/1871536/euclidean-distance-
-:         between-points-in-two-different-numpy-arrays-not-within
-:---------------------------------------------------------------------:
+near
+====
+
+Script :   near.py
+
+Author :   Dan.Patterson@carleton.ca
+
+Modified: 2018-03-28
+
+Purpose :
+    Determine the nearest points based on euclidean distance within
+    a point file.  Also, a function to ensure points have a minimum spacing.
+
+References:
+----------
+
+**creating meshgrids from x,y data and plotting**
+
+[1]
+`2D array of values based on coordinates`__:
+
+__ http://stackoverflow.com/questions/30764955/python-numpy-create-2darray-of-values-based-on-coordinates
+
+[2]
+`2D histogram issues`__:
+
+__ https://github.com/numpy/numpy/issues/7317
+
+
+**distance calculations and related** .... (scipy, skikit-learn)
+
+[3]
+`scipy spatial distance`__:
+
+__ https://github.com/scipy/scipy/blob/v0.18.1/scipy/spatial/distance.py#L1744-L2211
+
+[4]
+`einsum and distance calculations`__:
+
+    __ http://stackoverflow.com/questions/32154475/einsum-and-distance-calculations
+
+[5]
+`optimizations for calculating squared euclidean distances`__:
+
+__ http://stackoverflow.com/questions/23983748/possible-optimizations-for-calculating-squared-euclidean-distance
+
+[6]
+`pairwise euclidean distances`__:
+
+__ http://scikit-learn.org/stable/modules/generated/sklearn.metrics.pairwise.euclidean_distances.html
+
+[7]
+`euclidean distance between points`__:
+
+__ http://stackoverflow.com/questions/1871536/euclidean-distance-between-points-in-two-different-numpy-arrays-not-within
+
+---------------------------------------------------------------------
 """
 # ---- imports, formats, constants ----
 
@@ -54,12 +85,15 @@ __all__ = ['distances',
 
 def distances(a, b):
     """A fast implementation for distance calculations
-    :Requires:
-    :--------
-    :  a, b - 2D arrays of equal size!! ... can be the same array
-    :Notes:
-    :-----
-    :  similar to my e_dist and scipy cdist
+
+    Requires:
+    --------
+    `a`, `b` - arrays
+        2D arrays of equal size!! ... can be the same array
+
+    Notes:
+    -----
+        Similar to my e_dist and scipy cdist
     """
     if (len(a) != len(b)):
         print("\nInput array error...\n{}".format(distances.__doc__))
@@ -71,12 +105,16 @@ def distances(a, b):
 
 def not_closer(a, min_d=1, ordered=False):
     """Find the points that are separated by a distance greater than
-    :  min_d.  This ensures a degree of point spacing
-    :Requires:
-    :--------
-    : a - 2D array of coordinates.
-    : min_d - minimum separation distance
-    : ordered - order the input points
+     min_d.  This ensures a degree of point spacing
+
+    Requires:
+    --------
+     `a` : coordinates
+         2D array of coordinates.
+     `min_d` : number
+         Minimum separation distance
+     `ordered` : boolean
+         Order the input points
     """
     if ordered:
         a = a[np.argsort(a[:, 0])]
@@ -91,9 +129,10 @@ def not_closer(a, min_d=1, ordered=False):
 
 def n_check(a, N=3, order=True):
     """n_check prior to running n_near analysis
-    :Requires:
-    :--------
-    : Two 2D array of X,Y coordinates required.  Parse your data to comply.
+
+    Requires:
+    --------
+       Two 2D array of X,Y coordinates required.  Parse your data to comply.
     """
     has_err = False
     if isinstance(a, (list, tuple, np.ndarray)):
@@ -110,19 +149,25 @@ def n_check(a, N=3, order=True):
 
 def n_near(a, N=3, ordered=True):
     """Return the coordinates and distance to the nearest N points within
-    :  an 2D numpy array, 'a', with optional ordering of the inputs.
-    :Requires:
-    :--------
-    : a - an ndarray of uniform int or float dtype.  Extract the fields
-    :     representing the x,y coordinates before proceeding.
-    : N - number of closest points to return
-    :Returns:
-    :-------
-    :  A structured array is returned containing an ID number.  The ID number
-    :  is the ID of the points as they were read.  The array will contain
-    :  (C)losest fields and distance fields
-    :  (C0_X, C0_Y, C1_X, C1_Y, Dist0, Dist1 etc) representing coordinates
-    :  and distance to the required 'closest' points.
+      an 2D numpy array, 'a', with optional ordering of the inputs.
+
+    Requires:
+    --------
+
+    `a` : array
+        An ndarray of uniform int or float dtype.  Extract the fields
+        representing the x,y coordinates before proceeding.
+
+    `N` : number
+         Number of closest points to return
+
+    Returns:
+    -------
+      A structured array is returned containing an ID number.  The ID number
+      is the ID of the points as they were read.  The array will contain
+      (C)losest fields and distance fields
+      (C0_X, C0_Y, C1_X, C1_Y, Dist0, Dist1 etc) representing coordinates
+      and distance to the required 'closest' points.
     """
     if not (isinstance(a, (np.ndarray)) and (N > 1)):
         print("\nInput error...read the docs\n\n{}".format(n_near.__doc__))
@@ -134,7 +179,7 @@ def n_near(a, N=3, ordered=True):
               for j in ['_X', '_Y']]
     dt_near.extend(dt_new)
     dt_dist = [('Dist{}'.format(i), '<f8') for i in range(N)]
-    #dt = [('ID', '<i4')]  + dt_near + dt_dist # python 2.7
+    # dt = [('ID', '<i4')]  + dt_near + dt_dist # python 2.7
     dt = [('ID', '<i4'), *dt_near, *dt_dist]
     n_array = np.zeros((rows,), dtype=dt)
     n_array['ID'] = np.arange(rows)
@@ -180,13 +225,13 @@ def _pnts(L, B, R, T, num, as_int=True, as_recarry=False):
 def _n_near_demo():
     """Demonstrate n_near function"""
     frmt = """
-    :-----------------------------------------------------------------
-    :Closest {} points for points in an array.  Results returned as
-    :  a structured array with coordinates and distance values.
+    -----------------------------------------------------------------
+    Closest {} points for points in an array.  Results returned as
+      a structured array with coordinates and distance values.
     {} ....\n
-    :Input points... array 'a'
+    Input points... array 'a'
     {}\n
-    :output array
+    output array
     """
     vals = [[0, 0], [0, 2], [2, 2], [2, 0], [1, 1]]
     vals = [tuple(i) for i in vals]      # has to be tuples
@@ -210,9 +255,9 @@ def _n_near_demo():
 
 def _not_closer_demo():
     """Perform 'closest' analysis and produce a histogram classed using
-    :  distance bands.  The histogram can be used to produce a 2D raster
-    :  representation of the point pattern.
-    :  np.histogram2d(x, y, bins=10, range=None, normed=False, weights=None)
+      distance bands.  The histogram can be used to produce a 2D raster
+      representation of the point pattern.
+      np.histogram2d(x, y, bins=10, range=None, normed=False, weights=None)
     """
     a = np.array([[6, 79], [7, 24], [17, 11], [33, 47], [37, 46], [38, 42],
                   [46, 98], [48, 66], [49, 21], [57, 40], [71, 74], [74, 86],
@@ -228,9 +273,11 @@ def _not_closer_demo():
                                weights=e[:, -2])
     h = h.astype('int64')  # return the counts in the 10x10 cells
     return a, b, c, d, e, h
+
+
 # ---------------------------------------------------------------------
 if __name__ == "__main__":
     """Main section...   """
 #    print("Script... {}".format(script))
-    a, coords, d, n_r = _n_near_demo()
+#    a, coords, d, n_r = _n_near_demo()
 #    a, b, c, d, e, h = _not_closer_demo()
