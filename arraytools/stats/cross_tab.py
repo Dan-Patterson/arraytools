@@ -2,7 +2,7 @@
 """
 :Script:   cross_tab.py
 :Author:   Dan.Patterson@carleton.ca
-:Modified: 2017-09-29
+:Modified: 2018-03-19
 :Purpose:  Crosstabulate data
 :Notes:
 :
@@ -76,7 +76,7 @@ def crosstab(row, col, verbose=False):
     def _prn(r, c, a):
         """fancy print formatting.
         """
-        r_sze = max(max([len(i) for i in r]), 8)
+        r_sze = max(max([len(str(i)) for i in r]), 8)
         c_sze = [max(len(str(i)), 5) for i in c]
         f_0 = '{{!s:<{}}} '.format(r_sze)
         f_1 = ('{{!s:>{}}} '*len(c)).format(*c_sze)
