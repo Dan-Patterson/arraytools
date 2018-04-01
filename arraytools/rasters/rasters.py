@@ -1,28 +1,259 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: UTF-8 -*-ct
 """
 :Script:   rasters.py
 :Author:   Dan.Patterson@carleton.ca
-:Modified: 2017-12-16
+:Modified: 2018-02-13
 :Purpose:  tools for working with numpy arrays
 :Useage:
 :
+:Requires:
+:  arraytools.tools - nd2struct, stride
 :References:
-:
+: https://community.esri.com/blogs/dan_patterson/2018/01/19/
+:       combine-data-classification-from-raster-combinations
+: - combine
+: https://stackoverflow.com/questions/48035246/
+:       intersect-multiple-2d-np-arrays-for-determining-zones
+: original def find_labels(*arrs):
 :---------------------------------------------------------------------:
 """
 # ---- imports, formats, constants ----
 import sys
 from textwrap import dedent, indent
 import numpy as np
-from arraytools.tools import stride
+import tools
+from tools import nd2struct, stride
 
-ft = {'bool': lambda x: repr(x.astype('int32')),
+ft = {'bool': lambda x: repr(x.astype(np.int32)),
       'float': '{: 0.3f}'.format}
 np.set_printoptions(edgeitems=10, linewidth=80, precision=2, suppress=True,
                     threshold=100, formatter=ft)
 np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
+
+__all__ = ['combine_',      # 3D array functions
+           'check_stack',
+           'mask_stack',    # statistical functions
+           'stack_sum', 'stack_cumsum',
+           'stack_prod', 'stack_cumprod', 'stack_min', 'stack_mean',
+           'stack_median', 'stack_max', 'stack_std', 'stack_var',
+           'stack_percentile',
+           'stack_stats']
+
+
+# ---- array checks and creation --------------------------------------------
+# ---- 3D arrays for stacked operations
+#
+def check_shapes(arrs):
+    """Check the shapes of the arrays to ensure they are all equal
+    """
+    shps = [i.shape for i in arrs]
+    eq = np.all(np.array([shps[0] == i for i in shps[1:]]))
+    err = "Arrays arr not of the same shape..."
+    if not eq:
+        raise ValueError("{}\n{}".format(err, shps))
+
+
+def check_stack(arrs):
+    """Do the basic checking of the stack to ensure that a 3D array is
+    :  generated
+    """
+    err1 = "Object, structured arrays not supported, current type..."
+    err2 = "3D arrays supported current ndim..."
+    if isinstance(arrs, (list, tuple)):
+        arrs = np.array(arrs)
+    if arrs.dtype.kind in ('O', 'V'):
+        raise ValueError("{} {}".format(err1, arrs.dtype.kind))
+    if arrs.ndim != 3:
+        raise ValueError("{} {}".format(err2, arrs.ndim))
+    return arrs
+
+
+def mask_stack(arr, nodata=None):
+    """Produce masks for a 3d array"""
+    if (nodata is None) or (arr.ndim < 2) or (arr.ndim > 3):
+        print("\n...mask_stack requires a 3d array and a nodata value\n")
+        return arr
+    m = (arr[:, ...] == nodata).any(0)
+    msk = [m for i in range(arr.shape[0])]
+    msk = np.array(msk)
+    a_m = np.ma.MaskedArray(arr, mask=msk)
+    return a_m
+
+
+# ---- 3D array functions ----------------------------------------------------
+# (1) combine ----
+def combine_(*arrs, ret_classes=False):
+    """Combine arrays to produce a unique classification scheme
+    : arrs - list, tuple of arrays of the same shape
+    : ret_classes - a structured array with the class values for each array
+    :               and the last column is the new_class
+    :Notes:
+    :------
+    : You should mask any values prior to running this if you want to account
+    : for nodata values
+    :
+    :References:
+    :-----------
+    : https://stackoverflow.com/questions/48035246/
+    :       intersect-multiple-2d-np-arrays-for-determining-zones
+    : original: def find_labels(*arrs):
+    """
+    err = "\n...A list of 2D arrays, or a 3D array is required, not...{}\n"
+    check_shapes(arrs)
+    seq = [isinstance(i, (list, tuple)) for i in arrs]
+    is_seq = np.array(seq).all()
+    is_nd = [isinstance(i, np.ndarray) for i in arrs]
+    is_nd.all()
+    if is_seq:
+        indices = [np.unique(arr, return_inverse=True)[1] for arr in arrs]
+    elif is_nd:
+        if isinstance(arrs, np.ma.MaskedArray):
+            indices = [np.ma.unique(arrs[i], return_inverse=True)[1]
+                       for i in range(arrs.shape[0])]
+        else:
+            indices = [np.unique(arrs[i], return_inverse=True)[1]
+                       for i in range(len(arrs))]
+    else:
+        print(err.format(arrs))
+        return arrs
+    #
+    M = np.array([item.max()+1 for item in indices])
+    M = np.r_[1, M[:-1]]
+    strides = M.cumprod()
+    indices = np.stack(indices, axis=-1)
+    vals = (indices * strides).sum(axis=-1)
+    uniqs, cls_new = np.unique(vals, return_inverse=True)
+    combo = cls_new.reshape(arrs[0].shape)
+    if ret_classes:
+        classes = np.array([np.ravel(i) for i in arrs]).T
+        classes = np.c_[classes, cls_new]
+        classes = nd2struct(classes)
+        classes = np.unique(classes)
+        classes = classes[np.argsort(classes, order=classes.dtype.names[-1])]
+        return combo, classes
+    else:
+        return combo
+
+
+# ---- Statistics for stacked arrays (3D) ------------------------------------
+#
+def stack_percentile(arrs, q=50, nodata=None):
+    """nanpercentile for an array stack with optional nodata masked
+    :  arrs - either a list, tuple of arrays or an array with ndim=3
+    :  q - the percentile
+    :  nodata - nodata value, numeric or np.nan (will upscale integers)
+    """
+    a = check_stack(arrs)
+    if nodata is not None:
+        a = mask_stack(a, nodata=nodata)
+    nan_per = np.nanpercentile(a, q=q, axis=0)
+    return nan_per
+
+
+def stack_sum(arrs, nodata=None):
+    """see stack_stats"""
+    a = check_stack(arrs)
+    if nodata is not None:
+        a = mask_stack(a, nodata=nodata)
+    return np.nansum(a, axis=0)
+
+
+def stack_cumsum(arrs, nodata=None):
+    """see stack_stats"""
+    a = check_stack(arrs)
+    if nodata is not None:
+        a = mask_stack(a, nodata=nodata)
+    return np.nancumsum(a, axis=0)
+
+
+def stack_prod(arrs, nodata=None):
+    """see stack_stats"""
+    a = check_stack(arrs)
+    if nodata is not None:
+        a = mask_stack(a, nodata=nodata)
+    return np.nanprod(a, axis=0)
+
+
+def stack_cumprod(arrs, nodata=None):
+    """see stack_stats"""
+    a = check_stack(arrs)
+    if nodata is not None:
+        a = mask_stack(a, nodata=nodata)
+    return np.nancumprod(a, axis=0)
+
+
+def stack_min(arrs, nodata=None):
+    """see stack_stats"""
+    a = check_stack(arrs)
+    if nodata is not None:
+        a = mask_stack(a, nodata=nodata)
+    return np.nanmin(a, axis=0)
+
+
+def stack_mean(arrs, nodata=None):
+    """see stack_stats"""
+    a = check_stack(arrs)
+    if nodata is not None:
+        a = mask_stack(a, nodata=nodata)
+    return np.nanmean(a, axis=0)
+
+
+def stack_median(arrs, nodata=None):
+    """see stack_stats"""
+    a = check_stack(arrs)
+    if nodata is not None:
+        a = mask_stack(a, nodata=nodata)
+    return np.nanmedian(a, axis=0)
+
+
+def stack_max(arrs, nodata=None):
+    """see stack_stats"""
+    a = check_stack(arrs)
+    if nodata is not None:
+        a = mask_stack(a, nodata=nodata)
+    return np.nanmax(a, axis=0)
+
+
+def stack_std(arrs, nodata=None):
+    """see stack_stats"""
+    a = check_stack(arrs)
+    if nodata is not None:
+        a = mask_stack(a, nodata=nodata)
+    return np.nanstd(a, axis=0)
+
+
+def stack_var(arrs, nodata=None):
+    """see stack_stats"""
+    a = check_stack(arrs)
+    if nodata is not None:
+        a = mask_stack(a, nodata=nodata)
+    return np.nanvar(a, axis=0)
+
+
+def stack_stats(arrs, ax=0, nodata=None):
+    """All statistics for arrs
+    :
+    :  arrs - either a list, tuple of arrays or an array with ndim=3
+    :  ax - axis, either, 0 (by band) or (1,2) to get a single value for
+    :       each band
+    :  nodata - nodata value, numeric or np.nan (will upscale integers)
+    """
+    arrs = check_stack(arrs)
+    a_m = mask_stack(arrs, nodata=nodata)
+    nan_sum = np.nansum(a_m, axis=ax)
+    nan_min = np.nanmin(a_m, axis=ax)
+    nan_mean = np.nanmean(a_m, axis=ax)
+    nan_median = np.nanmean(a_m, axis=ax)
+    nan_max = np.nanmax(a_m, axis=ax)
+    nan_std = np.nanstd(a_m, axis=ax)
+    nan_var = np.nanvar(a_m, axis=ax)
+    stats = [nan_sum, nan_min, nan_mean, nan_median, nan_max, nan_std, nan_var]
+    if len(ax) == 1:
+        nan_cumsum = np.nancumsum(a_m, axis=ax)
+        stats.append(nan_cumsum)
+    return stats
 
 
 def expand_zone(a, zone=None, win=2):
@@ -227,6 +458,43 @@ def scale_up(a, x=2, y=2, num_z=None):
         z3 = np.dstack(d)
         z3 = np.rollaxis(z3, 2, 0)
     return z3
+
+
+def _demo_combine():
+    """demo combine
+    dt = [('a', '<i8'), ('b', '<i8'), ('c', '<i8'), ('vals', '<i8')]
+    """
+    a = np.array([[0, 0, 0, 4, 4, 4, 1, 1, 1],
+                  [0, 0, 0, 4, 4, 4, 1, 1, 1],
+                  [0, 0, 0, 4, 4, 4, 1, 1, 1],
+                  [2, 2, 2, 1, 1, 1, 2, 2, 2],
+                  [2, 2, 2, 1, 1, 1, 2, 2, 2],
+                  [2, 2, 2, 1, 1, 1, 2, 2, 2],
+                  [1, 1, 1, 4, 4, 4, 0, 0, 0],
+                  [1, 1, 1, 4, 4, 4, 0, 0, 0],
+                  [1, 1, 1, 4, 4, 4, 0, 0, 0]])
+
+    b = np.array([[0, 0, 0, 1, 1, 1, 2, 2, 2],
+                  [0, 0, 0, 1, 1, 1, 2, 2, 2],
+                  [0, 0, 0, 1, 1, 1, 2, 2, 2],
+                  [3, 3, 3, 4, 4, 4, 5, 5, 5],
+                  [3, 3, 3, 4, 4, 4, 5, 5, 5],
+                  [3, 3, 3, 4, 4, 4, 5, 5, 5],
+                  [0, 0, 0, 1, 1, 1, 2, 2, 2],
+                  [0, 0, 0, 1, 1, 1, 2, 2, 2],
+                  [0, 0, 0, 1, 1, 1, 2, 2, 2]])
+
+    c = np.array([[0, 0, 0, 3, 3, 3, 0, 0, 0],
+                  [0, 0, 0, 3, 3, 3, 0, 0, 0],
+                  [0, 0, 0, 3, 3, 3, 0, 0, 0],
+                  [1, 1, 1, 4, 4, 4, 1, 1, 1],
+                  [1, 1, 1, 4, 4, 4, 1, 1, 1],
+                  [1, 1, 1, 4, 4, 4, 1, 1, 1],
+                  [2, 2, 2, 5, 5, 5, 2, 2, 2],
+                  [2, 2, 2, 5, 5, 5, 2, 2, 2],
+                  [2, 2, 2, 5, 5, 5, 2, 2, 2]])
+#    ret = combine_(*[a, b, c])
+    return a, b, c  #, ret
 
 
 def _demo():

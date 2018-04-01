@@ -243,12 +243,13 @@ def _square_(arr, step_size, r):
     # ---- end ----
 
 
-def _demo(n=2, img=False):
+def _demo(n, img=False):
     np.random.RandomState(1)
     # N = 2**n + 1
     low = 0
     high = 1.0
-    c_pnts = [.25, .75, .5, 1.0]
+#    c_pnts = [.25, .75, .5, 1.0]
+    c_pnts = [.25, 1.0, .25, 1.0]
     a = d_s(twoPow=n, low=low, high=high, cols=1, rows=1, corner=c_pnts,
             r=0, img=img)
     return a
@@ -262,4 +263,4 @@ if __name__ == "__main__":
     : - run the _demo
     """
 #    print("Script... {}".format(script))
-    a = _demo(n=3, img=False)  # img... show plot if True
+    a = _demo(n=1, img=True)  # img... show plot if True
