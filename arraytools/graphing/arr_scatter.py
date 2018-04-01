@@ -60,7 +60,8 @@ def scatter_params(plt, fig, ax, title="Title", lbls=['X', 'Y']):
     return plt, fig, ax
 
 
-# noinspection PyDefaultArgument,PyShadowingNames,PyShadowingNames,PyShadowingNames,PyShadowingNames
+# noinspection PyDefaultArgument,PyShadowingNames,PyShadowingNames,
+# PyShadowingNames,PyShadowingNames
 def plot_pnts_(pnts, title='Title', r_c=False, lbls=['X', 'Y'], params=True):
     """Plot points for Nx2 array representing x,y or row,col data.
     :Requires:  see _params() to specify special parameters
@@ -106,6 +107,35 @@ def plot_pnts_(pnts, title='Title', r_c=False, lbls=['X', 'Y'], params=True):
     return plt, ax
 
 
+# ----------------------------------------------------------------------
+# .... running script or testing code section
+def _tool():
+    """run when script is from a tool
+    """
+    in_fc = sys.argv[1]
+    group_by = str(sys.argv[2])
+    x_fld = int(sys.argv[3])
+    y_fld = str(sys.argv[4])
+#    out_type = str(sys.argv[5])
+#    out_fc = sys.argv[6]
+    return in_fc, x_fld, y_fld
+
+
+gdb_pth = "/".join(script.split("/")[:-2]) + "/Data/Point_tools.gdb"
+
+if len(sys.argv) == 1:
+    testing = True
+    in_fc = gdb_pth + r"/r_sorted"
+    group_by = 'Group_'
+    k_factor = 3
+    hull_type = 'concave'  # 'convex'
+    out_type = 'Polyline'
+    out_fc = gdb_pth + r"/r_11"
+else:
+    testing = False
+    in_fc, group_by, k_factor, hull_type, out_type, out_fc = _tool()
+
+
 # noinspection PyShadowingNames,PyShadowingNames,PyShadowingNames
 def _demo():
     """Plot 20 points which have a minimum 1 unit point spacing
@@ -125,4 +155,4 @@ def _demo():
 if __name__ == "__main__":
     """Main section...   """
 #    print("Script... {}".format(script))
-    a, plt, ax = _demo()
+#    a, plt, ax = _demo()
