@@ -13,7 +13,7 @@
 :       recarray-by-column
 :---------------------------------------------------------------------:
 """
-#---- imports, formats, constants ----
+# ---- imports, formats, constants ------------------------------------------
 
 import sys
 import numpy as np
@@ -27,8 +27,9 @@ np.ma.masked_print_option.set_display('-')
 
 script = sys.argv[0]
 
-#---- functions ----
 
+# ---- functions ------------------------------------------------------------
+#
 def not_closer(a, min_d=1, ordered=False):
     """Find the points that are separated by a distance greater than
     :  min_d.  This ensures a degree of point spacing
@@ -52,6 +53,7 @@ def not_closer(a, min_d=1, ordered=False):
     c = ~(np.triu(d <= min_d, 1)).any(0)
     b = a[c]
     return b, c, d
+
 
 def n_spaced(L=0, B=0, R=10, T=10, min_space=1, num=10, verbose=True):
     """Produce num points within the bounds specified by the extent (L,B,R,T)
@@ -79,7 +81,7 @@ def n_spaced(L=0, B=0, R=10, T=10, min_space=1, num=10, verbose=True):
         return a[case]
     #
     cnt = 1
-    n = num * 2 # check double the number required as a check
+    n = num * 2  # check double the number required as a check
     result = 0
     frmt = "Examined: {}  Found: {}  Need: {}"
     a0 = []
@@ -102,18 +104,19 @@ def n_spaced(L=0, B=0, R=10, T=10, min_space=1, num=10, verbose=True):
 
 def _demo():
     """ """
-    #L, R, B, T = [300000, 300100, 5025000, 5025100]
+    # L, R, B, T = [300000, 300100, 5025000, 5025100]
     L, B, R, T = [1, 1, 10, 10]
     tol = 1
     N = 10
     a = n_spaced(L, B, R, T, tol, num=N, verbose=True)
     return a
 
+
 if __name__ == "__main__":
     """ run the demos, comment out what you don't want"""
-    #print("Script... {}".format(script))
+    # print("Script... {}".format(script))
     a = np.array([[0, 0], [0, 2], [2, 2], [2, 0]], dtype='float64')
     b = _demo()
 
-#z = np.zeros((3,), dtype=[('A', 'int', (2,)), ('B', 'float')])
-#z["A"] = np.arange(6).reshape(3,2)
+# z = np.zeros((3,), dtype=[('A', 'int', (2,)), ('B', 'float')])
+# z["A"] = np.arange(6).reshape(3,2)

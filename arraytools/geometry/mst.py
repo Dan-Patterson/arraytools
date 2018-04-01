@@ -2,10 +2,10 @@
 """
 :Script:   mst.py
 :Author:   Dan.Patterson@carleton.ca
-:Modified: 2017-01-27
+:Modified: 2017-12-31
 :
 :Purpose: Produce a spanning tree from a point set.  I have yet to confirm
-:  whether it constitutes a minimum spanning tree, since the implementation 
+:  whether it constitutes a minimum spanning tree, since the implementation
 :  doesn't specify whether Prim's algorithm is being used (see ref. 2)
 :
 :References:
@@ -37,7 +37,7 @@
 :     np.linalg.norm(a_srt[1:] - a_srt[:-1], axis=1)
 :     array([ 8.0,  5.0,  4.0,  5.0,  8.0])
 :     np.sum(np.linalg.norm(a_srt[1:] - a_srt[:-1], axis=1)) => 30.0...
-:  
+:
 :(3) Near results...
 :------------
 :  coords, dist, n_array = n_near(s, N=2)
@@ -47,7 +47,7 @@
 :       (2,  3.0, 4.0,  7.0, 4.0,   0.0, 0.0,  4.0,  5.0),
 :       (3,  7.0, 4.0,  3.0, 4.0,  10.0, 8.0,  4.0,  5.0),
 :       (4, 10.0, 8.0,  7.0, 4.0,  10.0, 0.0,  5.0,  8.0),
-:       (5, 10.0, 0.0,  7.0, 4.0,  10.0, 8.0,  5.0,  8.0)], 
+:       (5, 10.0, 0.0,  7.0, 4.0,  10.0, 8.0,  5.0,  8.0)],
 :      dtype=[('ID', '<i4'),
 :             ('Xo', '<f8'), ('Yo', '<f8'),
 :             ('C0_X', '<f8'), ('C0_Y', '<f8'),
@@ -55,10 +55,10 @@
 :             ('Dist0', '<f8'), ('Dist1', '<f8')])
 :  Connections
 :   o_d    array([(0, 2, 5.0),
-:                 (2, 3, 4.0), 
-:                 (2, 1, 5.0), 
-:                 (3, 4, 5.0), 
-:                 (3, 5, 5.0)], 
+:                 (2, 3, 4.0),
+:                 (2, 1, 5.0),
+:                 (3, 4, 5.0),
+:                 (3, 5, 5.0)],
 :                 dtype=[('Orig', '<i4'), ('Dest', '<i4'), ('Dist', '<f8')])
 :
 :  a[o_d['Orig']]     a[o_d['Dest']]
@@ -98,11 +98,11 @@
 :  a_srt[np.argsort(d[0])]
 :    array([[3, 4], [ 0, 8], [7, 4], [10, 0], [10, 8], [0, 0]])
 :
-:  d[0][np.argsort(d[0])]  => array([ 5.0, 8.0, 8.1, 10.0, 12.8, inf])    
+:  d[0][np.argsort(d[0])]  => array([ 5.0, 8.0, 8.1, 10.0, 12.8, inf])
 : ---------------------------------------------------------------------:
 """
 #---- imports, formats, constants ----
-# 
+#
 
 import sys
 import numpy as np
@@ -125,27 +125,26 @@ def dist_arr(a):
     """Minimum spanning tree prep... see main header
     : paths from given data set...
     """
-    #idx = np.lexsort(a.T)  # sort y, then x
-    idx= np.lexsort((a[:,1], a[:,0]))  # sort X, then Y
-    #idx= np.lexsort((a[:,0], a[:,1]))  # sort Y, then X
-    a_srt = a[idx,:]
+    idx = np.lexsort((a[:, 1], a[:, 0]))  # sort X, then Y
+    # idx= np.lexsort((a[:, 0], a[:, 1]))  # sort Y, then X
+    a_srt = a[idx, :]
     d = _e_dist(a_srt)
     frmt = """\n    {}\n    :Input array...\n    {}\n\n    :Sorted array...
     {}\n\n    :Distance...\n    {}
     """
-    args = [dist_arr.__doc__, a, a_srt, d ]  # d.astype('int')]
+    args = [dist_arr.__doc__, a, a_srt, d]  # d.astype('int')]
     print(dedent(frmt).format(*args))
     return idx, a_srt, d
-    
+
 
 def _e_dist(a):
-    """Return a 2D square-form euclidean distance matrix.  For other 
+    """Return a 2D square-form euclidean distance matrix.  For other
     :  dimensions, use e_dist in ein_geom.py"""
     b = a.reshape(np.prod(a.shape[:-1]), 1, a.shape[-1])
     diff = a - b
     d = np.sqrt(np.einsum('ijk,ijk->ij', diff, diff)).squeeze()
-    #d = np.triu(d)
-    return d 
+    # d = np.triu(d)
+    return d
 
 
 def mst(W, copy_W=True):
@@ -160,18 +159,18 @@ def mst(W, copy_W=True):
     :  pairs - the pair of nodes that form the edges
     """
     if copy_W:
-        W = W.copy() 
+        W = W.copy()
     if W.shape[0] != W.shape[1]:
         raise ValueError("W needs to be square matrix of edge weights")
     Np = W.shape[0]
     pairs = []
-    pnts_seen = [0]  # Add the first point                    
+    pnts_seen = [0]  # Add the first point
     n_seen = 1
     # exclude self connections by assigning inf to the diagonal
     diag = np.arange(Np)
     W[diag, diag] = np.inf
-    # 
-    while n_seen != Np:                                     
+    #
+    while n_seen != Np:
         new_edge = np.argmin(W[pnts_seen], axis=None)
         new_edge = divmod(new_edge, Np)
         new_edge = [pnts_seen[new_edge[0]], new_edge[1]]
@@ -181,8 +180,8 @@ def mst(W, copy_W=True):
         W[new_edge[1], pnts_seen] = np.inf
         n_seen += 1
     return np.vstack(pairs)
- 
- 
+
+
 def plot_mst(a, pairs):
     """plot minimum spanning tree test """
     plt.scatter(a[:, 0], a[:, 1])
@@ -192,12 +191,13 @@ def plot_mst(a, pairs):
         i, j = pair
         plt.plot([a[i, 0], a[j, 0]], [a[i, 1], a[j, 1]], c='r')
     lbl = np.arange(len(a))
-    for label, xpt, ypt in zip(lbl, a[:,0], a[:,1]):
-        plt.annotate(label, xy=(xpt, ypt), xytext=(2,2), size=8,
+    for label, xpt, ypt in zip(lbl, a[:, 0], a[:, 1]):
+        plt.annotate(label, xy=(xpt, ypt), xytext=(2, 2), size=8,
                      textcoords='offset points',
-                     ha='left', va='bottom') 
+                     ha='left', va='bottom')
     plt.show()
-    plt.close()
+    # plt.close()
+
 
 def connect(a, dist_arr, edges):
     """Return the full spanning tree, with points, connections and distance
@@ -220,11 +220,10 @@ def connect(a, dist_arr, edges):
 # ---------------------------------------------------------------------
 if __name__ == "__main__":
     """Main section...   """
-    #print("Script... {}".format(script))
+    # print("Script... {}".format(script))
     #    a = np.random.randint(1, 10, size=(10,2))
-    a = np.array([[0, 0], [0,8], [10, 8],  [10,0], [3, 4], [7,4]])
+    a = np.array([[0, 0], [0, 8], [10, 8],  [10, 0], [3, 4], [7, 4]])
     idx, a_srt, d = dist_arr(a)     # return distance array and sorted pnts
     pairs = mst(d)                  # the orig-dest pairs for the mst
     plot_mst(a_srt, pairs)          # uncomment to plot
     o_d = connect(a_srt, d, pairs)  # produce an o-d structured array
-

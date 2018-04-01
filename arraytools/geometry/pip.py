@@ -2,7 +2,7 @@
 """
 :Script:   pip.py
 :Author:   Dan.Patterson@carleton.ca
-:Modified: 2017-10-06
+:Modified: 2017-12-31
 :Purpose:
 :  Incarnations of point in polygon searches.  Includes, points in extent and
 :  crossing number.
@@ -46,7 +46,7 @@ import numpy as np
 import arcpy
 
 ft = {'bool': lambda x: repr(x.astype('int32')),
-      'float': '{: 0.3f}'.format}
+      'float_kind': '{: 0.3f}'.format}
 
 np.set_printoptions(edgeitems=10, linewidth=80, precision=2, suppress=True,
                     threshold=100, formatter=ft)

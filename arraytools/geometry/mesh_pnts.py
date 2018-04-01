@@ -14,7 +14,7 @@ from textwrap import dedent
 
 
 ft = {'bool': lambda x: repr(x.astype('int32')),
-      'float': '{: 0.3f}'.format}
+      'float_kind': '{: 0.3f}'.format}
 
 np.set_printoptions(edgeitems=10, linewidth=80, precision=2, suppress=True,
                     threshold=100, formatter=ft)

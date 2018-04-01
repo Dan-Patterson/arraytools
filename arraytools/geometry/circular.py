@@ -2,7 +2,7 @@
 """
 :Script:   circular.py
 :Author:   Dan.Patterson@carleton.ca
-:Modified: 2017-02-14
+:Modified: 2017-12-31
 :Purpose:  See the documentation for the functions
 :Notes:
 :
@@ -17,7 +17,7 @@ import numpy as np
 
 
 ft = {'bool': lambda x: repr(x.astype('int32')),
-      'float': '{: 0.3f}'.format}
+      'float_kind': '{: 0.3f}'.format}
 np.set_printoptions(edgeitems=10, linewidth=80, precision=2,
                     suppress=True, threshold=100, formatter=ft)
 
@@ -59,14 +59,16 @@ def plot_(pnts):
 
 def rot_matrix(angle=0, nm_3=False):
     """Return the rotation matrix given points and rotation angle
-    :Requires:
-    :--------
-    :  - rotation angle in degrees and whether the matrix will be used with
-    :    homogenous coordinates
-    :Returns:
-    :-------
-    :  - rot_m - rotation matrix for 2D transform
-    :  - rotate around  translate(-x, -y).rotate(theta).translate(x, y)
+
+    Requires:
+    --------
+      - rotation angle in degrees and whether the matrix will be used with
+        homogenous coordinates
+
+    Returns:
+    -------
+      - rot_m - rotation matrix for 2D transform
+      - rotate around  translate(-x, -y).rotate(theta).translate(x, y)
     """
     rad = np.deg2rad(angle)
     c = np.cos(rad)
@@ -81,14 +83,19 @@ def rot_matrix(angle=0, nm_3=False):
 
 def _arc(radius=100, start=0, stop=1, step=0.1, xc=0.0, yc=0.0):
     """Create an arc from a specified radius, centre and start/stop angles
-    :Requires:
-    :---------
-    :  radius = cirle radius from which the arc is obtained
-    :  start, stop, incr = angles in degrees
-    :  xc, yc - center coordinates in projected units
-    :Returns:
-    :--------
-    :  points on the arc
+
+    Requires:
+    ---------
+    `radius` : number
+        cirle radius from which the arc is obtained
+    `start`, `stop`, `incr` : numbers
+        angles in degrees
+    `xc`, `yc` : number
+        center coordinates in projected units
+
+    Returns:
+    --------
+      points on the arc
     """
     start, stop = sorted([start, stop])
     angle = np.deg2rad(np.arange(start, stop, step))
@@ -100,27 +107,35 @@ def _arc(radius=100, start=0, stop=1, step=0.1, xc=0.0, yc=0.0):
     return p_lst
 
 
-def _circle(radius=100, clockwise=True, theta=1, rot=0.0, scale=1, xc=0.0, yc=0.0):
+def _circle(radius=100, clockwise=True, theta=1, rot=0.0, scale=1,
+            xc=0.0, yc=0.0):
     """Produce a circle/ellipse depending on parameters.
-    :Requires
-    :--------
-    :  radius - in projected units
-    :  clockwise - True for clockwise (outer rings),
-    :            - False for counter-clockwise (for inner rings)
-    :  theta -  angle spacing
-    :     If theta=1, angles between -180 to 180, are returned in 1 degree
-    :     increments. The endpoint is excluded.
-    :  rot - rotation angle in degrees... used if scaling is not equal to 1
-    :  scale - for ellipses, change the scale to <1 or > 1. The resultant
-    :     y-values will favour the x or y-axis depending on the scaling.
-    :Returns
-    :-------
-    :  list of coordinates for the circle/ellipse
-    :Notes:
-    :------
-    : You can also use np.linspace if you want to specify point numbers.
-    : np.linspace(start, stop, num=50, endpoint=True, retstep=False)
-    : np.linspace(-180, 180, num=720, endpoint=True, retstep=False)
+
+    Requires
+    --------
+    `radius` : number
+        in projected units
+    `clockwise` : boolean
+        True for clockwise (outer rings), False for counter-clockwise
+        (for inner rings)
+    `theta` : number
+        Angle spacing. If theta=1, angles between -180 to 180, are returned
+        in 1 degree increments. The endpoint is excluded.
+    `rot` : number
+         rotation angle in degrees... used if scaling is not equal to 1
+    `scale` : number
+         For ellipses, change the scale to <1 or > 1. The resultant
+         y-values will favour the x or y-axis depending on the scaling.
+
+    Returns:
+    -------
+      list of coordinates for the circle/ellipse
+
+    Notes:
+    ------
+     You can also use np.linspace if you want to specify point numbers.
+     np.linspace(start, stop, num=50, endpoint=True, retstep=False)
+     np.linspace(-180, 180, num=720, endpoint=True, retstep=False)
     """
     if clockwise:
         angles = np.deg2rad(np.arange(180.0, -180.0-theta, step=-theta))
@@ -138,16 +153,22 @@ def _circle(radius=100, clockwise=True, theta=1, rot=0.0, scale=1, xc=0.0, yc=0.
 
 def arc_sector(outer=10, inner=9, start=1, stop=6, step=0.1):
     """Form an arc sector bounded by a distance specified by two radii
-    : outer - outer radius of the arc sector
-    : inner - inner radius
-    : start - start angle of the arc
-    : stop - end angle of the arc
-    : step - the angle densification step
-    :Requires:
-    :--------
-    :  _arc - this def is used to produce the arcs, the top arc is rotated
-    :     clockwise and the bottom remains in the order produced to help
-    :     form closed-polygons.
+
+    `outer` : number
+        outer radius of the arc sector
+    `inner` : number
+        inner radius
+    `start` : number
+        start angle of the arc
+    `stop` : number
+        end angle of the arc
+    `step` : number
+        the angle densification step
+
+    Requires:
+    --------
+      `_arc` is used to produce the arcs, the top arc is rotated clockwise and
+      the bottom remains in the order produced to help form closed-polygons.
     """
     s_s = [start, stop]
     s_s.sort()
@@ -164,19 +185,19 @@ def arc_sector(outer=10, inner=9, start=1, stop=6, step=0.1):
 
 def buffer_ring(outer=100, inner=0, theta=10, rot=0, scale=1, xc=0.0, yc=0.0):
     """Create a multi-ring buffer around a center point (xc, yc)
-    : outer - outer radius
-    : inner - inner radius
-    : theta - angles to use to densify the circle...
-    :    - 360+ for circle
-    :    - 120 for triangle
-    :    - 90  for square
-    :    - 72  for pentagon
-    :    - 60  for hexagon
-    :    - 45  for octagon
-    :    - etc
-    : rot - rotation angle, used for non-circles
-    : scale - used to scale the y-coordinates
-    :
+     outer - outer radius
+     inner - inner radius
+     theta - angles to use to densify the circle...
+        - 360+ for circle
+        - 120 for triangle
+        - 90  for square
+        - 72  for pentagon
+        - 60  for hexagon
+        - 45  for octagon
+        - etc
+     rot - rotation angle, used for non-circles
+     scale - used to scale the y-coordinates
+
     """
     top = _circle(outer, clockwise=True, theta=theta, rot=rot,
                   scale=scale, xc=xc, yc=yc)
@@ -193,10 +214,10 @@ def buffer_ring(outer=100, inner=0, theta=10, rot=0, scale=1, xc=0.0, yc=0.0):
 
 def multiring_buffer_demo():
     """Do a multiring buffer
-    : rads - buffer radii
-    : theta - angle density... 1 for 360 ngon, 120 for triangle
-    : rot - rotation angle for ellipses and other shapes
-    : scale - scale the y-values to produce ellipses
+     rads - buffer radii
+     theta - angle density... 1 for 360 ngon, 120 for triangle
+     rot - rotation angle for ellipses and other shapes
+     scale - scale the y-values to produce ellipses
     """
     buffers = []
     radii = [10, 20, 40, 80, 100]  # , 40, 60, 100]
