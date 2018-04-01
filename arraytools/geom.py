@@ -1,20 +1,30 @@
 # -*- coding: UTF-8 -*-
 """
-:Script:   geom.py
-:Author:   Dan_Patterson@carleton.ca
-:Modified: 2018-01-15
-:Purpose:  tools for working with numpy arrays
-:Functions: see __all__ for a complete listing
-:Notes:
-:-----
-: - do not rely on the OBJECTID field for anything
-:    http://support.esri.com/en/technical-article/000010834
-:
-:References:
-:----------
-:  See ein_geom.py for full details and examples
-:  https://en.wikipedia.org/wiki/Centroid#Centroid_of_polygon
-:  https://iliauk.com/2016/03/02/centroids-and-centres-numpy-r/
+geom
+====
+
+Script :   geom.py
+
+Author :   Dan_Patterson@carleton.ca
+
+Modified : 2018-03-28
+
+Purpose :  tools for working with numpy arrays
+
+Functions: see __all__ for a complete listing
+
+Notes:
+-----
+- do not rely on the OBJECTID field for anything
+  http://support.esri.com/en/technical-article/000010834
+
+References:
+----------
+See ein_geom.py for full details and examples
+
+  https://en.wikipedia.org/wiki/Centroid#Centroid_of_polygon
+
+  https://iliauk.com/2016/03/02/centroids-and-centres-numpy-r/
 :---------------------------------------------------------------------:
 """
 # ---- imports, formats, constants ----
@@ -57,9 +67,9 @@ __all__ = ['_flat_', '_unpack',
 # ---- array functions -------------------------------------------------------
 #
 def _flat_(a_list, flat_list=None):
-    """Change the isinstance as appropriate
-    :  Flatten an object using recursion
-    :  see: itertools.chain() for an alternate method of flattening.
+    """Change the isinstance as appropriate.  Flatten an object using recursion
+
+    see: itertools.chain() for an alternate method of flattening.
     """
     if flat_list is None:
         flat_list = []
@@ -73,7 +83,7 @@ def _flat_(a_list, flat_list=None):
 
 def _unpack(iterable, param='__iter__'):
     """Unpack an iterable based on the param(eter) condition using recursion.
-    :From 'unpack' in _common.py
+    From `unpack` in `_common.py`
     """
     xy = []
     for x in iterable:
@@ -88,8 +98,9 @@ def _unpack(iterable, param='__iter__'):
 #
 def _new_view_(a):
     """View a structured array x,y coordinates as an ndarray to facilitate
-    :some array calculations.
-    :NOTE:  see _view_ for the same functionality
+    some array calculations.
+
+    NOTE:  see _view_ for the same functionality
     """
     if (len(a.dtype) > 1):
         shp = a.shape[0]
@@ -99,31 +110,35 @@ def _new_view_(a):
 
 
 def _view_(a):
-    """return a view of the array using the dtype and length"""
+    """Return a view of the array using the dtype and length"""
     return a.view((a.dtype[0], len(a.dtype.names)))
 
 
 def _reshape_(a):
     """Reshape arrays, structured or recarrays of coordinates to a 2D ndarray.
-    :Notes:
-    :-----
-    :(1) The length of the dtype is checked. Only object ('O') and arrays with
-    :  a uniform dtype return 0.  Structured and recarrays will yield 1 or >.
-    :
-    :(2) dtypes are stripped and the array reshaped
-    :  a = np.array([(341000., 5021000.), (341000., 5022000.),
-    :                (342000., 5022000.), (341000., 5021000.)],
-    :               dtype=[('X', '<f8'), ('Y', '<f8')])
-    :  becomes...
-    :  a = np.array([[  341000.,  5021000.], [  341000.,  5022000.],
-    :                [  342000.,  5022000.], [  341000.,  5021000.]])
-    :  a.dtype = dtype('float64')
-    :
-    :(3) 3D arrays are collapsed to 2D
-    :  a.shape = (2, 5, 2) => np.product(a.shape[:-1], 2) => (10, 2)
-    :
-    :(4) Object arrays are processed object by object but assumed to be of a
-    :  common dtype within, as would be expected from a gis package.
+
+    Notes:
+    -----
+
+    1. The length of the dtype is checked. Only object ('O') and arrays with
+       a uniform dtype return 0.  Structured and recarrays will yield 1 or >.
+
+    2. dtypes are stripped and the array reshaped
+    ::
+        a = np.array([(341000., 5021000.), (341000., 5022000.),
+                      (342000., 5022000.), (341000., 5021000.)],
+                     dtype=[('X', '<f8'), ('Y', '<f8')])
+        becomes...
+        a = np.array([[  341000.,  5021000.], [  341000.,  5022000.],
+                      [  342000.,  5022000.], [  341000.,  5021000.]])
+        a.dtype = dtype('float64')
+
+    3. 3D arrays are collapsed to 2D
+    ::
+        a.shape = (2, 5, 2) => np.product(a.shape[:-1], 2) => (10, 2)
+
+    4. Object arrays are processed object by object but assumed to be of a
+       common dtype within, as would be expected from a gis package.
     """
     if not isinstance(a, (np.ndarray)):
         a = np.asanyarray(a)
@@ -161,7 +176,6 @@ def _reshape_(a):
 # ---- extent, mins and maxs ------------------------------------------------
 def _min(a):
     """Array minimums
-    :
     """
     a = _reshape_(a)
     if (a.dtype.kind == 'O') or (len(a.shape) > 2):
@@ -173,7 +187,6 @@ def _min(a):
 
 def _max(a):
     """Array maximums
-    :
     """
     a = _reshape_(a)
     if (a.dtype.kind == 'O') or (len(a.shape) > 2):
@@ -185,7 +198,6 @@ def _max(a):
 
 def _extent(a):
     """Array extent values
-    :
     """
     a = _reshape_(a)
     if isinstance(a, (list, tuple)):
@@ -203,7 +215,7 @@ def _extent(a):
 # ---- centers --------------------------------------------------------------
 def _center(a, remove_dup=True):
     """Return the center of an array. If the array represents a polygon, then
-    :  a check is made for the duplicate first and last point to remove one.
+    a check is made for the duplicate first and last point to remove one.
     """
     if remove_dup:
         if np.all(a[0] == a[-1]):
@@ -213,7 +225,7 @@ def _center(a, remove_dup=True):
 
 def _centroid(a):
     """Return the centroid of a closed polygon.
-    : e_area required
+    `e_area` required
     """
     x, y = a.T
     t = ((x[:-1] * y[1:]) - (y[:-1] * x[1:]))
@@ -225,7 +237,6 @@ def _centroid(a):
 
 def centroids(a, remove_dup=True):
     """batch centroids (ie _centroid)
-    :
     """
     a = np.asarray(a)
     if a.dtype == 'O':
@@ -241,7 +252,6 @@ def centroids(a, remove_dup=True):
 
 def centers(a, remove_dup=True):
     """batch centres (ie _center)
-    :
     """
     a = np.asarray(a)
     if a.dtype == 'O':
@@ -259,15 +269,22 @@ def centers(a, remove_dup=True):
 # ----
 def e_area(a, b=None):
     """Area calculation, using einsum.
-    :  Some may consider this overkill, but consider a huge list of polygons,
-    :  many multipart, many with holes and even multiple version therein.
-    :Requires:
-    :--------
-    :  a - either a 2D+ array of coordinates or arrays of x, y values
-    :  b - if a < 2D, then the y values need to be supplied
-    :  Outer rings are ordered clockwise, inner holes are counter-clockwise
-    :Notes: see ein_geom.py for examples
-    :-----------------------------------------------------------------------
+
+    Some may consider this overkill, but consider a huge list of polygons,
+    many multipart, many with holes and even multiple version therein.
+
+    Requires:
+    --------
+    `a` : array
+        Either a 2D+ array of coordinates or arrays of x, y values
+    `b` : array, optional
+        If a < 2D, then the y values need to be supplied
+    Outer rings are ordered clockwise, inner holes are counter-clockwise
+
+    Notes:
+    -----
+        See ein_geom.py for examples
+
     """
     a = np.asanyarray(a)
     if b is None:
@@ -287,8 +304,10 @@ def e_area(a, b=None):
 
 def e_dist(a, b, metric='euclidean'):
     """Distance calculation for 1D, 2D and 3D points using einsum
-    : a, b   - list, tuple, array in 1,2 or 3D form
-    : metric - euclidean ('e','eu'...), sqeuclidean ('s','sq'...),
+    `a`, `b` : array like
+        Inputs, list, tuple, array in 1,2 or 3D form
+    `metric : string
+        euclidean ('e','eu'...), sqeuclidean ('s','sq'...),
     :-----------------------------------------------------------------------
     """
     a = np.asarray(a)
@@ -311,15 +330,21 @@ def e_dist(a, b, metric='euclidean'):
 
 def e_leng(a):
     """Length/distance between points in an array using einsum
-    : Inputs
-    :   a list/array coordinate pairs, with ndim = 3 and the
-    :   Minimum shape = (1,2,2), eg. (1,4,2) for a single line of 4 pairs
-    :   The minimum input needed is a pair, a sequence of pairs can be used.
-    : Returns
-    :   length - the total length/distance formed by the points
-    :   d_leng - the distances between points forming the array
-    :          - (40.0, [array([[ 10.,  10.,  10.,  10.]])])
-    :-----------------------------------------------------------------------
+    Requires:
+    --------
+        A list/array coordinate pairs, with ndim = 3 and the minimum
+        shape = (1,2,2), eg. (1,4,2) for a single line of 4 pairs
+
+        The minimum input needed is a pair, a sequence of pairs can be used.
+    Returns:
+    -------
+    `length` : float
+        The total length/distance formed by the points
+    `d_leng` : float
+        The distances between points forming the array
+
+        (40.0, [array([[ 10.,  10.,  10.,  10.]])])
+
     """
     #
 #    d_leng = 0.0
@@ -360,10 +385,13 @@ def e_leng(a):
 #
 def areas(a):
     """Calls e_area to calculate areas for many types of nested objects.
-    :  This would include object arrays, list of lists and similar constructs.
-    :  Each part is considered separately.
-    :Returns:
-    :  A list with one or more areas.
+
+    This would include object arrays, list of lists and similar constructs.
+    Each part is considered separately.
+
+    Returns:
+    -------
+        A list with one or more areas.
     """
     a = np.asarray(a)
     if a.dtype == 'O':
@@ -379,10 +407,12 @@ def areas(a):
 
 def lengths(a, prn=False):
     """Calls e_leng to calculate lengths for many types of nested objects.
-    :  This would include object arrays, list of lists and similar constructs.
-    :  Each part is considered separately.
-    :Returns:
-    :  A list with one or more lengths. prn=True for optional printing
+    This would include object arrays, list of lists and similar constructs.
+    Each part is considered separately.
+
+    Returns:
+    -------
+        A list with one or more lengths. `prn=True` for optional printing.
     """
     def _prn_(a_s):
         """optional result printing"""
@@ -413,7 +443,9 @@ def lengths(a, prn=False):
 
 def total_length(a):
     """Just return total length from 'length' above
-    :Returns: list of array(s) containing the total length for each object
+    Returns:
+    -------
+        List of array(s) containing the total length for each object
     """
     a_s = lengths(a)
     result = [i[0] for i in a_s]
@@ -422,7 +454,9 @@ def total_length(a):
 
 def seg_lengths(a):
     """Just return segment lengths from 'length above.
-    :Returns: list of array(s) containing the segment lengths for each object
+    Returns:
+    -------
+        List of array(s) containing the segment lengths for each object
     """
     a_s = lengths(a)
     result = [i[1] for i in a_s]
@@ -433,10 +467,18 @@ def seg_lengths(a):
 #
 def radial_sort(pnts, cent=None):
     """Sort about the point cloud center or from a given point
-    : pnts - an array of points (x,y) as array or list
-    : cent - list, tuple, array of the center's x,y coordinates
-    :      - cent = [0, 0] or np.array([0, 0])
-    :Returns: the angles in the range -180, 180 x-axis oriented
+
+    `pnts` : points
+        An array of points (x,y) as array or list
+    `cent` : coordinate
+        list, tuple, array of the center's x,y coordinates
+        ::
+            cent = [0, 0] or np.array([0, 0])
+
+    Returns:
+    -------
+        The angles in the range -180, 180 x-axis oriented
+
     """
     pnts = np.asarray(pnts, dtype=np.float64)
     if cent is None:
@@ -482,8 +524,9 @@ def azim_np(a, fld):
 # ---- ndarrays
 def angle_2pnts(p0, p1):
     """Two point angle
-    : angle = atan2(vector2.y, vector2.x) - atan2(vector1.y, vector1.x);
-    : Accepted answer from the poly_angles link
+    ::
+        angle = atan2(vector2.y, vector2.x) - atan2(vector1.y, vector1.x)
+    Accepted answer from the poly_angles link
     """
     p0, p1 = [np.asarray(i) for i in [p0, p1]]
     ba = p0 - p1
@@ -492,9 +535,10 @@ def angle_2pnts(p0, p1):
 
 
 def angle_seq(a):
-    """sequential angles for a points list
-    : angle = atan2(vector2.y, vector2.x) - atan2(vector1.y, vector1.x);
-    : Accepted answer from the poly_angles link
+    """Sequential angles for a points list
+    ::
+        angle = atan2(vector2.y, vector2.x) - atan2(vector1.y, vector1.x)
+    Accepted answer from the poly_angles link
     """
     ba = a[1:] - a[:-1]
     ang_ab = np.arctan2(ba[:, 1], ba[:, 0])
@@ -555,31 +599,36 @@ def angles_poly(a, inside=True, in_deg=True):
 
 
 def dist_bearing(orig=(0, 0), bearings=None, dists=None, prn=False):
-    """point locations given distance and bearing
-    :  Now only distance and angle are known.  Calculate the point coordinates
-    :  from distance and angle
-    :References:
-    :----------
-    : - https://community.esri.com/thread/66222
-    : - https://community.esri.com/blogs/dan_patterson/2018/01/21/
-    :           origin-distances-and-bearings-geometry-wanderings
-    :Notes:
-    :-----
-    : - bearings = np.arange(0, 361, 10.)  # 37 bearings
-    : - dists = np.random.randint(10, 500, len(bearings)) * 1.0
-    : - dists = np.ones((len(bearings),))
-    :   dists.fill(100.)
-    :data = dist_bearing(orig=orig, bearings=bearings, dists=dists)
-    :
-    :Create a featureclass from the results
-    :-------------------------------------
-    :  shapeXY = ['X_f', 'Y_f']
-    :  fc_name = r"C:\path\Geodatabase.gdb\featureclassname"
-    :  arcpy.da.NumPyArrayToFeatureClass(out, fc_name, ['Xn', 'Yn'], "2951")
-    :.... syntax
-    :  arcpy.da.NumPyArrayToFeatureClass(
-    :                     in_array=out, out_table=fc_name,
-    :                     shape_fields=shapeXY, spatial_reference=SR)
+    """Point locations given distance and bearing.
+    Now only distance and angle are known.  Calculate the point coordinates
+    from distance and angle
+
+    References:
+    ----------
+    1. https://community.esri.com/thread/66222
+
+    2. https://community.esri.com/blogs/dan_patterson/2018/01/21/ \
+    origin-distances-and-bearings-geometry-wanderings
+
+    Notes:
+    -----
+    Sample calculation
+    ::
+          bearings = np.arange(0, 361, 10.)  # 37 bearings
+          dists = np.random.randint(10, 500, len(bearings)) * 1.0
+          dists = np.ones((len(bearings),))
+          dists.fill(100.)
+          data = dist_bearing(orig=orig, bearings=bearings, dists=dists)
+
+    Create a featureclass from the results
+    ::
+       shapeXY = ['X_f', 'Y_f']
+       fc_name = r"C:\path\Geodatabase.gdb\featureclassname"
+       arcpy.da.NumPyArrayToFeatureClass(out, fc_name, ['Xn', 'Yn'], "2951")
+       # ... syntax
+       arcpy.da.NumPyArrayToFeatureClass(
+                          in_array=out, out_table=fc_name,
+                          shape_fields=shapeXY, spatial_reference=SR)
     """
     orig = np.array(orig)
     rads = np.deg2rad(bearings)
@@ -613,13 +662,20 @@ def dist_bearing(orig=(0, 0), bearings=None, dists=None, prn=False):
 #
 def _densify_2D(a, fact=2):
     """Densify a 2D array using np.interp.
-    :fact - the factor to density the line segments by
-    :Notes:
-    :-----
-    :original construction of c rather than the zero's approach
-    :  c0 = c0.reshape(n, -1)
-    :  c1 = c1.reshape(n, -1)
-    :  c = np.concatenate((c0, c1), 1)
+
+    `a` : array
+        Input polyline or polygon array coordinates
+    `fact` : number
+        The factor to density the line segments by
+
+    Notes:
+    -----
+        Original construction of c rather than the zero's approach.
+    Example
+    ::
+          c0 = c0.reshape(n, -1)
+          c1 = c1.reshape(n, -1)
+          c = np.concatenate((c0, c1), 1)
     """
     # Y = a changed all the y's to a
     a = np.squeeze(a)
@@ -660,11 +716,12 @@ def _convert(a, fact=2):
 
 def densify(polys, fact=2, sp_ref=None):
     """Convert polygon objects to arrays, densify.
-    :
-    :Requires:
-    :--------
-    : _densify_2D - the function that is called for each shape part
-    : _unpack - unpack objects
+
+    Requires:
+    --------
+        `_densify_2D` - the function that is called for each shape part
+
+        `_unpack` - unpack objects
     """
     # ---- main section ----
     out = []
@@ -690,9 +747,10 @@ def simplify(a, deviation=10):
 # ---- Create geometries -----------------------------------------------------
 #
 def pnt_(p=np.nan):
-    """Create a point object for null points, center points etc\n
-    : pnt_((1., 2.)\n
-    : pnt_(1) => array([1., 1.])
+    """Create a point object for null points, center points etc
+    ::
+        pnt_((1., 2.)\n
+        pnt_(1) => array([1., 1.])
     """
     p = np.atleast_1d(p)
     if p.dtype.kind not in ('f', 'i'):
@@ -719,13 +777,17 @@ def rotate(pnts, angle=0):
 
 def repeat(seed=None, corner=[0, 0], cols=1, rows=1, angle=0):
     """Create the array of pnts to pass on to arcpy using numpy magic to
-    :  produce a fishnet of the desired in_shp.
-    :seed - use grid_array, hex_flat or hex_pointy.  You specify the width
-    :       and height or its ratio when making the shapes
-    :corner - lower left corner of the shape pattern
-    :dx, dy - offset of the shapes... this is different
-    :rows, cols - the number of rows and columns to produce
-    :angle - rotation angle in degrees
+    produce a fishnet of the desired in_shp.
+
+    `seed` : array
+        Use grid_array, hex_flat or hex_pointy.  You specify the width
+        and height or its ratio when making the shapes
+    `corner` : point coordinates
+        The lower left corner of the shape pattern
+    `rows`, `cols` : ints
+        The number of rows and columns to produce
+    `angle` : number
+        Rotation angle in degrees
     """
     if seed is None:
         a = rectangle(dx=1, dy=1, cols=3, rows=3)
@@ -739,8 +801,11 @@ def repeat(seed=None, corner=[0, 0], cols=1, rows=1, angle=0):
 
 def circle(radius=1.0, theta=10.0, xc=0.0, yc=0.0):
     """Produce a circle/ellipse depending on parameters.
-    :  radius - distance from centre
-    :  theta - angle of densification of the shape around 360 degrees
+
+    `radius` : number
+        Distance from centre
+    `theta` : number
+        Angle of densification of the shape around 360 degrees
     """
     angles = np.deg2rad(np.arange(180.0, -180.0-theta, step=-theta))
     x_s = radius*np.cos(angles) + xc    # X values
@@ -751,8 +816,11 @@ def circle(radius=1.0, theta=10.0, xc=0.0, yc=0.0):
 
 def ellipse(x_radius=1.0, y_radius=1.0,  theta=10., xc=0.0, yc=0.0):
     """Produce an ellipse depending on parameters.
-    :  radius - distance from centre in the X and Y directions
-    :  theta - angle of densification of the shape around 360 degrees
+
+    `radius` : number
+        Distance from centre in the X and Y directions
+    `theta` : number
+        Angle of densification of the shape around 360 degrees
     """
     angles = np.deg2rad(np.arange(180.0, -180.0-theta, step=-theta))
     x_s = x_radius*np.cos(angles) + xc    # X values
@@ -763,8 +831,13 @@ def ellipse(x_radius=1.0, y_radius=1.0,  theta=10., xc=0.0, yc=0.0):
 
 def rectangle(dx=1, dy=1, cols=1, rows=1):
     """Create the array of pnts to pass on to arcpy using numpy magic
-    :  dx - increment in x direction, +ve moves west to east, left/right
-    :  dy - increment in y direction, -ve moves north to south, top/bottom
+
+    `dx` : number
+        Increment in x direction, +ve moves west to east, left/right
+    `dy` : number
+        Increment in y direction, -ve moves north to south, top/bottom
+    `rows`, `cols` : ints
+        Row and columns to produce
     """
     X = [0.0, 0.0, dx, dx, 0.0]       # X, Y values for a unit square
     Y = [0.0, dy, dy, 0.0, 0.0]
@@ -777,10 +850,14 @@ def rectangle(dx=1, dy=1, cols=1, rows=1):
 
 
 def hex_flat(dx=1, dy=1, cols=1, rows=1):
-    """generate the points for the flat-headed hexagon
-    :dy_dx - the radius width, remember this when setting hex spacing
-    :  dx - increment in x direction, +ve moves west to east, left/right
-    :  dy - increment in y direction, -ve moves north to south, top/bottom
+    """Generate the points for the flat-headed hexagon
+
+    `dy_dx` - number
+        The radius width, remember this when setting hex spacing
+    `dx` : number
+        Increment in x direction, +ve moves west to east, left/right
+    `dy` : number
+        Increment in y direction, -ve moves north to south, top/bottom
     """
     f_rad = np.deg2rad([180., 120., 60., 0., -60., -120., -180.])
     X = np.cos(f_rad) * dy
@@ -796,10 +873,14 @@ def hex_flat(dx=1, dy=1, cols=1, rows=1):
 
 
 def hex_pointy(dx=1, dy=1, cols=1, rows=1):
-    """pointy hex angles, convert to sin, cos, zip and send
-    :dy_dx - the radius width, remember this when setting hex spacing
-    :  dx - increment in x direction, +ve moves west to east, left/right
-    :  dy - increment in y direction, -ve moves north to south, top/bottom
+    """Pointy hex angles, convert to sin, cos, zip and send
+
+    `dy_dx` - number
+        The radius width, remember this when setting hex spacing
+    `dx` : number
+        Increment in x direction, +ve moves west to east, left/right
+    `dy` : number
+        Increment in y direction, -ve moves north to south, top/bottom
     """
     p_rad = np.deg2rad([150., 90, 30., -30., -90., -150., 150.])
     X = np.cos(p_rad) * dx

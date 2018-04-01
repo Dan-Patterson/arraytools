@@ -1,14 +1,24 @@
 # -*- coding: UTF-8 -*-
 """
-:Script:   _common.py
-:Author:   Dan.Patterson@carleton.ca
-:Modified: 2017-11-03
-:Purpose:  common tools for working with numpy arrays and featureclasses
-:Useage:
-:
-:References:
-:
-:---------------------------------------------------------------------:
+_common.py
+==========
+
+Script :   _common.py
+
+Author :   Dan.Patterson@carleton.ca
+
+Modified : 2018-03-28
+
+Purpose :
+    Common tools for working with numpy arrays and featureclasses
+
+Tools :
+    '_describe', '_flatten', 'fc_info', 'flatten_shape', 'fld_info',\
+    'pack', 'tweet', 'unpack'
+
+References :
+
+---------------------------------------------------------------------
 """
 # ---- imports, formats, constants ----
 import sys
@@ -31,27 +41,42 @@ __all__ = ['_describe', '_flatten', 'fc_info', 'flatten_shape', 'fld_info',
 # ---- Geometry objects and generic geometry/featureclass functions ----------
 # ----------------------------------------------------------------------------
 def _describe(in_fc):
-    """Simply return the arcpy.da.Describe object
-    : desc.keys() an abbreviated list...
-    : [... 'OIDFieldName'... 'areaFieldName', 'baseName'... 'catalogPath',
-    :  ... 'dataType'... 'extent', 'featureType', 'fields', 'file'... 'hasM',
-    :  'hasOID', 'hasZ', 'indexes'... 'lengthFieldName'... 'name', 'path',
-    :  'rasterFieldName', ..., 'shapeFieldName', 'shapeType',
-    :  'spatialReference',  ...]
+    """Simply return the arcpy.da.Describe object.
+
+    **desc.keys()** an abbreviated list::
+
+    'OIDFieldName'... 'areaFieldName', 'baseName'... 'catalogPath',
+    'dataType'... 'extent', 'featureType', 'fields', 'file'... 'hasM',
+    'hasOID', 'hasZ', 'indexes'... 'lengthFieldName'... 'name', 'path',
+    'rasterFieldName', ..., 'shapeFieldName', 'shapeType',
+    'spatialReference'
+
     """
     return arcpy.da.Describe(in_fc)
 
 
 def fc_info(in_fc, prn=False):
-    """Return basic featureclass information, including...
-    :
-    : shp_fld  - field name which contains the geometry object
-    : oid_fld  - the object index/id field name
-    : SR       - spatial reference object (use SR.name to get the name)
-    : shp_type - shape type (Point, Polyline, Polygon, Multipoint, Multipatch)
-    : - others: 'areaFieldName', 'baseName', 'catalogPath','featureType',
-    :   'fields', 'hasOID', 'hasM', 'hasZ', 'path'
-    : - all_flds =[i.name for i in desc['fields']]
+    """Return basic featureclass information, including the following...
+
+    Returns:
+    --------
+    - shp_fld  :
+        field name which contains the geometry object
+    - oid_fld  :
+        the object index/id field name
+    - SR       :
+        spatial reference object (use SR.name to get the name)
+    - shp_type :
+        shape type (Point, Polyline, Polygon, Multipoint, Multipatch)
+
+    Notes:
+    ------
+    Other useful parameters :
+        'areaFieldName', 'baseName', 'catalogPath','featureType',
+        'fields', 'hasOID', 'hasM', 'hasZ', 'path'
+
+    Derive all field names :
+        all_flds = [i.name for i in desc['fields']]
     """
     desc = _describe(in_fc)
     args = ['shapeFieldName', 'OIDFieldName', 'shapeType', 'spatialReference']
@@ -62,17 +87,25 @@ def fc_info(in_fc, prn=False):
         frmt += f.format(*args)
         frmt += f.format(shp_fld, oid_fld, shp_type, SR.name)
         tweet(frmt)
-    else:
-        return shp_fld, oid_fld, shp_type, SR
+        return None
+    return shp_fld, oid_fld, shp_type, SR
 
 
 def fld_info(in_fc, prn=False):
-    """Field information for a featureclass.
-    :  prn=True - returns the values
-    :  prn=False - simply prints the results
-    :field properties...
-    :  'aliasName', 'baseName', 'defaultValue', 'domain', 'editable',
-    :  'isNullable', 'length', 'name', 'precision', 'required', 'scale', 'type'
+    """Field information for a featureclass (in_fc).
+
+    Parameters:
+    -----------
+    prn :
+        True - returns the values
+
+        False - simply prints the results
+
+    Field properties:
+    -----------------
+        'aliasName', 'baseName', 'defaultValue', 'domain', 'editable',
+        'isNullable', 'length', 'name', 'precision', 'required', 'scale',
+        'type'
     """
     flds = arcpy.ListFields(in_fc)
     f_info = [(i.name, i.type, i.length) for i in flds]
@@ -82,13 +115,14 @@ def fld_info(in_fc, prn=False):
         f = "{!s:<14}{!s:<10}{!s:>6}"
         frmt += "\n".join([f.format(*i) for i in f_info])
         tweet(frmt)
-    else:
-        return f_info
+        return None
+    return f_info
 
 
 def tweet(msg):
     """Print a message for both arcpy and python.
-    : msg - a text message
+
+    msg - a text message
     """
     m = "\n{}\n".format(msg)
     arcpy.AddMessage(m)
@@ -97,9 +131,11 @@ def tweet(msg):
 
 # ---- extras ----------------------------------------------------------------
 def _flatten(a_list, flat_list=None):
-    """Change the isinstance as appropriate
-    :  Flatten an object using recursion
-    :  see: itertools.chain() for an alternate method of flattening.
+    """Change the isinstance as appropriate.
+
+    Flatten an object using recursion
+
+    see: itertools.chain() for an alternate method of flattening.
     """
     if flat_list is None:
         flat_list = []
@@ -113,13 +149,18 @@ def _flatten(a_list, flat_list=None):
 
 def flatten_shape(shp, completely=False):
     """Flatten a shape using itertools.
-    : shp - shape, polygon, polyline, point
-    : completely - True, returns points for all objects
-    :            - False, returns Array for polygon or polyline objects
-    : Notes:
-    :------
-    : __iter__ - Polygon, Polyline, Array all have this property... Points
-    :            do not.
+
+    Parameters:
+    -----------
+        shp :
+            either a polygon, polyline, point shape
+        completely :
+            True returns points for all objects
+            False, returns Array for polygon or polyline objects
+    Notes:
+    ------
+        __iter__ - Polygon, Polyline, Array all have this property...
+        Points do not.
     """
     import itertools
     if completely:
@@ -131,23 +172,28 @@ def flatten_shape(shp, completely=False):
 
 def pack(a, param='__iter__'):
     """Pack an iterable into an ndarray or object array
-    :
     """
+    if not hasattr(a, param):
+        return a
     return np.asarray([np.asarray(i) for i in a])
 
 
 def unpack(iterable, param='__iter__'):
     """Unpack an iterable based on the param(eter) condition using recursion.
-    :Notes:
-    : - Use 'flatten' for recarrays or structured arrays'
-    : ---- see main docs for more information and options ----
-    : To produce uniform array from this, use the following after this is done.
-    :   out = np.array(xy).reshape(len(xy)//2, 2)
-    : isinstance(x, (list, tuple, np.ndarray, np.void)) like in flatten above
+
+    Notes:
+    ------
+    - Use `flatten` for recarrays or structured arrays.
+    - See main docs for more information and options.
+    - To produce uniform array from this, use the following after this is done.
+    >>> out = np.array(xy).reshape(len(xy)//2, 2)
+
+    - To check whether unpack can be used.
+    >>> isinstance(x, (list, tuple, np.ndarray, np.void)) like in flatten above
     """
     xy = []
     for x in iterable:
-        if hasattr(x, '__iter__'):
+        if hasattr(x, param):
             xy.extend(unpack(x))
         else:
             xy.append(x)
@@ -157,8 +203,5 @@ def unpack(iterable, param='__iter__'):
 # ----------------------------------------------------------------------
 # __main__ .... code section
 if __name__ == "__main__":
-    """Optionally...
-    : - print the script source name.
-    : - run the _demo
-    """
+    """Optionally... print the script source name. run the _demo """
 #    print("Script... {}".format(script))

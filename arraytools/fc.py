@@ -1,135 +1,164 @@
 # -*- coding: UTF-8 -*-
 """
-:Script:   fc.py  (featureclass.py)
-:Author:   Dan.Patterson@carleton.ca
-:Modified: 2017-10-21
-:Purpose:  Tools for working with featureclass arcpy geometry objects and
-:          conversion to numpy arrays.
-:
-:Notes:
-:-----
-: - do not rely on the OBJECTID field for anything
-:    http://support.esri.com/en/technical-article/000010834
-:
-: see ... /arcpytools/Notes_etc/fc_py_output.txt for sample output for the
-:   functions below.
-:  _describe',  # arcpy describe object
-:  _get_shapes',  # actual arc* geometry
-:  _ndarray',  # a structured array
-:  _props'  # detailed properties for an arcpy shape object
-:  _two_arrays',  # a geometry array and attribute array
-:  _xy',  # x,y coordinates only
-:  _xyID',  # x,y and ID
-:  _xy_idx',  # x,y and an index array
-:  change_fld',  # provide array happy field types
-:  fc_info',  # shape and oid fields, SR and geometry type
-:  fld_info',  # field type, namd and length
-:
-:General
-:-------
-:  cur._as_narray() and cur._dtype are methods of da.cursors
-:
-:  field_names
-:    ['OBJECTID', 'Shape'], ['OID@', 'Shape'], ['OID@', 'SHAPE@WKT']
-:    ['OID@', 'SHAPE@JSON'], ['OID@', 'SHAPE@X', 'SHAPE@Y']
-:  cur = arcpy.da.SearchCursor(in_fc, field_names, .....)
-:      =
-:  cur = arcpy.da.SearchCursor(in_fc, ['OBJECTID', 'Shape'], None, None,
-:                              True, (None, None))
-:
-:Polygons... arcpy polygon objects
-:--------
-: information - __doc__, __module__, __type_string__
-: conversion - JSON, WKB, WKT, __geo_interface__, _fromGeoJson
-: properties - 'area', 'boundary', 'centroid', 'convexHull', 'equals',
-:    'firstPoint, 'extent', 'isMultipart', 'hullRectangle', 'labelPoint',
-:    'lastPoint', 'length', 'length3D', 'partCount', 'pointCount',
-:    'spatialReference', 'trueCentroid', 'type'
-:
-: methods - angleAndDistanceTo, buffer, clip, contains, crosses, cut, densify,
-:    difference, disjoint, distanceTo, generalize, getArea, getGeohash,
-:    getLength, getPart, intersect, measureOnLine, overlaps,
-:    pointFromAngleAndDistance, positionAlongLine, projectAs,
-:    queryPointAndDistance, segmentAlongLine, snapToLine, symmetricDifference,
-:    touches, union, within
-:
-:(1) cursors .....
-:  from arcgisscripting import da
-:
-:  dir(da)  # the main data access link with underscore functions present
-:
-:  ['Describe', 'Domain', 'Editor', 'ExtendTable', 'FeatureClassToNumPyArray',
-:  'InsertCursor', 'ListDomains', 'ListFieldConflictFilters', 'ListReplicas',
-:  'ListSubtypes', 'ListVersions', 'NumPyArrayToFeatureClass',
-:  'NumPyArrayToTable', 'Replica', 'SearchCursor', 'TableToNumPyArray',
-:  'UpdateCursor', 'Version', 'Walk', '__doc__', '__loader__', '__name__',
-:  '__package__', '__spec__', '_internal_eq', '_internal_sd', '_internal_vb']
-:
-:  dir(da.SearchCursor)
-:
-:  ['__class__', '__delattr__', '__dir__', '__doc__', '__enter__', '__eq__',
-:  '__esri_toolinfo__', '__exit__', '__format__', '__ge__', '__getattribute__',
-:  '__getitem__', '__gt__', '__hash__', '__init__', '__iter__', '__le__',
-:  '__lt__', '__ne__', '__new__', '__next__', '__reduce__', '__reduce_ex__',
-:  '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__',
-:  '_as_narray', '_dtype', 'fields', 'next', 'reset']
+fc.py  featureclass.py
+======================
+
+Script   :   fc.py  (featureclass.py)
+
+Author   :   Dan.Patterson@carleton.ca
+
+Modified : 2018-03-28
+
+Purpose  :
+    Tools for working with featureclass arcpy geometry objects and conversion
+    to numpy arrays.
+
+Notes:
+------
+- do not rely on the OBJECTID field for anything
+
+  http://support.esri.com/en/technical-article/000010834
+
+See ... /arcpytools/Notes_etc/fc_py_output.txt
+
+for sample output for the functions below
+
+-  _describe,  : arcpy describe object
+-  _get_shapes,  : actual arc* geometry
+-  _ndarray,  : a structured array
+-  _props  : detailed properties for an arcpy shape object
+-  _two_arrays,  : a geometry array and attribute array
+-  _xy,  : x,y coordinates only
+-  _xyID,  : x,y and ID
+-  _xy_idx,  : x,y and an index array
+-  change_fld,  : provide array happy field types
+-  fc_info,  : shape and oid fields, SR and geometry type
+-  fld_info,  : field type, namd and length
+
+General
+-------
+
+cur._as_narray() and cur._dtype are methods of da.cursors
+
+field_names
+  ['OBJECTID', 'Shape'], ['OID@', 'Shape'], ['OID@', 'SHAPE@WKT']
+  ['OID@', 'SHAPE@JSON'], ['OID@', 'SHAPE@X', 'SHAPE@Y']
+
+>>> cur = arcpy.da.SearchCursor(in_fc, field_names, .....)
+>>> cur = arcpy.da.SearchCursor(in_fc, ['OBJECTID', 'Shape'], None, None,
+                                True, (None, None))
+
+Polygons
+--------
+
+Arcpy polygon objects
+
+- information :
+    __doc__, __module__, __type_string__
+
+- conversion :
+    JSON, WKB, WKT, __geo_interface__, _fromGeoJson
+
+- properties :
+    'area', 'boundary', 'centroid', 'convexHull', 'equals', 'firstPoint,
+    'extent', 'isMultipart', 'hullRectangle', 'labelPoint', 'lastPoint',
+    'length', 'length3D', 'partCount', 'pointCount', 'spatialReference',
+    'trueCentroid', 'type'
+
+- methods :
+    angleAndDistanceTo, buffer, clip, contains, crosses, cut, densify,
+    difference, disjoint, distanceTo, generalize, getArea, getGeohash,
+    getLength, getPart, intersect, measureOnLine, overlaps,
+    pointFromAngleAndDistance, positionAlongLine, projectAs,
+    queryPointAndDistance, segmentAlongLine, snapToLine, symmetricDifference,
+    touches, union, within
 
 
-:(2) arcpy.da.SearchCursor
-:  cur = arcpy.da.SearchCursor(in_table, field_names, {where_clause},
-:                             {spatial_reference}, {explode_to_points},
-:                             {sql_clause})
-:  - field_names
-:    - flds = [i.name for i in arcpy.ListFields(in_fc)]  # fields, sort after
-:    - flds = '*'  # all fields in order
-:    - flds = ['OBJECTID', 'Shape',...]  # specify the fields you want
-:  - where_clause
-:    - specify a where clause
-:  - spatial_reference
-:    - SR.name    'NAD_1983_CSRS_MTM_9'
-:    - SR.PCSName 'NAD_1983_CSRS_MTM_9'
-:    - SR.PCSCode 2951
-:  - explode_to_points
-:    - True or False
-:  - sql_clause
-:    - specify one or (None, None)
-:
-:  For example....
-:    args = [in_fc, ['OBJECTID', 'Shape'], None, None,  True, (None, None)]
-:    cur = arcpy.da.SearchCursor(*args)
-:    a = cur._as_narray()
-:
-:(3) JSON --- example dictionary... a_polygon.JSON returns a string
-:  json.loads(a_polygon.JSON)  # 3 polygons
-:  {'rings': [[[300010, 5000010],... [300010, 5000010]],
-:             [[300010, 5000010],... [300010, 5000010]],
-:             [[300005, 5000008],... [300005, 5000008]]],
-:   'spatialReference': {'latestWkid': 2951, 'wkid': 2146}}
-:
-:(4) __geo_interface__ --- example return for a 2-part polygon
-:  a_polygon.__geo_interface__
-:  {'coordinates': [[[(300010.0, 5000010.0),... (300010.0, 5000010.0)]],
-:                   [[(300010.0, 5000010.0),... (300010.0, 5000010.0)],
-:                    [(300005.0, 5000008.0),... (300005.0, 5000008.0)]]],
-:   'type': 'MultiPolygon'}
-:
-:(5) JSON and WKT return strings, that is why you need json.loads or
-:  __geo_interface__
-:
-:  JSON
-:  a_polygon.JSON
-:  '{'rings' ...snip... 'wkid': 2146}}'  # note the ' ' enclosure
-:  WKT --- WKT returns a string like JSON
-:  a_polygon.WKT
-:  'MULTIPOLYGON(((300010 5000010,... 300010 5000010)),
-:                 ((300010 5000010,... 300010 5000010),
-:                  (300005 5000008,... 300005 5000008)))'
-:
-:References:
-:----------
-: arcpy.da.SearchCursor
-:   http://pro.arcgis.com/en/pro-app/arcpy/data-access/searchcursor-class.htm
-:---------------------------------------------------------------------:
+**1. cursors**
+
+from arcgisscripting import da
+
+dir(da)  : the main data access link with underscore functions present
+
+   ['Describe', 'Domain', 'Editor', 'ExtendTable', 'FeatureClassToNumPyArray',
+   'InsertCursor', 'ListDomains', 'ListFieldConflictFilters', 'ListReplicas',
+   'ListSubtypes', 'ListVersions', 'NumPyArrayToFeatureClass',
+   'NumPyArrayToTable', 'Replica', 'SearchCursor', 'TableToNumPyArray',
+   'UpdateCursor', 'Version', 'Walk', '__doc__', '__loader__', '__name__',
+   '__package__', '__spec__', '_internal_eq', '_internal_sd', '_internal_vb']
+
+dir(da.SearchCursor)
+
+   ['__class__', '__delattr__', '__dir__', '__doc__', '__enter__', '__eq__',
+   '__esri_toolinfo__', '__exit__', '__format__', '__ge__', '__getattribute__',
+   '__getitem__', '__gt__', '__hash__', '__init__', '__iter__', '__le__',
+   '__lt__', '__ne__', '__new__', '__next__', '__reduce__', '__reduce_ex__',
+   '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__',
+   '_as_narray', '_dtype', 'fields', 'next', 'reset']
+
+
+**2. arcpy.da.SearchCursor**
+
+>>> cur = arcpy.da.SearchCursor(in_table, field_names, {where_clause},
+                                {spatial_reference}, {explode_to_points},
+                                {sql_clause})
+   - field_names
+     - flds = [i.name for i in arcpy.ListFields(in_fc)]  : fields, sort after
+     - flds = '*'  : all fields in order
+     - flds = ['OBJECTID', 'Shape',...]  : specify the fields you want
+   - where_clause
+     - specify a where clause
+   - spatial_reference
+     - SR.name    'NAD_1983_CSRS_MTM_9'
+     - SR.PCSName 'NAD_1983_CSRS_MTM_9'
+     - SR.PCSCode 2951
+   - explode_to_points
+     - True or False
+   - sql_clause
+     - specify one or (None, None)
+
+For example....
+
+>>> args = [in_fc, ['OBJECTID', 'Shape'], None, None,  True, (None, None)]
+>>> cur = arcpy.da.SearchCursor(*args)
+>>>  a = cur._as_narray()
+
+**3. JSON** --- example dictionary... a_polygon.JSON returns a string
+::
+   json.loads(a_polygon.JSON)  : 3 polygons
+   {'rings':  [[[300010, 5000010],... [300010, 5000010]],
+              [[300010, 5000010],... [300010, 5000010]],
+              [[300005, 5000008],... [300005, 5000008]]],
+    'spatialReference': {'latestWkid': 2951, 'wkid': 2146}}
+
+**4. __geo_interface__**--- example return for a 2-part polygon
+::
+   a_polygon.__geo_interface__
+   {'coordinates': [[[(300010.0, 5000010.0),... (300010.0, 5000010.0)]],
+                    [[(300010.0, 5000010.0),... (300010.0, 5000010.0)],
+                     [(300005.0, 5000008.0),... (300005.0, 5000008.0)]]],
+    'type': 'MultiPolygon'}
+
+
+**5. JSON and WKT** return strings, that is why you need json.loads or
+::
+   __geo_interface__
+   a_polygon.JSON
+   '{'rings' ...snip... 'wkid': 2146}}'  : note the ' ' enclosure
+   WKT --- WKT returns a string like JSON
+   a_polygon.WKT
+   'MULTIPOLYGON(((300010 5000010,... 300010 5000010)),
+                  ((300010 5000010,... 300010 5000010),
+                   (300005 5000008,... 300005 5000008)))'
+
+
+References:
+----------
+
+arcpy.da.SearchCursor
+
+http://pro.arcgis.com/en/pro-app/arcpy/data-access/searchcursor-class.htm
+  ---------------------------------------------------------------------
 """
 # ---- imports, formats, constants ----
 import sys
@@ -169,9 +198,11 @@ __all__ = ['_cursor_array', '_geo_array', '_get_shapes',
 #
 def _cursor_array(in_fc, full=True):
     """Return the the points for a geometry object using a searchcursor.
-    :
-    : in_fc - the featureclass
-    : full - True: 'SHAPE@', False: ['SHAPE@X', 'SHAPE@Y' ]
+
+    in_fc :
+        the featureclass
+    full :
+        True: 'SHAPE@', False: ['SHAPE@X', 'SHAPE@Y' ]
     """
     shp = [['SHAPE@X', 'SHAPE@Y'], 'SHAPE@'][full]
     if full:
@@ -194,7 +225,7 @@ def _geo_array(polys):
 
 def _get_shapes(in_fc):
     """Get shapes from a featureclass, in_fc, using SHAPE@ returning
-    :  [<Polygon object at....>, ... (<Polygon object at....>]
+       [<Polygon object at....>, ... (<Polygon object at....>]
     """
     with arcpy.da.SearchCursor(in_fc, 'SHAPE@') as cursor:
         a = [row[0] for row in cursor]
@@ -203,13 +234,16 @@ def _get_shapes(in_fc):
 
 def _ndarray(in_fc, to_pnts=True, flds=None, SR=None):
     """Convert featureclass geometry (in_fc) to a structured ndarray including
-    :  options to select fields and specify a spatial reference.
-    :
-    :Requires:
-    :--------
-    : in_fc - input featureclass
-    : to_pnts - True, convert the shape to points. False, centroid returned.
-    : flds - '*' for all, others: 'Shape',  ['SHAPE@X', 'SHAPE@Y'], or specify
+    options to select fields and specify a spatial reference.
+
+    Requires
+    --------
+    in_fc :
+        input featureclass
+    to_pnts :
+        True, convert the shape to points. False, centroid returned.
+    flds :
+        '*' for all, others: 'Shape',  ['SHAPE@X', 'SHAPE@Y'], or specify
     """
     if flds is None:
         flds = "*"
@@ -225,26 +259,35 @@ def _ndarray(in_fc, to_pnts=True, flds=None, SR=None):
 
 def _two_arrays(in_fc, both=True, split=True):
     """Send to a numpy structured/array and split it into a geometry array
-    :  and an attribute array.  They can be joined back later if needed.
-    :
-    :Note:  The geometry array is returned as an object array.  See the
-    :----   main documentation
-    :
-    :Requires:
-    :--------
-    :functions:
-    :  _xyID - function to get geometry array
-    :  _ndarray - function to get the x, y, id array and attribute array
-    :   fc_info(in_fc) - function needed to return fc properties
-    :parameters:
-    :  both  - True, to return both arrays, False to return just geometry
-    :  split - True, split points by their geometry groups as an object array
-    :         - False, a sequential array with shape = (N,)
-    :variables:
-    :  dt_a = [('IDs', '<i4'), ('Xs', '<f8'), ('Ys', '<f8')]
-    :  dt_b = [('IDs', '<i4'), ('Xc', '<f8'), ('Yc', '<f8')]
-    :  dt_b.extend(b.dtype.descr[2:])
-    :       extend the dtype using the attribute dtype minus geometry and id
+    and an attribute array.  They can be joined back later if needed.
+
+    Note
+    ----
+        The geometry array is returned as an object array.  See the
+        main documentation
+
+    Requires:
+    --------
+
+    functions:
+        _xyID
+            function to get geometry array
+        _ndarray
+            function to get the x, y, id array and attribute array
+        fc_info(in_fc)
+            function needed to return fc properties
+    parameters:
+        both
+            True, to return both arrays, False to return just geometry
+        split
+            True, split points by their geometry groups as an object array;
+            False, a sequential array with shape = (N,)
+    variables:
+        dt_a = [('IDs', '<i4'), ('Xs', '<f8'), ('Ys', '<f8')]
+        dt_b = [('IDs', '<i4'), ('Xc', '<f8'), ('Yc', '<f8')]
+        dt_b.extend(b.dtype.descr[2:])
+
+        Extend the dtype using the attribute dtype minus geometry and id
     """
     a = _xyID(in_fc, to_pnts=True)
     shp_fld, oid_fld, SR, shp_type = fc_info(in_fc)
@@ -266,7 +309,7 @@ def _two_arrays(in_fc, both=True, split=True):
 
 def _xy(in_fc):
     """Convert featureclass geometry (in_fc) to a simple 2D point array.
-    :  See _xyID if you need id values.
+    See _xyID if you need id values.
     """
     flds = ['SHAPE@X', 'SHAPE@Y']
     args = [in_fc, flds, None, None, True, (None, None)]
@@ -282,7 +325,7 @@ def _xy(in_fc):
 
 def _xyID(in_fc, to_pnts=True):
     """Convert featureclass geometry (in_fc) to a simple 2D structured array
-    :  with ID, X, Y values. Optionally convert to points, otherwise centroid.
+    with ID, X, Y values. Optionally convert to points, otherwise centroid.
     """
     flds = ['OID@', 'SHAPE@X', 'SHAPE@Y']
     args = [in_fc, flds, None, None, to_pnts, (None, None)]
@@ -295,7 +338,7 @@ def _xyID(in_fc, to_pnts=True):
 
 def _xy_idx(in_fc):
     """Convert featureclass geometry (in_fc) to a simple 2D point array with
-    :  float64 data type and a separate index array to preserve id values
+    float64 data type and a separate index array to preserve id values
     """
     flds = ['OID@', 'SHAPE@X', 'SHAPE@Y']
     args = [in_fc, flds, None, None, True, (None, None)]
@@ -317,24 +360,34 @@ def _xy_idx(in_fc):
 
 def orig_dest_pnts(fc):
     """Convert sequential points to origin-destination pairs to enable
-    :  construction of a line.
-    :
-    :Notes:
-    :------
-    :- a = arcpy.da.FeatureClassToNumPyArray(
-    :      in_table=fc,
-    :      field_names=["OID@","Shape@X", "Shape@Y"],  # bring in ids, Xs, Ys
-    :      where_clause=None
-    :      spatial_reference="2951")
-    :      explode_to_points=False, skip_nulls=False,
-    :      null_value=None, sql_clause=(None, None)
-    : - out = from_to_pnts(fc)
-    : - arcpy.da.ExtendTable(
-    :      in_table=fc,
-    :      table_match_field='OBJECTID',  # normally
-    :      in_array = out,                # the array you created
-    :      array_match_field='IDs',       # created by this script
-    :      append_only=True)
+    construction of a line.
+
+    Notes:
+    -----
+    a : array
+        arcpy.da.FeatureClassToNumPyArray(
+            in_table=fc,
+
+            field_names=["OID@","Shape@X", "Shape@Y"],
+
+            where_clause=None
+
+            spatial_reference="2951")
+
+            explode_to_points=False, skip_nulls=False,
+
+            null_value=None, sql_clause=(None, None)
+    out : from_to_pnts(fc)
+        arcpy.da.ExtendTable(
+         in_table=fc,
+
+         table_match_field='OBJECTID',  # normally
+
+         in_array = out,                # the array you created
+
+         array_match_field='IDs',       # created by this script
+
+         append_only=True)
     """
     fc = r"C:\Git_Dan\a_Data\arcpytools_demo.gdb\polylines_pnts"
     SR = "2951"
@@ -357,9 +410,12 @@ def orig_dest_pnts(fc):
 
 def obj_array(in_fc):
     """Convert an featureclass geometry to an object array.
-    :  The array must have an ID field.  Remove any other fields except
-    :  IDs, Xs and Ys or whatever is used by the featureclass.
-    :Requires _xyID and a variant of group_pnts
+    The array must have an ID field.  Remove any other fields except
+    IDs, Xs and Ys or whatever is used by the featureclass.
+
+    Requires
+    --------
+        _xyID and a variant of group_pnts
     """
     def _group_pnts_(a, key_fld='IDs', shp_flds=['Xs', 'Ys']):
         """see group_pnts in tool.py"""
@@ -379,7 +435,7 @@ def obj_array(in_fc):
 
 
 def change_fld(flds):
-    """Convert the field types to array friendly ones
+    """Convert the field types to array friendly ones.
     """
     info = [(fld.type, fld.name, fld.length) for fld in flds]
     dt = []
@@ -395,8 +451,12 @@ def change_fld(flds):
 
 def _props(a_shape, prn=True):
     """Get some basic shape geometry properties.
-    :Note:  a_shape, is a single shape.  A searchcursor will return a list
-    :  of geometries, so you should slice even if there is only one shape.
+
+    Note:
+    ----
+        `a_shape`, is a single shape.
+        A searchcursor will return a list of geometries, so you should slice
+        even if there is only one shape.
     """
     if not hasattr(a_shape, '__geo_interface__'):
         tweet("Requires a 'shape', your provided a {}".format(type(a_shape)))
@@ -421,17 +481,23 @@ def _props(a_shape, prn=True):
 # (11)_join_array ... code section .....
 def join_arr_fc(a, in_fc, out_fld='Result_', OID_fld='OID@'):
     """Join an array to a featureclass table using matching fields, usually
-    :  an object id field.
-    :
-    :Requires:
-    :--------
-    : a - an array of numbers or text with ndim=1
-    : out_fld - field name for the results
-    : in_fc - input featureclass
-    : in_flds - list of fields containing the OID@ field as a minimum
-    : - ExtendTable (in_table, table_match_field,
-    :                in_array, array_match_field, {append_only})
-    :
+    an object id field.
+
+    Requires:
+    --------
+
+    a :
+        an array of numbers or text with ndim=1
+    out_fld :
+        field name for the results
+    in_fc :
+        input featureclass
+    in_flds :
+        list of fields containing the OID@ field as a minimum
+
+    ExtendTable (in_table, table_match_field,
+                 in_array, array_match_field, {append_only})
+
     """
     N = len(a)
     dt_a = [('IDs', '<i4'), (out_fld, a.dtype.str)]
@@ -444,10 +510,14 @@ def join_arr_fc(a, in_fc, out_fld='Result_', OID_fld='OID@'):
 
 def concat_arrs(arrs, sep=" ", name=None, with_ids=True):
     """Concatenate a sequence of arrays to string format and return a
-    :  structured array or ndarray
-    :  arrs - a list single arrays of the same length
-    :  sep - the separator between lists
-    :  name - used for structured array
+    structured array or ndarray
+
+    arrs :
+        a list single arrays of the same length
+    sep :
+        the separator between lists
+    name :
+        used for structured array
     """
     N = len(arrs)
     if N < 2:
@@ -474,7 +544,7 @@ def concat_arrs(arrs, sep=" ", name=None, with_ids=True):
 
 def arrays_cols(arrs):
     """Stack arrays of any dtype to form a structured array, stacked in
-    :  columns format.
+    columns format.
     """
     if len(arrs) < 2:
         return arrs
@@ -511,8 +581,8 @@ def _cross_3pnts(a):
 # __main__ .... code section
 if __name__ == "__main__":
     """Optionally...
-    : - print the script source name.
-    : - run the _demo
+      - print the script source name.
+      - run the _demo
     """
     from _common import fc_info, tweet
 #    print("Script... {}".format(script))

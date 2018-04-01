@@ -1,77 +1,100 @@
 # -*- coding: UTF-8 -*-
 """
-:Script:   apt.py ... (arcpytools.py)
-:Author:   Dan.Patterson@carleton.ca
-:Modified: 2018-03-04
-:Purpose:  tools for working with arcpy and numpy arrays
-:
-:Notes:
-:  _arr_common',    # common function for poly* features
-:  _shapes_fc',     # convert shapes to featureclass
-:  'arr_pnts',      # array to points
-:  arr_polyline',   # to polyline
-:  arr_polygon',    # to polygon
-:  array_fc',       # to featureclass
-:  array_struct',   # array to structured array
-:  pnts_arr',       # points to array
-:  polylines_arr',  # polylines to array
-:  polygons_arr',   # polygons to array
-:  fc_array',       # featureclass to array
-:  change_fld',     # convert arc to np field types
-:  tbl_arr',        # convert a table to an array
-:  to_fc',          # convert the results back to a featureclass
-:
-:-----  common variables used in the functions ----
-:(1) array variables/properties
-:  a - structured/recarray
-:  dt = array dtype properties
-:
-:(2) featureclass variables/properties
-:  shps    - point geometry objects needed to create the featureclass
-:  in_fc   - input featureclass
-:  out_fc  - full path and name to the output container (gdb or folder)
-:  SR      - spatial reference object (use SR.name to get the name)
-:  shp_fld - field name which contains the geometry object
-:  oid_fld - the object index/id field name
-:
-:  Field options:  ['OBJECTID', 'Shape'], ['OID@', 'SHAPE@XY'],
-:     ['OID@', 'SHAPE@X', 'SHAPE@Y'], ['OID@', 'SHAPE@JSON']
-:  cur = arcpy.da.SearchCursor(in_fc, field_names, .....)
-:      =
-:  cur = arcpy.da.SearchCursor(in_fc, ['OBJECTID', 'Shape'], None, None,
-:                              True, (None, None))
-:Procedures:
-:----------
-: (1) Split featureclass to array
-:    - split the geometry:
-:    - split the attributes: TableToNumPyArray
-: (2) Create featureclass
-:    - geometry: arr_pnts, arr_polylines, arr_polygons
-:    - join attributes: ExtendTable
-:    -
-:References:
-:----------
-:
-: (1) main link section:  http://pro.arcgis.com/en/pro-app/arcpy/data-access/
-:
-: (2) ...extendtable.htm
-:     ExtendTable (in_table, table_match_field, in_array,
-:                  array_match_field, {append_only})
-:
-: (3) ...featureclasstonumpyarray.htm
-:     FeatureClassToNumPyArray (in_table, field_names, {where_clause},
-:                               {spatial_reference}, {explode_to_points},
-:                               {skip_nulls}, {null_value})
-:
-: (4) ...numpyarraytofeatureclass.htm
-:     NumPyArrayToFeatureClass (in_array, out_table, shape_fields,
-                                {spatial_reference})
-: (5) ...tabletonumpyarray.htm
-:     TableToNumPyArray(in_table, field_names, {where_clause},
-                       {skip_nulls}, {null_value})
-:
+apt.py ... arcpy tools
+======================
 
-:---------------------------------------------------------------------:
+Script :   apt.py ... (arcpytools.py)
+
+Author :   Dan.Patterson@carleton.ca
+
+Modified : 2018-03-28
+
+Purpose :  tools for working with arcpy and numpy arrays
+
+Notes
+-----
+Functions
+---------
+
+-  _arr_common : common function for poly* features
+-  _shapes_fc : convert shapes to featureclass
+-  arr_pnts : array to points
+-  arr_polyline : array to polyline
+-  arr_polygon : array to polygon
+-  array_fc : array to featureclass
+-  array_struct : array to structured array
+-  pnts_arr : points to array
+-  polylines_arr : polylines to array
+-  polygons_arr : polygons to array
+-  fc_array : featureclass to array
+-  change_fld : convert arc to np field types
+-  tbl_arr : convert a table to an array
+-  to_fc : convert the results back to a featureclass
+
+**Common variables used in the functions**
+
+1. Array variables/properties
+  - a  : structured/recarray
+  - dt : array dtype properties
+
+2. Featureclass variables/properties
+
+  -  shps    - point geometry objects needed to create the featureclass
+  -  in_fc   - input featureclass
+  -  out_fc  - full path and name to the output container (gdb or folder)
+  -  SR      - spatial reference object (use SR.name to get the name)
+  -  shp_fld - field name which contains the geometry object
+  -  oid_fld - the object index/id field name
+
+3. Field options:
+
+    ['OBJECTID', 'Shape'], ['OID@', 'SHAPE@XY'],
+    ['OID@', 'SHAPE@X', 'SHAPE@Y'], ['OID@', 'SHAPE@JSON']
+
+  >>> cur = arcpy.da.SearchCursor(in_fc, field_names, .....)
+  >>> cur = arcpy.da.SearchCursor(in_fc, ['OBJECTID', 'Shape'], None, None,
+                                  True, (None, None))
+
+Procedures:
+-----------
+
+1. Split featureclass to array
+
+  - Split the geometry
+  - Split the attributes (TableToNumPyArray)
+
+2. Create featureclass
+
+  - geometry : arr_pnts, arr_polylines, arr_polygons
+  - join attributes : ExtendTable
+
+References:
+-----------
+
+(1) main link section:  http://pro.arcgis.com/en/pro-app/arcpy/data-access/
+
+(2) ...extendtable.htm
+
+>>> ExtendTable (in_table, table_match_field, in_array,
+                 array_match_field, {append_only})
+
+(3) ...featureclasstonumpyarray.htm
+
+>>> FeatureClassToNumPyArray(in_table, field_names, {where_clause},
+                            {spatial_reference}, {explode_to_points},
+                            {skip_nulls}, {null_value})
+
+(4) ...numpyarraytofeatureclass.htm
+
+>>>  NumPyArrayToFeatureClass(in_array, out_table, shape_fields,
+                              {spatial_reference})
+
+(5) ...tabletonumpyarray.htm
+
+>>> TableToNumPyArray(in_table, field_names, {where_clause},
+                     {skip_nulls}, {null_value})
+
+---------------------------------------------------------------------
 """
 # ---- imports, formats, constants ----
 import sys
@@ -103,14 +126,19 @@ script = sys.argv[0]  # print this should you need to locate the script
 
 def _arr_common(a, oid_fld, shp_fld):
     """Common structure for polyline, polygon and multipoint features.
-    :  This functions pulls out all the array points that belong to a
-    :  feature so they can be used in shape construction.
-    :
-    :Requires:
-    :--------
-    : a - structured/recarray
-    : oid_fld -  the object index/id field name
-    : shp_fld - the table field which contains the geometry
+    This functions pulls out all the array points that belong to a
+    feature so they can be used in shape construction.
+
+    Requires:
+    --------
+    a : structured/recarray
+
+    oid_fld : the object index/id field name
+        Normally the `OBJECTID` field, but any field that provides a means to
+        determine sequential objects.
+
+    shp_fld : the table field which contains the geometry
+        Usually the `Shape` field.
     """
     pts = []
     keys = np.unique(a[oid_fld])
@@ -124,21 +152,24 @@ def _arr_common(a, oid_fld, shp_fld):
 # @time_deco
 def _split_array(a, fld='ID'):
     """Split a structured/recarray array, using unique values in a numeric id
-    :  'fld' assumed to be sorted in the correct order which indicates the
-    :  group a record belongs to.  From 'arraytools split_array'.
+    `fld` assumed to be sorted in the correct order which indicates the
+    group a record belongs to.  From 'arraytools split_array'.
     """
     return np.split(a, np.where(np.diff(a[fld]))[0] + 1)
 
 
 def arr_pnts(a, out_fc, shp_fld, SR):
     """Make point features from a structured array.
-    :
-    :Requires:
-    :--------
-    : a - structured/recarray
-    : out_fc - featureclass full path and name
-    : shp_fld - the table field which contains the geometry
-    : SR - the spatial reference/coordinate system of the geometry
+
+    Requires:
+    --------
+    `a` : structured/recarray
+
+    `out_fc` : featureclass full path and name
+
+    `shp_fld` : the table field which contains the geometry
+
+    `SR` : the spatial reference/coordinate system of the geometry
     """
     msg0 = "\nCreated..\n{}".format(out_fc)
     msg1 = "\nCan't overwrite {}... rename it".format(out_fc)
@@ -152,7 +183,9 @@ def arr_pnts(a, out_fc, shp_fld, SR):
 
 
 def obj_polyline(pnts, SR=None):
-    """Object array of point geometry X, Y coordinates to a polyline"""
+    """Object array of point geometry X, Y coordinates to a polyline, using
+    a known spatial reference (SR)
+    """
     f = []
     for pt in pnts:
         f.append(arcpy.Polyline(arcpy.Array([arcpy.Point(*p)
@@ -161,7 +194,9 @@ def obj_polyline(pnts, SR=None):
 
 
 def obj_polygon(pnts, SR=None):
-    """Object array of point geometry X, Y coordinates to a polyline"""
+    """Object array of point geometry X, Y coordinates to a polygon, using
+    a known spatial reference (SR)
+    """
     f = []
     for pt in pnts:
         f.append(arcpy.Polygon(arcpy.Array([arcpy.Point(*p)
@@ -171,18 +206,22 @@ def obj_polygon(pnts, SR=None):
 
 def struct_polyline(a, oid_fld, shp_fld, SR):
     """Make polyline features from a structured array.
-    :
-    :Requires:
-    :--------
-    :  a - structured array
-    :  out_fc - a featureclass path and name, or None
-    :  oid_fld - object id field, used to partition the shapes into groups
-    :  shp_fld - shape field(s)
-    :  SR - spatial reference object, or name
-    :
-    :Returns:
-    :-------
-    :  Produces the featureclass optionally, but returns the polygons anyway.
+
+    Requires:
+    --------
+    `a`       : structured array
+
+    `out_fc`  : a featureclass path and name, or None
+
+    `oid_fld` : object id field, used to partition the shapes into groups
+
+    `shp_fld` : shape field(s)
+
+    `SR`      : spatial reference object, or name
+
+    Returns:
+    -------
+        Produces the featureclass optionally, but returns the polygons anyway.
     """
     pts = _arr_common(a, oid_fld, shp_fld)
     f = []
@@ -194,18 +233,22 @@ def struct_polyline(a, oid_fld, shp_fld, SR):
 
 def struct_polygon(a, out_fc, oid_fld, shp_fld, SR):
     """Make polygon features from a structured array.
-    :
-    :Requires:
-    :--------
-    :  a - structured array
-    :  out_fc - a featureclass path and name, or None
-    :  oid_fld - object id field, used to partition the shapes into groups
-    :  shp_fld - shape field(s)
-    :  SR - spatial reference object, or name
-    :
-    :Returns:
-    :-------
-    :  Produces the featureclass optionally, but returns the polygons anyway.
+
+    Requires:
+    --------
+    `a` : structured array
+
+    `out_fc` : a featureclass path and name, or None
+
+    `oid_fld` : object id field, used to partition the shapes into groups
+
+    `shp_fld` : shape field(s)
+
+    `SR` : spatial reference object, or name
+
+    Returns:
+    -------
+        Produces the featureclass optionally, but returns the polygons anyway.
     """
     pts = _arr_common(a, oid_fld, shp_fld)
     f = []
@@ -217,17 +260,20 @@ def struct_polygon(a, out_fc, oid_fld, shp_fld, SR):
 
 def array_fc(a, out_fc=None, shp_fld=['Shape'], SR=None):
     """Array to featureclass/shapefile...optionally including all fields
-    :
-    :Requires:
-    :--------
-    : a - structured or recarray
-    : out_fc - the full path and filename to a featureclass or shapefile
-    : shp_fld - shapefield name(s) ie. ['Shape'] or ['X', 'Y']
-    :
-    :References:
-    :----------
-    : - NumpyArrayToFeatureClass, ListFields for information and options
-    :
+
+    Requires:
+    --------
+
+    a : structured or recarray
+
+    out_fc : the full path and filename to a featureclass or shapefile
+
+    shp_fld : shapefield name(s) ie. ['Shape'] or ['X', 'Y']
+
+    References:
+    ----------
+        NumpyArrayToFeatureClass, ListFields for information and options
+
     """
     if not out_fc:
         if arcpy.Exists(out_fc):
@@ -238,12 +284,14 @@ def array_fc(a, out_fc=None, shp_fld=['Shape'], SR=None):
 
 def array_struct(a, fld_names=['X', 'Y'], dt=['<f8', '<f8']):
     """Convert an array to a structured array
-    :
-    :Requires:
-    :--------
-    :  a - an ndarray with shape at least (N, 2)
-    :  dt = dtype class
-    :  names - names for the fields
+
+    Requires:
+    --------
+    `a` : an ndarray with shape at least (N, 2)
+
+    `dt` : dtype class
+
+    `names` : names for the fields
     """
     dts = [(fld_names[i], dt[i]) for i in range(len(fld_names))]
     z = np.zeros((a.shape[0],), dtype=dts)
@@ -257,25 +305,25 @@ def array_struct(a, fld_names=['X', 'Y'], dt=['<f8', '<f8']):
 
 def arc_np(in_fc):
     """Alternate constructor to create a structured array from a feature class.
-    :  This function only returns the geometry portion.  The OID field is
-    :  retained should you wish to associate attributes back to the results.
-    :  There is no point in carrying extra baggage around when you don't need
-    :  it.
-    :
-    :Requires:
-    :--------
-    :  in_fc - the file path to the feature class
-    :    ArcGIS Pro is assumed, since the new arcpy.da.Describe is used
-    :    which returns a dictionary of properties.
-    :
-    :Returns:
-    :-------
-    :  A structured array with a specified dtype to facilitate
-    :  geometry reconstruction later.  The attributes are kept separate.
-    :
-    :Alternatives:
-    :------------
-    :  SpatialDataFrame from ArcGIS API for Python... or GeoPandas
+    This function only returns the geometry portion.  The OID field is
+    retained should you wish to associate attributes back to the results.
+    There is no point in carrying extra baggage around when you don't need it.
+
+    Requires:
+    --------
+    `in_fc` : the file path to the feature class
+
+    ArcGIS Pro is assumed, since the new arcpy.da.Describe is used which
+    returns a dictionary of properties.
+
+    Returns:
+    -------
+    A structured array with a specified dtype to facilitate geometry
+    reconstruction later.  The attributes are kept separate.
+
+    Alternatives:
+    ------------
+    SpatialDataFrame from ArcGIS API for Python... or GeoPandas
     """
     desc = arcpy.da.Describe(in_fc)
     shp_type = desc['shapeType']
@@ -299,14 +347,20 @@ def arc_np(in_fc):
 
 def pnts_arr(in_fc, as_struct=True, shp_fld=None, SR=None):
     """Create points from an array.
-    :
-    :Requires:
-    :--------
-    :  in_fc - input featureclass
-    :  as_struct - if True, returns a structured array with Id, X, Y fields
-    :            - if False, returns an ndarray with dtype='<f8'
-    :  shp_fld & SR - if unspecified, it will be determined using fc_info
-    :  to return featureclass information.
+
+    Requires:
+    --------
+
+    `in_fc` :
+        input featureclass
+
+    `as_struct` : boolean
+        - True, returns a structured array with Id, X, Y fields
+        - False, returns an ndarray with dtype='<f8'
+
+    `shp_fld` & `SR` :
+        if unspecified, it will be determined using fc_info
+        to return featureclass information.
     """
     if shp_fld is None or SR is None:
         shp_fld, oid_fld, SR, shp_type = fc_info(in_fc)
@@ -356,11 +410,12 @@ def output_polylines(out_fc, SR, pnts):
 
 def output_polygons(out_fc, SR, pnts):
     """Produce the output polygon featureclass.
-    :Requires:
-    :--------
-    : - A list of lists of points
-    :   aline = [[0, 0], [1, 1]]  # a list of points
-    :   aPolygon = [aline]       # a list of lists of points
+
+    Requires:
+    --------
+        - A list of lists of points
+        - aline = [[0, 0], [1, 1]]  # a list of points
+        - aPolygon = [aline]       # a list of lists of points
     """
     msg = '\nRead the script header... A projected coordinate system required'
     assert (SR is not None), msg
@@ -389,11 +444,14 @@ def arr_polygon_fc(a, out_fc, oid_fld, shp_fld, SR):
 
 def shapes_fc(shps, out_fc):
     """Create a featureclass/shapefile from poly* shapes.
-    :
-    :Requires:
-    :--------
-    :  shps   - point geometry objects needed to create the featureclass
-    :  out_fc - full path and name to the output container (gdb or folder)
+
+    Requires:
+    ---------
+
+    - shps : geometry
+        Point geometry objects needed to create the featureclass
+    - out_fc : string
+        Full path and name to the output container (gdb or folder)
     """
     msg0 = "\nCreated..\n{}".format(out_fc)
     msg1 = "\nCan't overwrite the {}... rename it".format(out_fc)
@@ -412,7 +470,7 @@ def shapes_fc(shps, out_fc):
 
 def _id_geom_array(in_fc):
     """The main code segment which gets the id and shape information and
-    :  explodes the geometry to individual points
+    explodes the geometry to individual points
     """
     shp_fld, oid_fld, SR, shp_type = fc_info(in_fc)
     a_flds = [oid_fld, shp_fld]
@@ -438,20 +496,26 @@ def polygons_arr(in_fc, as_struct=True, shp_fld=None, SR=None):
 
 def fc_array(in_fc, flds="", allpnts=True):
     """Convert a featureclass to an ndarray of attribute, with the geometry
-    :  removed.
-    :
-    :Requires:
-    :--------
-    : input_fc - featureclass/shapefile complete path
-    : flds     - ""  just oid and shape fields
-    :          - "*" all fields or
-    :          - ['Field1', 'Field2', etc] for specific fields
-    : allpnts  - True/False
-    :          - True to explode the geometry to individual points
-    :          - False for the centroid of the geometry
-    :References:
-    :----------
-    :  FeatureClassToNumPyArray, ListFields for more information
+    removed.
+
+    Requires:
+    --------
+
+    `input_fc` :
+        featureclass/shapefile complete path
+
+    `flds` : fields or as listed
+        - ""  just oid and shape fields
+        - "*" all fields or
+        - ['Field1', 'Field2', etc] for specific fields
+
+    `allpnts` : boolean
+        - True to explode the geometry to individual points
+        - False for the centroid of the geometry
+
+    References:
+    ----------
+        FeatureClassToNumPyArray, ListFields for more information
     """
     out_flds = []
     shp_fld, oid_fld, SR, shp_type = fc_info(in_fc)  # get the base information
@@ -494,7 +558,7 @@ def change_fld(flds):
 
 def tbl_arr(in_fc):
     """ Convert a table or featureclass table (in_fc)to a numpy array
-    :   including the oid field but excluding the geometry field.
+    including the oid field but excluding the geometry field.
     """
     desc = arcpy.da.Describe(in_fc)  # use the new da.Describe method
     dump = ['shapeFieldName', 'areaFieldName', 'lengthFieldName']
@@ -517,25 +581,42 @@ def tbl_arr(in_fc):
 #
 def to_fc(out_fc, a, b=None, dim=2, flds=['Id', 'X', 'Y'], SR_code=None):
     """Reconstruct a featureclass from a deconstructed pair of arrays.
-    :  This function reverses the functionality of to_array which splits a
-    :  featureclass into an array of geometry and one of attributes.
-    :  One can perform operations on one or the other or both, then reassemble
-    :  into a new file.
-    :
-    :Requires:
-    :--------
-    : out_fc - full path and name for the output featureclass
-    : a - the array of geometry objects
-    : b - the array of attributes for 'a'
-    : dim - 0 (point), 1 (polyline) or 2 (polygon)
-    : fld - id and shape field(s), normally ['Id, 'X', 'Y']
-    :       if deconstructed using 'to_array'
-    : SR_code - the spatial reference code of the output geometry
-    :           ie 4326 for GCS WGS84
-    :              2951
-    :References:
-    :----------
-    : Spatial reference http://spatialreference.org/
+
+    This function reverses the functionality of to_array which splits a
+    featureclass into an array of geometry and one of attributes.
+
+    One can perform operations on one or the other or both, then reassemble
+    into a new file.
+
+    Requires:
+    --------
+    `out_fc` : filename
+        full path and name for the output featureclass
+
+    `a` : geometry array
+        the array of geometry objects
+
+    `b` : attribute array
+        the array of attributes for 'a'
+
+    `dim` : geometry type
+        - 0 (point)
+        - 1 (polyline) or
+        - 2 (polygon)
+
+    `fld` : id and shape field(s)
+        normally ['Id, 'X', 'Y'] if deconstructed using 'to_array'
+
+    `SR_code` :
+        The spatial reference code of the output geometry
+
+        - 4326 for GCS WGS84
+        - 2951 for MTM 9
+
+    References:
+    ----------
+
+        Spatial reference http://spatialreference.org/
     """
     args = [to_fc.__module__, dedent(to_fc.__doc__)]
     msg = "\n...to_fc ... in {} failed\n{}".format(*args)

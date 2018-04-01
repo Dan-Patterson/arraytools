@@ -1,13 +1,20 @@
 # -*- coding: UTF-8 -*-
 """
-:Script:   image.py
-:Author:   Dan.Patterson@carleton.ca
-:Modified: 2018-01-05
-:Purpose:  tools for working with numpy arrays as images
-:Useage:
-:
-:Functions:  tools function examples below
-:---------
+image
+=====
+
+Script :   image.py
+
+Author :   Dan.Patterson@carleton.ca
+
+Modified : 2018-01-05
+
+Purpose :  tools for working with numpy arrays as images
+
+Useage:
+
+Functions:  tools function examples below
+---------_
 : (1) a_filter(a, mode=1, ignore_ndata=True)  # mode is a 3x3 filter
 :References:
 :
@@ -77,61 +84,69 @@ def _pad_zero(a, n=1):
 # (1) filter array ---- convolution filters
 #
 def a_filter(a, mode=1, pad_output=True, ignore_nodata=True, nodata=None):
-    """Various filters applied to an array
-    :Requires:
-    :--------
-    : make_blocks  => make_blocks()
-    : a - an array that will be strided using a 3x3 window
-    : pad_output - True, produces a masked array padded so that the shape
-    :      is the same as the input
-    : ignore_nodata - True, all values used, False, array contains nodata
-    : nodata - ignored if ignore_nodata=False, otherwise when
-    :          None - max int or float used
-    :          value - use this value in integer or float form otherwise
-    : mode - a dictionary containing a choice from
-    :   d = 1: all_f     # all 1's
-    :       2: no_cnt    # no center
-    :       3: cross_f   # cross filter, corners
-    :       4: plus_f    # plus filter, up/down, left/right
-    :       5: grad_e, n, ne, nw, s, w  (6, 7, 8, 9, 10) directional gradients
-    :      11: lap_33    # laplacian
-    :      12: line_h    # line detection, horizonal
-    :      13: line_ld   # line detection, left diagonal
-    :      14: line_rd   # line detection, right diagonal
-    :      15: line_v    # line detection, vertical
-    :      16: high
-    :      17: sob_hor   # Sobel horizontal
-    :      18: sob_vert  # Sobel vertical
-    :      19: emboss
-    :      20: sharp1    # sharpen 1
-    :      22: sharp2    # sharpen 2
-    :      23: sharp3    # sharpen 3 highpass 3x3
-    :      24: lowpass   # lowpass filter
-    :
-    :Numpy vs SciPy options for a.shape=(1000, 1000):
-    : %timeit a_filter(a, mode=3, pad_output=False)
-    : 108 ms ± 6.83 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
-    :
-    : from scipy import ndimage
-    :
-    : %timeit ndimage.convolve(a, filter_, mode='constant', cval=np.nan)
-    : 13.4 ms ± 641 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
-    :
-    :Notes:
-    :-----
-    :  Only 3x3 filters covered here.  The output array is padded with np.nan
-    :  and the array is returned as a masked array.
-    :
-    :  a0 = pyramid(core=4, steps=5, incr=(1, 1))
-    :  a0 = a0 * 2  # multiply by a number to increase slope
-    :  a0 = (pyramid(core=4, steps=5, incr=(1, 1)) + 1) * 2  # is also good!
-    :Reference:
-    :---------
-    :  http://desktop.arcgis.com/en/arcmap/latest/tools/
-    :       spatial-analyst-toolbox/how-filter-works.htm
-    :  http://desktop.arcgis.com/en/arcmap/latest/manage-data/
-    :       raster-and-images/convolution-function.htm
-    :  https://github.com/scikit-image/scikit-image/tree/master/skimage/filters
+    """Various filters applied to an array.
+
+    Requires:
+    --------
+    stride : function
+        the `stride` function is used internally in this function
+    a : array
+        an array that will be strided using a 3x3 window
+    pad_output : boolean
+        True, produces a masked array padded so that the shape
+        is the same as the input
+    ignore_nodata : boolean
+        True, all values used, False, array contains nodata
+    nodata : None or number
+        None :
+            max int or float used
+        value :
+            use this value in integer or float form otherwise
+
+
+    mode :
+        a dictionary containing a choice from
+    ::
+
+        1.  `all_f`    : all 1's
+        2.  `no_cnt`   : no center
+        3.  `cross_f`  : cross filter, corners
+        4.  `plus_f`   : up down, left right
+        5.  `gradient` : `6 7 8 9 10` directional gradients
+        11. `lap_33`   : laplacian
+        12. `line_h`   : line detection, horizonal
+        13. `line_ld`  : line detection, left diagonal
+        14. `line_rd`  : line detection, right diagonal
+        15. `line_v`   : line detection, vertical
+        16. `high`     :
+        17. `sob_hor`  : Sobel horizontal
+        18. `sob_vert` : Sobel vertical
+        19. `emboss`   :
+        20. `sharp1`   : sharpen 1
+        22. `sharp2`   : sharpen 2
+        23. `sharp3`   : sharpen 3 highpass 3x3
+        24. `lowpass`  : lowpass filter
+
+    Notes:
+    -----
+        Only 3x3 filters covered here.  The output array is padded with np.nan
+        and the array is returned as a masked array.
+
+    >>> a0 = pyramid(core=4, steps=5, incr=(1, 1))
+    >>> a0 = a0 * 2  # multiply by a number to increase slope
+    >>> a0 = (pyramid(core=4, steps=5, incr=(1, 1)) + 1) * 2  # is also good!
+
+    References:
+    ----------
+    ..
+    [1]
+    http://desktop.arcgis.com/en/arcmap/latest/tools/spatial-analyst-toolbox/how-filter-works.htm
+
+    [2]
+    http://desktop.arcgis.com/en/arcmap/latest/manage-data/raster-and-images/convolution-function.htm
+
+    [3]
+    https://github.com/scikit-image/scikit-image/tree/master/skimage/filters
     """
     n = np.nan
     all_f = [1, 1, 1, 1, 1, 1, 1, 1, 1]
@@ -251,4 +266,4 @@ if __name__ == "__main__":
     : - run the _demo
     """
 #    print("Script... {}".format(script))
-    a = _demo()
+#    a = _demo()

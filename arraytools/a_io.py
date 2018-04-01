@@ -1,20 +1,35 @@
 # -*- coding: UTF-8 -*-
 """
-:Script:   a_io.py
-:Author:   Dan.Patterson@carleton.ca
-:Modified: 2018-10-17
-:Purpose: basic io tools for numpy arrays and operating system functions
-:
-:Notes:
-:  _arr_json   - array to json file
-:  _get_dir    - various function for accessing folders
-:  all_folders
-:  load_npy    - load numpy npy files
-:  read_txt    - read a text formatted array
-:  save_npy    - save array to npy format
-:  save_txt    - save array to text format
-:  sub_folders
-:---------------------------------------------------------------------:
+a_io.py
+=======
+
+Script :   a_io.py
+
+Author :   Dan.Patterson@carleton.ca
+
+Modified : 2018-03-28
+
+Purpose : Basic io tools for numpy arrays and operating system functions
+
+Notes :
+
+1.   _arr_json   - array to json file
+
+2.   _get_dir    - various function for accessing folders
+
+3.   all_folders
+
+4.   load_npy    - load numpy npy files
+
+5.   read_txt    - read a text formatted array
+
+6.   save_npy    - save array to npy format
+
+7.   save_txt    - save array to text format
+
+8.   sub_folders
+
+---------------------------------------------------------------------
 """
 # ---- imports, formats, constants ----
 import sys
@@ -40,9 +55,11 @@ __all__ = ['load_npy', 'save_npy',
 # ----------------------------------------------------------------------
 # (1) load_npy .... code section ---
 def load_npy(f_name, all_info=False):
-    """load a well formed npy file representing a structured array
-    :Returns:
-    : the array, the description, field names and their size
+    """load a well formed `npy` file representing a structured array
+
+    Returns
+    -------
+        The array, the description, field names and their size.
     """
     a = np.load(f_name)
     if all_info:
@@ -68,10 +85,17 @@ def save_npy(a, f_name):
 # (2) read_txt .... code section ---
 def read_txt(name="arr.txt"):
     """Read the structured/recarray created by save_txt.
-    :  dtype=None ... allow the structure to be read from the array.
-    :  delimiter  ... use a comma delimiter by default
-    :  names=True ... first row contains the field names.
-    :                 uncomment skip_header part if not needed.
+
+    dtype : data type
+        If `None`, it allows the structure to be read from the array.
+
+    delimiter : string
+        Use a comma delimiter by default.
+
+    names : boolean
+        If `True`, the first row contains the field names.
+
+    Uncomment skip_header part if not needed.
     """
     a = np.genfromtxt(name, dtype=None, delimiter=",",
                       names=True, autostrip=True)  # ,skip_header=1)
@@ -82,12 +106,17 @@ def read_txt(name="arr.txt"):
 # (3) save_txt .... code section ---
 def save_txt(a, name="arr.txt", sep=", ", dt_hdr=True):
     """Save a NumPy structured, recarray to text.
-    :Requires:
-    :--------
-    :  a     : input array
-    :  fname : output filename and path otherwise save to script folder
-    :  sep   : column separater, include a space if needed
-    :  dt_hdr: if True, add dtype names to the header of the file
+
+    Requires:
+    --------
+    a     : array
+        input array
+    fname : filename
+        output filename and path otherwise save to script folder
+    sep   : separator
+        column separater, include a space if needed
+    dt_hdr: boolean
+        if True, add dtype names to the header of the file
     """
     a_names = ", ".join(i for i in a.dtype.names)
     hdr = ["", a_names][dt_hdr]  # use "" or names from input array
@@ -104,7 +133,7 @@ def save_txt(a, name="arr.txt", sep=", ", dt_hdr=True):
 # (4) arr_json .... code section ---
 def arr_json(file_out, arr=None):
     """Send an array out to json format. Use json_arr to read the file.
-    :  no error checking
+    No error checking
     """
     import json
     import codecs
@@ -117,12 +146,16 @@ def arr_json(file_out, arr=None):
 # (5) batch load and save to/from arrays and rasters
 def array2raster(a, folder, fname, LL_corner, cellsize):
     """It is easier if you have a raster to derive the values from.
-    : - r01 = rasters[1]  # --- get one of the original rasters since they will
-    : - rast = arcpy.Raster(r01)  # ---  have the same extent and cell size
-    : - lower_left = rast.extent.lowerLeft  # --- needed to produce output
-    :     this is a Point object... ie LL = arcpy.Point(10, 10)
-    : - cell_size = rast.meanCellHeight     # --- we will use this for x and y
-    : - f = r"c:\temp\result.tif"  # --- don't forget the extention
+
+    >>> # Get one of the original rasters since they will have the same
+    >>> # extent and cell size needed to produce output
+    >>> r01 = rasters[1]
+    >>> rast = arcpy.Raster(r01)
+    >>> lower_left = rast.extent.lowerLeft
+    >>> # this is a Point object... ie LL = arcpy.Point(10, 10)
+    >>> cell_size = rast.meanCellHeight  # --- we will use this for x and y
+    >>> f = r'c:/temp/result.tif'  # --- don't forget the extention
+
     """
     import os
     import arcpy
@@ -136,13 +169,21 @@ def array2raster(a, folder, fname, LL_corner, cellsize):
 
 def rasters2nparray(folder=None, to3D=False):
     """Batch the RasterToNumPyArray arcpy function to produce 3D or a list
-    : of 2D arrays
-    :NOTE:  edit the code... far simpler than accounting for everything
-    :  There is a reasonable expectation that rasters exist in the folder
-    :Requires:  os, arcpy if not already loaded
-    :---------
-    : folder - a folder on disk... a real one
-    : to3D - if False, a list of arrays, if True a 3D array
+    of 2D arrays
+
+    NOTE:
+    ----
+        Edit the code... far simpler than accounting for everything.
+        There is a reasonable expectation that rasters exist in the folder.
+
+    Requires:
+    --------
+    modules :
+        os, arcpy if not already loaded
+    folder : folder
+        A folder on disk... a real one
+    to3D : boolean
+        If False, a list of arrays, if True a 3D array
     """
     import os
     import arcpy  # needed if not already done
@@ -164,8 +205,8 @@ def rasters2nparray(folder=None, to3D=False):
 # ----------------------------------------------------------------------
 # (6) general file functions ... code section ---
 def get_dir(path):
-    """Get the directory list from a path, excluding geodatabase folders
-    :  Used by.. print_folders
+    """Get the directory list from a path, excluding geodatabase folders.
+    Used by.. print_folders
     """
     if os.path.isfile(path):
         path = os.path.dirname(path)
@@ -176,12 +217,15 @@ def get_dir(path):
 
 
 def all_folders(path, first=True, prefix=""):
-    """ Print recursive listing of contents of path
-    :Requires: _get_dir
-    :--------
-    :Notes:
-    :-----
-    : useful.... cp = os.path.commonprefix(dirlist)
+    """ Print recursive listing of contents of path.
+
+    Requires
+    --------
+        _get_dir
+
+    Notes
+    -----
+        useful.... cp = os.path.commonprefix(dirlist)
     """
     if first:  # Detect outermost call, print a heading
         print("Folder listing for....\n|--{}".format(path))
@@ -202,7 +246,7 @@ def all_folders(path, first=True, prefix=""):
 
 
 def sub_folders(path):
-    """print the folders in a path
+    """Print the folders in a path
     """
     import pathlib
     print("Path...\n{}".format(path))
@@ -230,4 +274,3 @@ if __name__ == "__main__":
     """
 #    print("Script... {}".format(script))
 #    _npy_file = _demo_a_io()
-#    x = "C:/Git_Dan/arraytools/Data/x.txt"
