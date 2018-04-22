@@ -11,18 +11,20 @@ Modified : 2018-03-28
 
 Purpose :  tools for working with numpy arrays
 
-Useage :
+Useage:
+-------
+
 >>> import arraytools as art
 
-`tools.py` and other scripts are part of the array tools package.
-Access in other programs using .... art.func(params) ....
+- `tools.py` and other scripts are part of the arraytools package.
+- Access in other programs using .... art.func(params) ....
 
 **Requires**
 -------------
-  see import section and __init__.py
+  see import section and __init__.py in the `arraytools` folder
 
-**Notes:**
-----------
+**Notes**
+---------
 **Basic array information**
 
 *np.typecodes*
@@ -67,6 +69,7 @@ Access in other programs using .... art.func(params) ....
 
 **2.  get_func** : retrieve function information
 ::
+    get_func(func, line_nums=True, verbose=True)
     print(art.get_func(art.main))
 
     Function: .... main ....
@@ -81,7 +84,9 @@ Access in other programs using .... art.func(params) ....
        1   '''Do nothing'''
        2      pass
 
-**3.  get_modu** : nothing yet
+**3.  get_modu** : retrieve module info
+
+    get_modu(obj, code=False, verbose=True)
 
 **4.  info(a, prn=True)** : retrieve array information
 ::
@@ -110,9 +115,13 @@ Access in other programs using .... art.func(params) ....
          |__['D', '<i8']
          |__['E', '<i8']
 
-
 **5.  num_to_nan, num_to_mask** : nan stuff
-
+::
+    num_to_nan(a, nums=[2, 3]) .... array([  0.,   1.,  nan,  nan,   4.,   5.])
+    num_to_mask(a, nums=[2, 3]) ...
+    masked_array(data = [0 1 - - 4 5],
+                 mask = [False False  True  True False False],
+           fill_value = 999999)
 
 **6.  make_blocks(rows=2, cols=4, r=2, c=2, dt='int')** : create array blocks
 ::
@@ -122,17 +131,38 @@ Access in other programs using .... art.func(params) ....
             [4, 4, 5, 5, 6, 6, 7, 7]])
 
 **7.  make_flds(n=1, names=None, default="col")** : example
+::
+   >>> make_flds(3, names='A,B,C', default='A')
+   dtype([('A', '<f8'), ('B', '<f8'), ('C', '<f8')])
+   >>> names = 'A, B, C'
+   >>> easy(f, names)
+   dtype([('A', '<f8'), ('B', '<f8'), ('C', '<f8')])
+   >>> names = 'A, B'   # missing a name, so default kicks in
+   >>> easy(f, names, name)
+   dtype([('A', '<f8'), ('B', '<f8'), ('A00', '<f8')]
 
-    - make_flds(3, names='A,B,C', default='A')
-      =>  dtype([('A', '<f8'), ('B', '<f8'), ('C', '<f8')])
-    - names='A,B,C'
-      easy(f,names)
-      =>  dtype([('A', '<f8'), ('B', '<f8'), ('C', '<f8')])
-    - names='A,B'   # missing a name, so default kicks in
-      easy(f,names,name)
-      =>  dtype([('A', '<f8'), ('B', '<f8'), ('A00', '<f8')]
+**8.  nd_rec and nd_struct** : example
 
-**8.  rec_arr** : example
+**. nd2struct(a)** : np2rec ... shell around above
+
+ndarray to structured array or recarray
+
+Keep the dtype the same
+::
+    aa = nd2struct(a)       # produce a structured array from inputs
+    aa.reshape(-1,1)   # structured array
+    array([[(0, 1, 2, 3, 4)],
+           [(5, 6, 7, 8, 9)],
+           [(10, 11, 12, 13, 14)],
+           [(15, 16, 17, 18, 19)]],
+       dtype=[('A', '<i4'), ... snip ... , ('E', '<i4')])
+
+Upcast the dtype
+::
+       a_f = nd2struct(a.astype('float'))  # note astype allows a view
+       array([(0.0, 1.0, 2.0, 3.0, 4.0), ... snip... ,
+              (15.0, 16.0, 17.0, 18.0, 19.0)],
+          dtype=[('A', '<f8'), ... snip ... , ('E', '<f8')])
 
 **9.  arr2xyz(a, verbose=False)** : convert an array to x,y,z values, using
 row/column values for x and y
@@ -163,27 +193,6 @@ row/column values for x and y
     e = a[[0, 1, 3], [1, 2, 3]]  # keep [0, 1], [1, 2], [3, 3]
                                    => ([ 1, 7, 18])
 
-
-**11. nd2struct(a)** : np2rec ... shell around above
-
-ndarray to structured array or recarray
-
-Keep the dtype the same
-::
-    aa = nd2struct(a)       # produce a structured array from inputs
-    aa.reshape(-1,1)   # structured array
-    array([[(0, 1, 2, 3, 4)],
-           [(5, 6, 7, 8, 9)],
-           [(10, 11, 12, 13, 14)],
-           [(15, 16, 17, 18, 19)]],
-       dtype=[('A', '<i4'), ... snip ... , ('E', '<i4')])
-
-Upcast the dtype
-::
-       a_f = nd2struct(a.astype('float'))  # note astype allows a view
-       array([(0.0, 1.0, 2.0, 3.0, 4.0), ... snip... ,
-              (15.0, 16.0, 17.0, 18.0, 19.0)],
-          dtype=[('A', '<f8'), ... snip ... , ('E', '<f8')])
 
 **12. scale(a, x=2, y=2)** : scale an array by x, y factors
 ::
@@ -301,13 +310,13 @@ in ascending order.
              [10, 11, 12, 13, 14]])         [3, 3, 3, 3, 3]])
 
 
-**22. rolling_stats()... stats for a strided array**
+**22. rolling_stats() : stats for a strided array**
 
     min, max, mean, sum, std, var, ptp
 
 
-**23. uniq(ar, return_index=False, return_inverse=False, return_counts=False,
- axis=0)**
+**23. uniq(ar, return_index=False, return_inverse=False, return_counts=False,**
+     **axis=0)**
 
 **24. is_in(find_in, using, not_in=False)**
 
@@ -367,11 +376,11 @@ from numpy.lib.stride_tricks import as_strided
 
 warnings.simplefilter('ignore', FutureWarning)
 
-__all__ = ['dirr', '_func', '_help', '_pad_', 'arr2xyz', 'block', 'block_arr',
+__all__ = ['_func', '_help', '_pad_', 'arr2xyz', 'block', 'block_arr',
            'change_arr', 'doc_func', 'find', 'get_func', 'get_modu',
            'group_pnts', 'group_vals', 'info', 'is_in', 'make_blocks',
            'make_flds', 'n_largest', 'n_smallest', 'nd2struct',
-           'num_to_mask', 'num_to_nan', 'rc_vals', 'rec_arr', 'reclass',
+           'num_to_mask', 'num_to_nan', 'rc_vals', 'nd_rec', 'reclass',
            'rolling_stats', 'scale', 'sort_cols_by_row', 'sort_rows_by_col',
            'split_array', 'stride', 'uniq', 'xy_vals']
 
@@ -380,8 +389,8 @@ __outside__ = ['dedent', 'indent']
 
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
       'float_kind': '{: 0.3f}'.format}
-np.set_printoptions(edgeitems=2, linewidth=80, precision=2,
-                    suppress=True, threshold=100,
+np.set_printoptions(edgeitems=5, linewidth=80, precision=2,
+                    suppress=True, threshold=200,
                     formatter=ft)
 np.ma.masked_print_option.set_display('-')  # change to a single -
 
@@ -452,126 +461,6 @@ def run_deco(func):
         print("{!r:}\n".format(result))  # comment out if results not needed
         return result                    # for optional use outside.
     return wrapper
-
-
-# ----------------------------------------------------------------------
-# (0) dirr ... code section ...
-def dirr2(obj, sub=None, colwise=False, cols=3, prn=True):
-    """call either numpy or python dirr function
-    """
-    obj = dir(obj)
-    if sub is not None:
-        obj = [i for i in obj if sub in i]
-    if 'np' in globals().keys():
-        dirr(obj, colwise=colwise, cols=cols, prn=prn)
-    else:
-        dir_py(obj, colwise=colwise, cols=cols, prn=prn)
-
-
-def dir_py(obj, colwise=True, cols=3, prn=True):
-    """The non-numpy version of dirr
-    """
-    from itertools import zip_longest as zl
-    a = obj
-    w = max([len(i) for i in a])
-    frmt = (("{{!s:<{}}} ".format(w)))*cols
-    csze = len(a) / cols  # split it
-    csze = int(csze) + (csze % 1 > 0)
-    if colwise:
-        a_0 = [a[i: i+csze] for i in range(0, len(a), csze)]
-        a_0 = list(zl(*a_0, fillvalue=""))
-    else:
-        a_0 = [a[i: i+cols] for i in range(0, len(a), cols)]
-    if hasattr(obj, '__name__'):
-        args = ["-"*70, obj.__name__, obj]
-    else:
-        args = ["-"*70, type(obj), "py version"]
-    txt_out = "\n{}\n| dir({}) ...\n|    {}\n-------".format(*args)
-    cnt = 0
-    for i in a_0:
-        cnt += 1
-        txt = "\n  ({:>03.0f})  ".format(cnt)
-        frmt = (("{{!s:<{}}} ".format(w)))*len(i)
-        txt += frmt.format(*i)
-        txt_out += txt
-    if prn:
-        print(txt_out)
-    else:
-        return txt_out
-
-
-def dirr(obj, colwise=True, cols=3, sub=None, prn=True):
-    """A formatted dir listing of a module or function.
-
-    Source : arraytools module in tools.py, dirr def
-
-    Return a directory listing of a module's namespace or a part of it if the
-    `sub` option is specified.
-
-    Use `prn=True`, to print. `prn=False`, returns a string.
-
-    Parameters
-    ----------
-    - colwise : `True` or `1`, otherwise, `False` or `0`
-    - cols : pick a size to suit
-    - sub : sub='a' all modules beginning with `a`
-    - prn : `True` for print or `False` to return output as string
-
-    Notes
-    -----
-
-    See the `inspect` module for possible additions like `isfunction`,
-    'ismethod`, `ismodule`
-
-    **Examples**::
-
-        dirr(art, colwise=True, cols=3, sub=None, prn=True)  # all columnwise
-        dirr(art, colwise=True, cols=3, sub='arr', prn=True) # just the `arr`'s
-
-          (001)    _arr_common     arr2xyz         arr_json
-          (002)    arr_pnts        arr_polygon_fc  arr_polyline_fc
-          (003)    array2raster    array_fc
-          (004)    array_struct    arrays_cols
-    """
-    d_arr = dir(obj)
-    a = np.array(d_arr)
-    dt = a.dtype.descr[0][1]
-    if sub is not None:
-        a = [i for i in d_arr if sub in i[:len(sub)+1]]
-        num = max([len(i) for i in a])
-    else:
-        num = int("".join([i for i in dt if i.isdigit()]))
-    frmt = ("{{!s:<{}}} ".format(num)) * cols
-    if colwise:
-        z = np.array_split(a, cols)
-        zl = [len(i) for i in z]
-        N = max(zl)
-        e = np.empty((N, cols), dtype=z[0].dtype)
-        for i in range(cols):
-            n = min(N, zl[i])
-            e[:n, i] = z[i]
-    else:
-        csze = len(a) / cols
-        rows = int(csze) + (csze % 1 > 0)
-        z = np.array_split(a, rows)
-        e = np.empty((len(z), cols), dtype=z[0].dtype)
-        N = len(z)
-        for i in range(N):
-            n = min(cols, len(z[i]))
-            e[i, :n] = z[i][:n]
-    if hasattr(obj, '__name__'):
-        args = ["-"*70, obj.__name__, obj]
-    else:
-        args = ["-"*70, type(obj), "np version"]
-    txt_out = "\n{}\n| dir({}) ...\n|    {}\n-------".format(*args)
-    cnt = 0
-    for i in e:
-        cnt += 1
-        txt_out += "\n  ({:>03.0f})    {}".format(cnt, frmt.format(*i))
-    if prn:
-        print(txt_out)
-    else:
-        return txt_out
 
 
 # ----------------------------------------------------------------------
@@ -729,7 +618,7 @@ def get_func(func, line_nums=True, verbose=True):
 
 # ----------------------------------------------------------------------
 # (3) get_modu .... code section
-def get_modu(obj, verbose=True):
+def get_modu(obj, code=False, verbose=True):
     """Get module (script) information, including source code for
     documentation purposes.
 
@@ -747,21 +636,28 @@ def get_modu(obj, verbose=True):
     -----
     Useage::
 
-        >>> import tools
-        >>> tools.get_modu(tools, verbose=True)  # No quotes around module
+    >>> import tools
+    >>> tools.get_modu(tools, code=False, verbose=True)
+    >>> # No quotes around module name, code=True for module code
 
-    """
+   """
     frmt = """
     :-----------------------------------------------------------------
     :Module: .... {} ....
     :------
     :File: ......
     {}\n
-    :Docs:
+    :Docs: ......
     {}\n
-    :Members:
-    {}\n
-    :Source code:
+    :Members: .....
+    {}
+    """
+    frmt0 = """
+    :{}
+    :-----------------------------------------------------------------
+    """
+    frmt1 = """
+    :Source code: .....
     {}
     :
     :-----------------------------------------------------------------
@@ -773,11 +669,15 @@ def get_modu(obj, verbose=True):
         out = "\nError... `{}` is not a module, but is of type... {}\n"
         print(out.format(obj.__name__, type(obj)))
         return None
-
-    lines, _ = inspect.getsourcelines(obj)
+    if code:
+        lines, _ = inspect.getsourcelines(obj)
+        frmt = frmt + frmt1
+        code = "".join(["{:4d}  {}".format(idx, line)
+                        for idx, line in enumerate(lines)])
+    else:
+        lines = code = ""
+        frmt = frmt + frmt0
     memb = [i[0] for i in inspect.getmembers(obj)]
-    code = "".join(["{:4d}  {}".format(idx, line)
-                    for idx, line in enumerate(lines)])
     args = [obj.__name__, obj.__file__, obj.__doc__, memb, code]
     mod_mem = dedent(frmt).format(*args)
     if verbose:
@@ -866,49 +766,48 @@ def info(a, prn=True):
 # ---- make arrays, change format or arrangement ----
 # ----------------------------------------------------------------------
 # (5a) num_to_nan ... code section .....
-def num_to_nan(a, num=None):
+def num_to_nan(a, nums=None):
     """Reverse of nan_to_num introduced in numpy 1.13
 
     Example
     -------
     >>> a = np.arange(10)
-    >>> num_to_nan(a, 3)
-    array([  0.,   1.,   2.,  nan,   4.,   5.,   6.,   7.,   8.,   9.])
+    >>> num_to_nan(a, num=[2, 3])
+    array([  0.,   1.,   nan,  nan,   4.,   5.,   6.,   7.,   8.,   9.])
     """
     a = a.astype('float64')
-    if num is None:
+    if nums is None:
         return a
-    if isinstance(num, (list, tuple, np.ndarray)):
-        m = is_in(a, num)  # ---- call to is_in below
+    if isinstance(nums, (list, tuple, np.ndarray)):
+        m = is_in(a, nums)  # ---- call to is_in below
         a[m] = np.nan
     else:
-        a = np.where(a == num, np.nan, a)
+        a = np.where(a == nums, np.nan, a)
     return a
 
 
 # (5b) num_to_mask ... code section .....
-def num_to_mask(a, num=None):
+def num_to_mask(a, nums=None, hardmask=True):
     """Reverse of nan_to_num introduced in numpy 1.13
 
     Example
     -------
     >>> a = np.arange(10)
-    >>> num_to_mask(a, 5)
-    masked_array(data = [0.0 1.0 2.0 3.0 4.0 - 6.0 7.0 8.0 9.0],
-             mask = [False False False False False
-                     True False False False False],
-             fill_value = 1e+20)
+    >>> art.num_to_mask(a, nums=[1, 2, 4])
+    masked_array(data = [0 - - 3 - 5 6 7 8 9],
+                mask = [False  True  True False  True False
+                        False False False False], fill_value = 999999)
     """
-    a = a.astype('float64')
-    if num is None:
+    if nums is None:
         return a
     else:
-        m = is_in(a, num)  # ---- cal to is_in below
-        b = np.ma.MaskedArray(a, mask=m)
+        m = is_in(a, nums)  # ---- call to is_in below
+        b = np.ma.MaskedArray(a, mask=m, hard_mask=hardmask)
     return b
 
 
 # (6) make_blocks ... code section .....
+#
 def make_blocks(rows=3, cols=3, r=2, c=2, dt='int'):
     """Make a block array with rows * cols containing r*c sub windows.
     Specify the rows, columns, then the block size as r, c and dtype
@@ -945,6 +844,7 @@ def make_blocks(rows=3, cols=3, r=2, c=2, dt='int'):
 
 
 # (7) make_flds .... code section
+#
 def make_flds(n=1, as_type='float', names=None, def_name="col"):
     """Create float or integer fields for statistics and their names.
 
@@ -986,10 +886,21 @@ def make_flds(n=1, as_type='float', names=None, def_name="col"):
     return dt
 
 
-# (8)  rec_arr .... code section
-def rec_arr(a, flds=None, types=None):
-    """Sample field creation.  Change a uniform array to an array of
-    mixed dtype
+# (8)  make nd_rec, nd_struct.... code section
+#
+def nd_rec(a, flds=None, types=None):
+    """Change a uniform array to an array of mixed dtype as a recarray
+
+    Requires:
+    ---------
+    flds : string or None
+        flds='a, b, c'
+    types : string or None
+        types='U8, f8, i8'
+
+    See also:
+    ---------
+    nd_struct : alternate using lists rather than string inputs
 
     Notes:
     -----
@@ -998,12 +909,11 @@ def rec_arr(a, flds=None, types=None):
 
     Example::
 
-       a = np.arange(20).reshape(4, 5)
-       a_s = mixed_flds(a, flds='a, b, c, D, e', types='U8, f8, i8, U8, f8')
-       rec.array([('0',   1.,  2, '3',   4.), ...snip ...
-                  ('15',  16., 17, '18',  19.)],
-           dtype=[('a', '<U8'), ('b', '<f8'), ('c', '<i8'),
-                  ('D', '<U8'), ('e', '<f8')])
+       a = np.arange(9).reshape(3, 3)
+       a_r = nd_rec(a, flds='a, b, c', types='U8, f8, i8')
+       a_r
+       rec.array([('0',  1., 2), ('3',  4., 5), ('6',  7., 8)],
+          dtype=[('a', '<U8'), ('b', '<f8'), ('c', '<i8')])
 
     """
     _, c = a.shape
@@ -1011,134 +921,60 @@ def rec_arr(a, flds=None, types=None):
         flds = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")[:c]
         flds = ", ".join([n for n in flds])
     if types is None:
-        types = a.dtype.descr[0][1]
+        types = a.dtype.str  # a.dtype.descr[0][1]
         types = ", ".join(["{}".format(types) for i in range(c)])
-    a_s = np.core.records.fromarrays(a.transpose(),
+    a_r = np.core.records.fromarrays(a.transpose(),
                                      names=flds,
                                      formats=types)
-    return a_s
+    return a_r
 
 
-# (9) arr2xyz .... code section
-def arr2xyz(a, verbose=False):
-    """Produce an array such that the row, column values are used for x,y
-    and array values for z.
+def nd_struct(a, flds=None, types=None):
+    """"Change an array with uniform dtype to an array of mixed dtype as a
+    structured array.
 
-    Returns
-    --------
-    A mesh grid with values, dimensions and shapes are changed so
-    that ndim=2, ie shape(3,4,5), ndim=3 becomes shape(12,5), ndim=2
+    Requires:
+    ---------
+    flds : list or None
+        flds=['A', 'B', 'C']
+    types : list or None
+        types=['U8', 'f8', 'i8']
+
+    See also:
+    ---------
+    nd_rec : alternate using strings rather than list inputs
 
     Example::
 
-        >>> a = np.arange(9).reshape(3, 3)
-        a
-        array([[0, 1, 2],
-               [3, 4, 5],
-               [6, 7, 8]])
+        a = np.arange(9).reshape(3, 3)
+        a_s = nd_struct(a, flds=['A', 'B', 'C'], types=['U8', 'f8', 'i8'])
+        a_s
+        array([('0',  1., 2), ('3',  4., 5), ('6',  7., 8)],
+              dtype=[('A', '<U8'), ('B', '<f8'), ('C', '<i8')])
 
-        >>> arr2xyz(a)
-        array([[0, 0, 0],
-               [1, 0, 1],
-               [2, 0, 2],
-               [0, 1, 3],
-               [1, 1, 4],
-               [2, 1, 5],
-               [0, 2, 6],
-               [1, 2, 7],
-               [2, 2, 8]])
+    Timing of nd_rec and nd_struct
 
-    See also
-    --------
-        `xy_vals(a)` and
+    >>> %timeit nd_rec(a, flds='a, b, c', types='U8, f8, i8')
+    465 µs ± 53 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
-        `rc_vals(a)`
-
-        for simpler versions or if you want structured arrays.
-
+    >>> %timeit nd_struct(a, flds=['A', 'B', 'C'], types=['U8', 'f8', 'i8'])
+    253 µs ± 27.1 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
     """
-    if a.ndim == 1:
-        a = a.reshape(a.shape[0], 1)
-    if a.ndim > 2:
-        a = a.reshape(np.product(a.shape[:-1]), a.shape[-1])
-    r, c = a.shape
-    XX, YY = np.meshgrid(np.arange(c), np.arange(r))
-    tbl = np.stack((XX.ravel(), YY.ravel(), a.ravel()), axis=1)
-    if verbose:
-        frmt = """
-        ----------------------------
-        Meshgrid demo: array to x,y,z table
-        :Formulation...
-        :  XX,YY = np.meshgrid(np.arange(x.shape[1]),np.arange(x.shape[0]))
-        :Input table
-        {!r:<}
-        :Raveled array, using x.ravel()
-        {!r:<}
-        :XX in mesh: columns shape[1]
-        {!r:<}
-        :YY in mesh: rows shape[0]
-        {!r:<}
-        :Output:
-        {!r:<}
-        :-----------------------------
-        """
-        print(dedent(frmt).format(a, a.ravel(), XX, YY, tbl))
-    else:
-        return tbl
+    _, c = a.shape
+    dt_base = [a.dtype.str] * c  # a.dtype.descr[0][1]
+    if flds is None:
+        flds = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")[:c]
+    if types is None:
+        types = dt_base
+    dt0 = np.dtype(list(zip(flds, dt_base)))
+    dt1 = list(zip(flds, types))
+    a_s = a.view(dtype=dt0).squeeze(axis=-1).astype(dt1)
+    return a_s
 
 
-# (10) change_arr ... code section .....
-def change_arr(a, order=None, prn=False):
-    """Reorder and/or drop columns in an ndarray or structured array.
-
-    Fields not included will be dropped in the output array.
-
-    Parameters
-    ----------
-    order : list of fields
-        fields in the order that you want them
-
-    To Reorder fields : ['a', 'c', 'b']
-        For a structured/recarray, the desired field order is required.
-        An ndarray, not using named fields, will require the numerical
-        order of the fields.
-
-    Remove fields : ['a', 'c']  # `b` dropped
-        To remove fields, simply leave them out of the list.  The
-        order of the remaining fields will be reflected in the output.
-        This is a convenience function.... see the module header for
-        one-liner syntax.
-
-    Tip
-        Use... `info(a, verbose=True)`
-        This gives field names which can be copied for use here.
-
-    """
-    if order is None or (not isinstance(order, (list, tuple))):
-        print("Order not given in a list or tuple")
-        return a
-    names = a.dtype.names
-    if names is None:
-        b = a[:, order]
-    else:
-        out_flds = []
-        out_flds = [i for i in order if i in names]
-        if prn:
-            missing = [i for i in names if i not in order]
-            missing.extend([i for i in order if i not in out_flds])
-            frmt = """
-            : change(a)
-            : - field(s) {}
-            : - not found, missing or removed.
-            """
-            print(dedent(frmt).format(missing))
-        b = a[out_flds]
-    return b
-
-
-# (11) nd_struct and np2rec .... code section
+#  nd_struct and np2rec .... code section
 def nd2struct(a, fld_names=None):
-    """Return a view of an ndarray as structured array
+    """Return a view of an ndarray as structured array with a uniform dtype/
 
     Parameters
     ----------
@@ -1185,11 +1021,178 @@ def nd2struct(a, fld_names=None):
     return a.view([(n, a.dtype) for n in names]).squeeze(-1)
 
 
-def np2rec(a, fld_names=None):
+def nd2rec(a, fld_names=None):
     """Shell to nd2struct but yielding a recarray.
     """
     a = nd2struct(a, fld_names=None)
     return a.view(type=np.recarray)
+
+
+# (9) arr2xyz .... code section
+#
+def arr2xyz(a, keep_masked=False, verbose=False):
+    """Produce an array such that the row, column values are used for x,y
+    and array values for z.  Masked arrays are sorted
+
+    Returns
+    --------
+    A mesh grid with values, dimensions and shapes are changed so
+    that ndim=2, ie shape(3,4,5), ndim=3 becomes shape(12,5), ndim=2
+
+    Example::
+
+        >>> a = np.arange(9).reshape(3, 3)
+        array([[0, 1, 2],
+               [3, 4, 5],
+               [6, 7, 8]])
+        >>> arr2xyz(am, keep_masked=True)   # keep the masked values...
+        masked_array(data =
+        [[0 0 0]
+         [1 0 -]
+         [2 0 2]
+         [0 1 -]
+         [1 1 4]
+         [2 1 -]
+         [0 2 6]
+         [1 2 7]
+         [2 2 8]],
+                 mask =
+         [[False False False]... snip
+         [False False False]],
+               fill_value = 999999)
+
+    >>> arr2xyz(am, keep_masked=False)  # remove the masked values
+    array([[0, 0, 0],
+           [2, 0, 2],
+           [1, 1, 4],
+           [0, 2, 6],
+           [1, 2, 7],
+           [2, 2, 8]])
+
+
+    See also
+    --------
+        `xy_vals(a)` and
+
+        `rc_vals(a)`
+
+        for simpler versions or if you want structured arrays.
+
+        `num_to_mask(a)` and  `num_to_nan(a)` to produce masks prior to
+        conversion
+
+    """
+    if a.ndim == 1:
+        a = a.reshape(a.shape[0], 1)
+    if a.ndim > 2:
+        a = a.reshape(np.product(a.shape[:-1]), a.shape[-1])
+    r, c = a.shape
+    XX, YY = np.meshgrid(np.arange(c), np.arange(r))
+    XX = XX.ravel()
+    YY = YY.ravel()
+    if isinstance(np.ma.getmask(a), np.ndarray):
+        tbl = np.ma.vstack((XX, YY, a.ravel()))
+        tbl = tbl.T
+        if not keep_masked:
+            m = tbl[:, 2].mask
+            tbl = tbl[~m].data
+    else:
+        tbl = np.stack((XX, YY, a), axis=1)
+    if verbose:
+        frmt = """
+        ----------------------------
+        Meshgrid demo: array to x,y,z table
+        :Formulation...
+        :  XX,YY = np.meshgrid(np.arange(x.shape[1]),np.arange(x.shape[0]))
+        :Input table
+        {!r:<}
+        :Raveled array, using x.ravel()
+        {!r:<}
+        :XX in mesh: columns shape[1]
+        {!r:<}
+        :YY in mesh: rows shape[0]
+        {!r:<}
+        :Output:
+        {!r:<}
+        :-----------------------------
+        """
+        print(dedent(frmt).format(a, a.ravel(), XX, YY, tbl))
+    else:
+        return tbl
+
+# (27) rc_vals
+def rc_vals(a):
+    """Convert a 2D ndarray to a structured row, col, values array.
+    """
+    dt = [('r', '<i8'), ('c', '<i8'), ('Val', a.dtype.str)]
+    r_c = [(*ij, v) for ij, v in np.ndenumerate(a)]
+    vals = np.asarray(r_c, dtype=dt)
+    return vals
+
+
+# (28) xy_vals ----
+def xy_vals(a):
+    """Convert a 2D ndarray to a structured x, y, values array.
+    """
+    r, c = a.shape
+    n = r * c
+    x, y = np.meshgrid(np.arange(c), np.arange(r))
+    dt = [('X', '<i8'), ('Y', '<i8'), ('Vals', a.dtype.str)]
+    out = np.zeros((n,), dtype=dt)
+    out['X'] = x.ravel()
+    out['Y'] = y.ravel()
+    out['Vals'] = a.ravel()
+    return out
+
+# ----------------------------------------------------------------------------
+# (10) change_arr ... code section .....
+#
+def change_arr(a, order=None, prn=False):
+    """Reorder and/or drop columns in an ndarray or structured array.
+
+    Fields not included will be dropped in the output array.
+
+    Parameters
+    ----------
+    order : list of fields
+        fields in the order that you want them
+
+    To reorder fields : ['a', 'c', 'b']
+        For a structured/recarray, the desired field order is required.
+        An ndarray, not using named fields, will require the numerical
+        order of the fields.
+
+    To remove fields : ['a', 'c']  # `b` dropped
+        To remove fields, simply leave them out of the list.  The
+        order of the remaining fields will be reflected in the output.
+        This is a convenience function.... see the module header for
+        one-liner syntax.
+
+    Tip
+        Use... `info(a, verbose=True)`
+        This gives field names which can be copied for use here.
+
+    """
+    if order is None or (not isinstance(order, (list, tuple))):
+        print("Order not given in a list or tuple")
+        return a
+    names = a.dtype.names
+    if names is None:
+        b = a[:, order]
+    else:
+        out_flds = []
+        out_flds = [i for i in order if i in names]
+        if prn:
+            missing = [i for i in names if i not in order]
+            missing.extend([i for i in order if i not in out_flds])
+            frmt = """
+            : change(a)
+            : - field(s) {}
+            : - not found, missing or removed.
+            """
+            print(dedent(frmt).format(missing))
+        b = a[out_flds]
+    return b
 
 
 # (12) scale .... code section
@@ -1318,10 +1321,10 @@ def stride(a, win=(3, 3), stepby=(1, 1)):
     it is corrected as is the number of columns.
 
     `win, stepby` - tuple/list/array of window strides by dimensions
-
-        - 1D -    (3,)       (1,)    3 elements, step by 1
-        - 2D -    (3, 3)     (1, 1)  3x3 window, step by 1 rows and col.
-        - 3D - (1, 3, 3)  (1, 1, 1) 1x3x3, step by 1 row, col, depth
+    ::
+        - 1D - (3,)       (1,)       3 elements, step by 1
+        - 2D - (3, 3)     (1, 1)     3x3 window, step by 1 rows and col.
+        - 3D - (1, 3, 3)  (1, 1, 1)  1x3x3, step by 1 row, col, depth
 
     Examples
     --------
@@ -1361,7 +1364,7 @@ def stride(a, win=(3, 3), stepby=(1, 1)):
 
 def sliding_window_view(x, shape=None):
     """Create rolling window views of the 2D array with the given shape.
-    proposed for upcoming numpy version
+    proposed for upcoming numpy version.
     """
     if shape is None:
         shape = x.shape
@@ -1473,7 +1476,7 @@ def _func(fn, a, this):
 
 
 # @time_deco
-def find(a, func, this=None, count=0, keep=[], prn=False, r_lim=2):
+def find(a, func, this=None, count=0, keep=None, prn=False, r_lim=2):
     """Find the conditions that are met in an array, defined by `func`.
     `this` is the condition being looked for.  The other parameters are defined
     in the Parameters section.
@@ -1805,16 +1808,18 @@ def is_in(find_in, using, not_in=False):
 
     Parameters
     ----------
-        find_in :
-            the array to check for the elements
-        using :
-            what to use for the check
+
+    find_in :
+        the array to check for the elements
+    using :
+        what to use for the check
 
     Note
     ----
-        >>> from numpy.lib import NumpyVersion
-        >>> if NumpyVersion(np.__version__) < '1.13.0'):
-                # can add for older versions later
+
+    >>> from numpy.lib import NumpyVersion
+    >>> if NumpyVersion(np.__version__) < '1.13.0'):
+        # can add for older versions later
     """
     find_in = np.asarray(find_in)
     shp = find_in.shape
@@ -1863,39 +1868,15 @@ def n_smallest(a, num=1, by_row=True):
     return b
 
 
-# (27) rc_vals
-def rc_vals(a):
-    """Convert a 2D ndarray to a structured array with row, col, values array.
-    """
-    dt = [('r', '<i8'), ('c', '<i8'), ('Val', a.dtype.str)]
-    r_c = [(*ij, v) for ij, v in np.ndenumerate(a)]
-    vals = np.asarray(r_c, dtype=dt)
-    return vals
-
-
-# (28) xy_vals ----
-def xy_vals(a):
-    """Convert a 2D ndarray to a structured x, y, vals array.
-    """
-    r, c = a.shape
-    n = r * c
-    x, y = np.meshgrid(np.arange(c), np.arange(r))
-    dt = [('X', '<i8'), ('Y', '<i8'), ('Vals', a.dtype.str)]
-    out = np.zeros((n,), dtype=dt)
-    out['X'] = x.ravel()
-    out['Y'] = y.ravel()
-    out['Vals'] = a.ravel()
-    return out
-
-
 # ---- sorting ---------------------------------------------------------------
 # column and row sorting
 # (29) sort_rows_by_col ----
 def sort_rows_by_col(a, col=0, descending=False):
     """Sort a 2D array by column.
-    :  a =array([[0, 1, 2],    array([[6, 7, 8],
-    :            [3, 4, 5],           [3, 4, 5],
-    :            [6, 7, 8]])          [0, 1, 2]])
+
+    >>> a =array([[0, 1, 2],    array([[6, 7, 8],
+                  [3, 4, 5],           [3, 4, 5],
+                  [6, 7, 8]])          [0, 1, 2]])
     """
     a = np.asarray(a)
     shp = a.shape[0]
@@ -1917,10 +1898,19 @@ def sort_cols_by_row(a, col=0, descending=False):
 # (31) radial sort -----
 def radial_sort(pnts, cent=None):
     """Sort about the point cloud center or from a given point
-    : pnts - an array of points (x,y) as array or list
-    : cent - list, tuple, array of the center's x,y coordinates
-    :      - cent = [0, 0] or np.array([0, 0])
-    :Returns: the angles in the range -180, 180 x-axis oriented
+
+    Requires:
+    ---------
+
+    pnts :
+        an array of points (x,y) as array or list
+    cent :
+        list, tuple, array of the center's x,y coordinates
+        cent = [0, 0] or np.array([0, 0])
+
+    Returns:
+    --------
+        The angles in the range -180, 180 x-axis oriented
     """
     pnts = np.asarray(pnts, dtype='float64')
     if cent is None:
@@ -1948,7 +1938,10 @@ def pack_last_axis(arr, names=None):
 # ----------------------------------------------------------------------
 # _help .... code section
 def _help():
-    """arraytools"""
+    """arraytools.tools help...
+
+    Function list follows:
+    """
     _hf = """
     :-------------------------------------------------------------------:
     : ---- arrtools functions  (loaded as 'art') ----
@@ -1968,10 +1961,10 @@ def _help():
     (8)  rec_arr(a, flds=None, types=None)
     (9)  arr2xyz(a, verbose=False)
          array (col, rows) to (x, y) and array values for z.
-    (10) nd2struct(a)
-         convert an ndarray to a structured array with fields
-    (11) change(a, order=[], prn=False)
+    (10) change(a, order=[], prn=False)
          reorder and/or drop columns
+    (11) nd2struct(a)
+         convert an ndarray to a structured array with fields
     (12) scale(a, x=2, y=2, num_z=None)
          scale an array up in size by repeating values
     (13) split_array(a, fld='ID')
@@ -1995,7 +1988,7 @@ def _help():
               return_counts=False, axis=0)
     (24) is_in
     (25) n_largest(a, num=1, by_row=True)
-    (26)    n_smallest(a, num=1, by_row=True)
+    (26) n_smallest(a, num=1, by_row=True)
     (27) rc_vals
     (28) xy_vals
     (29) sort_rows_by_col
