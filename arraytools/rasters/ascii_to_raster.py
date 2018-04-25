@@ -1,27 +1,50 @@
 # coding: utf-8
 """
-Script:   ascii_demo.py
-Author:   Dan.Patterson@carleton.ca
-Modified: 2017-08-28
-Purpose:  Convert an ascii file to a raster (tif)
+ascii_to_raster
+===============
+
+Script :   ascii_to_raster.py
+
+Author :   Dan.Patterson@carleton.ca
+
+Modified : 2018-04-04
+
+Purpose :  Convert an ascii file to a raster (tif)
+
 References:
-- http://desktop.arcgis.com/en/arcmap/latest/analyze/arcpy-functions/
-         rastertonumpyarray-function.htm
-- syntax: RasterToNumPyArray (in_raster, {lower_left_corner},
-                               {ncols}, {nrows}, {nodata_to_value})
-- useage: inRas = arcpy.Raster('C:/data/inRaster')
-          lowerLeft = arcpy.Point(inRas.extent.XMin,inRas.extent.YMin)
-          cellSize = ras.meanCellWidth
-- returns:  bands, rows, columns or a structured array
+
+[1]
+http://desktop.arcgis.com/en/arcmap/latest/analyze/arcpy-functions/\
+rastertonumpyarray-function.htm
+
+syntax:
+    RasterToNumPyArray(in_raster, {lower_left_corner},
+                      {ncols}, {nrows}, {nodata_to_value})
+
+Useage:
+-------
+inRas : arcpy.Raster('C:/data/inRaster')
+
+lowerLeft : arcpy.Point(inRas.extent.XMin,inRas.extent.YMin)
+
+cellSize : ras.meanCellWidth
+
+Returns:
+--------
+bands, rows, columns or a structured array
 
 Notes:
-- ndim  rows is dim 0
-        cols is dim 1
-        depth is dim 2
+------
+- rows is dim 0
+- cols is dim 1
+- depth is dim 2
 
-From my post: 2011-10-11
-    http://gis.stackexchange.com/questions/16098/determining-min-and-
-       max-values-in-an-ascii-raster-dataset-using-python/16101#16101
+From my post : 2011-10-11
+
+[2]
+http://gis.stackexchange.com/questions/16098/determining-min-and-\
+max-values-in-an-ascii-raster-dataset-using-python/16101#16101
+
 >>> import numpy as np
 >>> ascii_file = "c:/temp/Ascii_3x3_1nodata.asc"
 >>> an_array = np.mafromtxt(ascii_file, 'float', '#', None, 6, None, '-999')
@@ -34,6 +57,7 @@ NODATA_VALUE   -999
 0 1 2
 -999 4 5
 6 7 8
+
 """
 import os
 import numpy as np

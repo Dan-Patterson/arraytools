@@ -7,7 +7,7 @@ Script:   surface.py
 
 Author:   Dan.Patterson@carleton.ca
 
-Modified: 2016-12-27
+Modified: 2018-04-15
 
 Purpose :
     Calculate slope, aspect, hillshade and other terrain derivatives

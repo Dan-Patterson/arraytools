@@ -1,13 +1,29 @@
 # -*- coding: UTF-8 -*-
 """
-:Script:   conversion.py
-:Author:   Dan.Patterson@carleton.ca
-:Modified: 2018-02-25
-:Purpose:  tools for working with numpy arrays
-:Useage:
-:
-:References:
-:
+conversion
+==========
+
+Script :   conversion.py
+
+Author :   Dan.Patterson@carleton.ca
+
+Modified : 2018-04-18
+
+Purpose :  conversion tools for working with numpy arrays
+
+Functions
+---------
+
+>>> __all__ = ['arr2tuple',
+               'recarray2dict',
+               'table2dict',
+               'read_npy',
+               'save_as_txt',
+               'arr_tif_tf',    # array to tiff using tifffile
+               'arr_tif_cb',    # .... using CompositeBands
+               'tifffile_arr',  # tiff to array using tifffile
+               '_demo_tif'
+               ]
 :---------------------------------------------------------------------:
 """
 # ---- imports, formats, constants ----
@@ -45,8 +61,8 @@ __all__ = ['arr2tuple',
 #
 def arr2tuple(a):
     """Convert an array to tuples, a convenience function when array.tolist()
-    :  doesn't provide the necessary structure since lists and lists of lists
-    :  aren't hashable
+    doesn't provide the necessary structure since lists and lists of lists
+    aren't hashable
     """
     return tuple(map(tuple, a.tolist()))
 
@@ -54,10 +70,13 @@ def arr2tuple(a):
 # ---- array or table to dictionary ------------------------------------------
 #
 def recarray2dict(a, flds=None, to_list=False):
-    """Return numpy.recarray as dicttionary
-    : a - a NumPy structured or recarray with/without mixed dtypes
-    : to_list - if True, the dictionary values are arrays, if False, the values
-    :     are returned as lists
+    """Return a numpy.recarray as dictionary
+
+    a :
+        a NumPy structured or recarray with/without mixed dtypes
+    to_list :
+        if True, the dictionary values are arrays, if False, the values
+        are returned as lists
     """
     if flds is None:
         flds = a.dtype.names
@@ -70,10 +89,15 @@ def recarray2dict(a, flds=None, to_list=False):
 
 def table2dict(in_tbl, flds=None, to_list=True):
     """Searchcursor to dictionary
-    : in_tbl - geodatabase table
-    : flds - a list/tuple of field names, if None, then all the fields are used
-    : to_list - True, then a list of the field values is returned
-    :         - False, an array subset from the array 'a' is returned.
+
+    in_tbl : table
+        a geodatabase table
+    flds : list or tuple
+        a list/tuple of field names, if None, then all the fields are used
+    to_list : boolean
+        True, then a list of the field values is returned.
+
+        False, an array subset from the array 'a' is returned.
     """
     if flds is None:
         flds = [f.name for f in arcpy.ListFields(in_tbl)]
@@ -90,15 +114,20 @@ def table2dict(in_tbl, flds=None, to_list=True):
 # ---- array to and from npy ------------------------------------------------
 #
 def read_npy(fp, prn=False):
-    """ read an npy file quickly
-    : fp - file path: "c:/temp/a01.npy"
-    : prn - obtain full information if True
-    :Requires:
-    :--------
-    : from numpy.lib import format
-    :Notes:
-    :------
-    : shortcut ... np.load("c:/temp/a01.npy")
+    """ Read an npy file quickly
+
+    fp : string
+        The file path: "c:/temp/a01.npy"
+    prn : boolean
+        obtain full information if True
+
+    Requires:
+    ---------
+    from numpy.lib import format
+
+    Notes:
+    -------
+    shortcut ... np.load("c:/temp/a01.npy")
     """
     frmt = """
     ---- npy reader ---------------------------------------------------------
@@ -128,14 +157,17 @@ def read_npy(fp, prn=False):
 
 def save_as_txt(fname, a):
     """Save a numpy array as a text file determining the format from the
-    :  data type
-    :
-    :Reference:  from numpy savetxt
-    :----------
-    : savetxt(fname, X, fmt='%.18e', delimiter=' ', newline='\n', header='',
-    :         footer='', comments='# ')
-    : fmt - '%[flag]width[.precision]specifier'
-    : fmt='%.18e'
+    data type.
+
+    Reference:
+    ----------
+    from numpy savetxt
+
+    >>> savetxt(fname, X, fmt='%.18e', delimiter=' ',
+                newline=`\\n`, header='', footer='', comments='# ')
+
+    - fmt : '%[flag]width[.precision]specifier'
+    - fmt='%.18e'
     """
     dt_kind = a.dtype.kind
     l_sze = max(len(str(a.max())), len(str(a.min())))
@@ -149,35 +181,45 @@ def save_as_txt(fname, a):
 #
 def arr_tif_tf(a, fname):
     """Convert a NumPy array to a tiff using tifffile.py
-    :
-    : - https://github.com/blink1073/tifffile  source github page
-    :Requires:  tifffile
-    :---------
-    : from tifffile import imread, imsave, TiffFile
-    : help(TiffFile.geotiff_metadata)
-    :
-    : imsave:
-    : imsave(file, data=None, shape=None, dtype=None, bigsize=2**32-2**25,
-    :       **kwargs)
-    :  file - filename with *.tif
-    :  data - array
-    :  shape - if creating an empty array
-    : a = np.arange(4*5*6).reshape(4, 5, 6)
-    : imsave('c:/temp/temp.tif', a)
-    : b =imread('c:/temp/temp.tif')
-    : np.all(a == b)  # True
-    :
-    : GeoTiff, World files:
-    :  http://trac.osgeo.org/geotiff/
-    :  https://en.wikipedia.org/wiki/World_file
-    :
-    : imsave('temp.tif', data, compress=6, metadata={'axes': 'TZCYX'})
-    :
-    : Parameters ‘append’, ‘byteorder’, ‘bigtiff’, ‘software’, and ‘imagej’,
-    :    are passed to the TiffWriter class.
-    : Parameters ‘photometric’, ‘planarconfig’, ‘resolution’, ‘compress’,
-    :   ‘colormap’, ‘tile’, ‘description’, ‘datetime’, ‘metadata’, ‘contiguous’
-    :   and ‘extratags’ are passed to the TiffWriter.save function.
+
+    Requires:
+    ---------
+    from tifffile import imread, imsave, TiffFile
+
+    help(TiffFile.geotiff_metadata)
+
+    imsave :
+        imsave(file, data=None, shape=None, dtype=None, bigsize=2**32-2**25,
+              **kwargs)
+
+    file - filename with *.tif
+
+    data - array
+
+    shape - if creating an empty array
+
+    >>> a = np.arange(4*5*6).reshape(4, 5, 6)
+    >>> imsave('c:/temp/temp.tif', a)
+    >>> b =imread('c:/temp/temp.tif')
+    >>> np.all(a == b)  # True
+
+    GeoTiff, World files:
+    ---------------------
+    [1]
+    https://github.com/blink1073/tifffile  source github page
+    [2]
+    http://trac.osgeo.org/geotiff/
+    [3]
+    https://en.wikipedia.org/wiki/World_file
+
+    imsave('temp.tif', data, compress=6, metadata={'axes': 'TZCYX'})
+
+    Parameters ‘append’, ‘byteorder’, ‘bigtiff’, ‘software’, and ‘imagej’,
+    are passed to the TiffWriter class.
+
+    Parameters ‘photometric’, ‘planarconfig’, ‘resolution’, ‘compress’,
+    ‘colormap’, ‘tile’, ‘description’, ‘datetime’, ‘metadata’, ‘contiguous’
+    and ‘extratags’ are passed to the TiffWriter.save function.
     """
     import warnings
     warnings.filterwarnings('ignore')
