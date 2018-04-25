@@ -5,7 +5,7 @@ frmts.py  formatting arrays
 
 Script:   frmts.py
 
-Author:   Dan.Patterson@carleton.ca
+Author:   Dan_Patterson@carleton.ca
 
 Modified: 2018-03-28
 
@@ -28,7 +28,7 @@ Purpose:
         5, r,  4  = 20    5, r, 3 = 15
 
 
-  frmt_(a)  example for a =  np.arange(3*4*5).reshape(3, 4, 5)::
+  >>> frmt_(a)  example for a =  np.arange(3*4*5).reshape(3, 4, 5)
   ---------------------------------------------------
   :Array...
   :-shape (3, 4, 5), ndim 3
@@ -106,7 +106,7 @@ indent objects, added automatic support for arrays and optional line numbers
      05..  [16 17 18 19]
      06..  [20 21 22 23]]]
 
-(1d)redent(lines, spaces=4)
+(1d)  redent(lines, spaces=4)
 ::
      a = np.arange(3*5).reshape(3,5)
      >>> print(redent(a))
@@ -132,9 +132,7 @@ indent objects, added automatic support for arrays and optional line numbers
    sub (0)       sub (1)
 
 (3) frmt_ma
-
 ::
-
     :--------------------
     :Masked array........
     :  ndim: 2 size: 20
@@ -210,9 +208,7 @@ Notes:
 >>>  a_kind = a.dtype.kind
 >>>  f = _format_row_test(d, r, c, a_kind, deci, a_max, a_min)
 
-
 ::
-
     Row format given
     d 3, r 2, c 3
     kind i decimals 1
@@ -220,7 +216,7 @@ Notes:
     0123456789012345678901234567890123456789012345678901234567890123456789
     0         1         2         3         4         5         6
 
->>>  r = "\n".join([f.format(*i) for i in aa])
+>>>  r = `\\n`.join([f.format(*i) for i in aa])
 >>>  print(r)
   0  1  2    6  7  8   12 13 14
   3  4  5    9 10 11   15 16 17
@@ -295,9 +291,17 @@ df_opt = ", ".join(["{}={}".format(i, pr_opt[i]) for i in pr_opt])
 
 script = sys.argv[0]
 
-__all__ = ['col_hdr', 'deline', 'frmt_', 'frmt_ma', 'frmt_rec', 'form_',
-           'in_by', 'make_row_format', 'redent', '_demo_frmt', '_demo_rec',
-           '_demo_ma']
+__all__ = ['col_hdr',
+           'deline',
+           'in_by',
+           'redent',
+           '_chunks',
+           'frmt_',
+           'frmt_ma',
+           'frmt_rec', 'pd_',
+           'make_row_format',
+           'form_',
+           ]
 
 
 # ----------------------------------------------------------------------
@@ -363,7 +367,7 @@ def deline(a, header="", prefix="  .", prn=True):
 
 # ---------------------------------------------------------------------------
 # (1c) in_by .... code section
-def in_by(obj, hdr="", nums=False, prefix=" .", prn=True):
+def in_by(obj, hdr="", nums=False, prefix="   .", prn=True):
     """A `textwrap.indent` variant for python 2.7 or a substitute for
     any version of python.  The function stands for `indent by`.
 
@@ -650,17 +654,30 @@ def _col_format(a, c_name="c00", deci=0):
                        len(m_.format(a_min, deci))) + 1
         col_wdth = max(len(c_name), col_wdth) + 1
         c_fmt = w_.format(col_wdth, deci)
-    else:  # ---- lists, arrays, strings. Check for (N,) vs (N,1)
+    # ---- lists, arrays, strings. Check for (N,) vs (N,1)
+    # I made some changes in how col_wdth is determined, old is commented
+    else:
         if a.ndim == 1:  # ---- check for (N, 1) format of structured array
             a = a[0]
-        col_wdth = max([len(str(i)) for i in a])
+        dt = a.dtype.descr[0][1]
+        col_wdth = int("".join([i for i in dt if i.isdigit()]))
+#       col_wdth = max([len(str(i)) for i in a])
         col_wdth = max(len(c_name), col_wdth) + 1  # + deci
         c_fmt = "!s:>" + "{}".format(col_wdth)
     return c_fmt, col_wdth
 
 
+def pd_(a, deci=2, use_names=True, prn=True):
+    """see help for `frmt_rec`..."""
+    ret = frmt_rec(a, deci=deci, use_names=use_names, prn=prn)
+    return ret
+
+
 def frmt_rec(a, deci=2, use_names=True, prn=True):
     """Format a structured array with a mixed dtype.
+
+    NOTE : Can be called as `pd_(a, ... )` to emulate pandas dataframes
+        You should limit large arrays to a slice ie. a[:50]
 
     Requires:
     -------
@@ -669,6 +686,10 @@ def frmt_rec(a, deci=2, use_names=True, prn=True):
     `deci` : int
         To facilitate printing, this value is the number of decimal
         points to use for all floating point fields.
+    `use_names` : boolean
+        If no names are available, then create them
+    `prn` : boolean
+        True to print, False to return the string
     Notes:
     -----
         `_col_format` : does the actual work of obtaining a representation of
@@ -841,6 +862,7 @@ def _demo_rec():
     """load and print a structured array
     """
     pth = _demo_rec.__code__.co_filename  # script path
+#    pth = pth.replace("frmts.py", "Data/sample_1000.npy")
     pth = pth.replace("frmts.py", "Data/sample_20.npy")
 #    pth = pth.replace("frmts.py", "Data/sample_data.npy")
     aa = np.load(pth)
@@ -856,6 +878,16 @@ def _demo_rec():
     # return a
 
 
+def _sample_data():
+    """just return a recarray
+    """
+    pth = _sample_data.__code__.co_filename
+    # sample_20.npy sample_1000.npy sample_10k.npy sample_100k.npy
+    pth = pth.replace("frmts.py", "Data/sample_20.npy")
+    a = np.load(pth)
+    return a
+
+
 # -------------------------
 if __name__ == "__main__":
     """Main section...   """
@@ -866,3 +898,4 @@ if __name__ == "__main__":
 #    _demo_ma()
 #    _demo_rec()
 #    _demo_form()
+#    a = _sample_data()

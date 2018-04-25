@@ -7,27 +7,19 @@ Script :   a_io.py
 
 Author :   Dan.Patterson@carleton.ca
 
-Modified : 2018-03-28
+Modified : 2018-04-22
 
-Purpose : Basic io tools for numpy arrays and operating system functions
+Purpose : Basic io tools for numpy arrays and arcpy
 
 Notes :
-
-1.   _arr_json   - array to json file
-
-2.   _get_dir    - various function for accessing folders
-
-3.   all_folders
-
-4.   load_npy    - load numpy npy files
-
-5.   read_txt    - read a text formatted array
-
-6.   save_npy    - save array to npy format
-
-7.   save_txt    - save array to text format
-
-8.   sub_folders
+::
+    1.  load_npy    - load numpy npy files
+    2.  save_npy    - save array to *.npy format
+    3.  read_txt    - read array created by save_txtt
+    4.  save_txt    - save array to npy format
+    5.  arr_json    - save to json format
+    6.  array2raster - save array to raster
+    7.  rasters2nparray - batch rasters to numpy array
 
 ---------------------------------------------------------------------
 """
@@ -49,7 +41,7 @@ __all__ = ['load_npy', 'save_npy',
            'read_txt', 'save_txt',
            'arr_json',
            'array2raster', 'rasters2nparray',
-           'get_dir',  'all_folders', 'sub_folders']
+           ]
 
 
 # ----------------------------------------------------------------------
@@ -72,17 +64,18 @@ def load_npy(f_name, all_info=False):
 
 
 # ----------------------------------------------------------------------
-# (1) read_npy .... code section ---
+# (2) read_npy .... code section ---
 def save_npy(a, f_name):
-    """Save an array as an npy file
-    :  The type of data in each column is arbitrary
-    :  It will be cast to the given dtype at runtime
+    """Save an array as an npy file.
+
+    The type of data in each column is arbitrary.  It will be cast to the
+    given dtype at runtime
     """
     np.save(f_name, a)
 
 
 # ----------------------------------------------------------------------
-# (2) read_txt .... code section ---
+# (3) read_txt .... code section ---
 def read_txt(name="arr.txt"):
     """Read the structured/recarray created by save_txt.
 
@@ -95,7 +88,7 @@ def read_txt(name="arr.txt"):
     names : boolean
         If `True`, the first row contains the field names.
 
-    Uncomment skip_header part if not needed.
+    see np.genfromtxt for all *args and **kwargs.
     """
     a = np.genfromtxt(name, dtype=None, delimiter=",",
                       names=True, autostrip=True)  # ,skip_header=1)
@@ -103,7 +96,7 @@ def read_txt(name="arr.txt"):
 
 
 # ----------------------------------------------------------------------
-# (3) save_txt .... code section ---
+# (4) save_txt .... code section ---
 def save_txt(a, name="arr.txt", sep=", ", dt_hdr=True):
     """Save a NumPy structured, recarray to text.
 
@@ -130,7 +123,7 @@ def save_txt(a, name="arr.txt", sep=", ", dt_hdr=True):
 
 
 # ----------------------------------------------------------------------
-# (4) arr_json .... code section ---
+# (5) arr_json .... code section ---
 def arr_json(file_out, arr=None):
     """Send an array out to json format. Use json_arr to read the file.
     No error checking
@@ -143,7 +136,7 @@ def arr_json(file_out, arr=None):
 
 
 # ----------------------------------------------------------------------
-# (5) batch load and save to/from arrays and rasters
+# (6) batch load and save to/from arrays and rasters
 def array2raster(a, folder, fname, LL_corner, cellsize):
     """It is easier if you have a raster to derive the values from.
 
@@ -156,9 +149,13 @@ def array2raster(a, folder, fname, LL_corner, cellsize):
     >>> cell_size = rast.meanCellHeight  # --- we will use this for x and y
     >>> f = r'c:/temp/result.tif'  # --- don't forget the extention
 
+    Requires:
+    ---------
+
+    `arcpy` and `os` if not previously imported
     """
-    import os
-    import arcpy
+    if 'arcpy' not in list(locals().keys()):
+        import arcpy
     if not os.path.exists(folder):
         return None
     r = arcpy.NumPyArrayToRaster(a, LL_corner, cellsize, cellsize)
@@ -167,6 +164,8 @@ def array2raster(a, folder, fname, LL_corner, cellsize):
     print("Array saved to...{}".format(f))
 
 
+# ----------------------------------------------------------------------
+# (7) batch load and save to/from arrays and rasters
 def rasters2nparray(folder=None, to3D=False):
     """Batch the RasterToNumPyArray arcpy function to produce 3D or a list
     of 2D arrays
@@ -185,8 +184,8 @@ def rasters2nparray(folder=None, to3D=False):
     to3D : boolean
         If False, a list of arrays, if True a 3D array
     """
-    import os
-    import arcpy  # needed if not already done
+    if 'arcpy' not in list(locals().keys()):
+        import arcpy
     arrs = []
     if folder is None:
         return None
@@ -200,60 +199,6 @@ def rasters2nparray(folder=None, to3D=False):
         return np.array(arrs)
     else:
         return arrs
-
-
-# ----------------------------------------------------------------------
-# (6) general file functions ... code section ---
-def get_dir(path):
-    """Get the directory list from a path, excluding geodatabase folders.
-    Used by.. print_folders
-    """
-    if os.path.isfile(path):
-        path = os.path.dirname(path)
-    p = os.path.normpath(path)
-    full = [os.path.join(p, v) for v in os.listdir(p)]
-    dirlist = [val for val in full if os.path.isdir(val)]
-    return dirlist
-
-
-def all_folders(path, first=True, prefix=""):
-    """ Print recursive listing of contents of path.
-
-    Requires
-    --------
-        _get_dir
-
-    Notes
-    -----
-        useful.... cp = os.path.commonprefix(dirlist)
-    """
-    if first:  # Detect outermost call, print a heading
-        print("Folder listing for....\n|--{}".format(path))
-        prefix = "|-"
-        first = False
-        cprev = path
-    dirlist = get_dir(path)
-    for d in dirlist:
-        fullname = os.path.join(path, d)  # Turn name into full pathname
-        if os.path.isdir(fullname):       # If a directory, recurse.
-            cprev = path
-            pad = ' ' * len(cprev)
-            n = d.replace(cprev, pad)
-            print(prefix + "-" + n)  # fullname) # os.path.relpath(fullname))
-            p = "  "
-            all_folders(fullname, first=False, prefix=p)
-    # ----
-
-
-def sub_folders(path):
-    """Print the folders in a path
-    """
-    import pathlib
-    print("Path...\n{}".format(path))
-    r = " "*len(path)
-    f = "\n".join([(p._str).replace(path, r)
-                   for p in pathlib.Path(path).iterdir() if p.is_dir()])
-    print("{}".format(f))
 
 
 def _demo_a_io():
@@ -273,4 +218,4 @@ if __name__ == "__main__":
     : - run the _demo
     """
 #    print("Script... {}".format(script))
-#    _npy_file = _demo_a_io()
+#    fname = _demo_a_io()
