@@ -1,18 +1,26 @@
 # -*- coding: UTF-8 -*-
 """
-:Script:   field_stats.py
-:Author:   Dan.Patterson@carleton.ca
-:Modified: 2018-03-21
-:Purpose:  Descriptive statistics for tables using numpy.
-:
-:References:
-:  https://github.com/numpy/numpy/blob/master/numpy/lib/nanfunctions.py
-:  _replace_nan(a, val) -  mask = np.isnan(a) - to get the mask
-:
-:  a = [1, 2, np.nan, 3, np.nan, 4]
-:  _, mask = _replace_nan(a, 0)  # for mean
-:  mask = array([False, False,  True, False,  True, False], dtype=bool)
-:
+field_stats
+===========
+
+Script :   field_stats.py
+
+Author :   Dan.Patterson@carleton.ca
+
+Modified : 2018-03-21
+
+Purpose :  Descriptive statistics for tables using numpy.
+
+References:
+[1]
+https://github.com/numpy/numpy/blob/master/numpy/lib/nanfunctions.py
+
+  _replace_nan(a, val) -  mask = np.isnan(a) - to get the mask
+
+>>> a = [1, 2, np.nan, 3, np.nan, 4]
+>>> _, mask = _replace_nan(a, 0)  # for mean
+>>> mask = array([False, False,  True, False,  True, False], dtype=bool)
+
 : ---------------------------------------------------------------------:
 """
 # ---- imports, formats, constants ----
