@@ -2,6 +2,7 @@
 frmts.py examples
 =================
 
+-----
 **deline**  remove extraneous lines fro multidimensional arrays
 
 ```
@@ -36,7 +37,9 @@ shape: (2, 3, 4, 5)
   .  [115 116 117 118 119]]]
 ```
 
+-----
 **frmt_ demo** format multidimensional arrays partly by rows
+
 
 ```
 frmt_demo ......
@@ -55,6 +58,7 @@ frmt_demo ......
   .  75  76  77  78  79    95  96  97  98  99   115 116 117 118 119  
 ```
 
+-----
 **frmt_ma**  formatting of masked arrays
 ```
 Sample run of frmt_ma...
@@ -88,7 +92,28 @@ Array reshaped to (2, 4, 5)
   .  35.0     -  37.0  38.0  39.0
 ```
 
+-----
 **frmt_rec** formatting recarrays and structured arrays
+
+Sample data for 20 records.
+
+```
+a
+Out[4]: 
+array([( 1,  0, 'B', 'A_', 'Hall', 26), ( 2,  1, 'C', 'C_', 'Hall', 60),
+       ( 3,  2, 'D', 'A_', 'Hall', 42), ( 4,  3, 'C', 'A_', 'Hall', 57),
+       ( 5,  4, 'C', 'B_', 'Hall', 51), ( 6,  5, 'B', 'B_', 'Hosp', 14),
+       ( 7,  6, 'C', 'A_', 'Hall', 45), ( 8,  7, 'B', 'B_', 'Hosp', 51),
+       ( 9,  8, 'B', 'A_', 'Hall', 28), (10,  9, 'C', 'C_', 'Hosp', 58),
+       (11, 10, 'B', 'B_', 'Hosp',  6), (12, 11, 'C', 'A_', 'Hall', 49),
+       (13, 12, 'B', 'A_', 'Hosp', 42), (14, 13, 'C', 'A_', 'Hosp', 60),
+       (15, 14, 'C', 'B_', 'Hosp', 41), (16, 15, 'A', 'A_', 'Hosp', 53),
+       (17, 16, 'A', 'A_', 'Hall', 42), (18, 17, 'A', 'C_', 'Hall', 59),
+       (19, 18, 'C', 'C_', 'Hosp', 37), (20, 19, 'B', 'B_', 'Hall', 52)],
+      dtype=[('OBJECTID', '<i4'), ('f0', '<i4'), ('County', '<U2'), ('Town', '<U6'), ('Facility', '<U8'), ('Time', '<i4')])
+```
+
+Appearance when using frmt_rec to produce a record count and headers based on the dtype names.
 
 ```
 Format ... C:/Git_Dan/arraytools/Data/sample_20.npy
@@ -107,6 +132,7 @@ record/structured array, with and without field names.
  002    3    2    D   A_  Hall    42
 ```
 
+-----
 **form_** a variant of frmt_
 
 ```
