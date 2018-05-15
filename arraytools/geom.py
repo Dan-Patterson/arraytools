@@ -15,8 +15,16 @@ Functions: see __all__ for a complete listing
 
 Notes:
 -----
-- do not rely on the OBJECTID field for anything
+- Do not rely on the OBJECTID field for anything
   http://support.esri.com/en/technical-article/000010834
+
+- When working with large coordinates, you should check to see whether a
+  translation about the origin (array - centre) produces different results.
+  This has been noted when calculating area using projected coordinates for the
+  Ontario.npy file.  The difference isn't huge, but subtracting the centre or
+  minimum from the coordinates produces area values which are equal but differ
+  slightly from those using the unaltered coordinates.
+
 
 References:
 ----------
@@ -25,7 +33,8 @@ See ein_geom.py for full details and examples
   https://en.wikipedia.org/wiki/Centroid#Centroid_of_polygon
 
   https://iliauk.com/2016/03/02/centroids-and-centres-numpy-r/
-:---------------------------------------------------------------------:
+
+------
 """
 # ---- imports, formats, constants ----
 import sys
@@ -34,7 +43,7 @@ import numpy as np
 
 # from arraytools.tools import arr2xyz
 # from arraytools.fc import _xy
-import arcpy
+
 
 # from tools import group_pnts
 
@@ -345,17 +354,19 @@ def e_leng(a):
 
         (40.0, [array([[ 10.,  10.,  10.,  10.]])])
 
+    Notes:
+    ------
+    >>> diff = g[:, :, 0:-1] - g[:, :, 1:]
+    >>> # for 4D
+    >>> d = np.einsum('ijk..., ijk...->ijk...', diff, diff).flatten()  # or
+    >>> d  = np.einsum('ijkl, ijkl->ijk', diff, diff).flatten()
+    >>> d = np.sum(np.sqrt(d)
     """
     #
 #    d_leng = 0.0
     # ----
     def _cal(diff):
-        """ perform the calculation
-        :diff = g[:, :, 0:-1] - g[:, :, 1:]
-        : for 4D
-        " d = np.einsum('ijk..., ijk...->ijk...', diff, diff).flatten() or
-        :   = np.einsum('ijkl, ijkl->ijk', diff, diff).flatten()
-        : d = np.sum(np.sqrt(d)
+        """ perform the calculation, see above
         """
         d_leng = np.sqrt(np.einsum('ijk,ijk->ij', diff, diff)).squeeze()
         length = np.sum(d_leng.flatten())
@@ -547,31 +558,43 @@ def angle_seq(a):
 
 def angles_poly(a, inside=True, in_deg=True):
     """Sequential 3 point angles from a poly* shape
-    : a - an array of points, derived from a polygon/polyline geometry
-    : inside - determine inside angles, outside if False
-    : in_deg - convert to degrees from radians
-    :
-    :Notes:
-    :-----
-    : 2 points - subtract 2nd and 1st points, effectively making the
-    :  calculation relative to the origin and x axis, aka... slope
-    : n points - sequential angle between 3 points
-    : - Check whether 1st and last points are duplicates.
-    :   'True' for polygons and closed loop polylines, it is checked using
-    :   np.allclose(a[0], a[-1])  # check first and last point
-    : - a rolling tuple is constructed to produce the point triplets
-    :   r = (-1,) + tuple(range(len(a))) + (0,)
-    :   for np.arctan2(np.linalg.norm(np.cross(ba, bc)), np.dot(ba, bc))
-    :
-    :Reference:
-    :---------
-    : https://stackoverflow.com/questions/21483999/
-    :         using-atan2-to-find-angle-between-two-vectors
-    :  *** keep to convert object to array
-    : a - a shape from the shape field
-    : a = p1.getPart()
-    : b =np.asarray([(i.X, i.Y) if i is not None else ()
-    :                for j in a for i in j])
+
+    a : array
+        an array of points, derived from a polygon/polyline geometry
+    inside : boolean
+        determine inside angles, outside if False
+    in_deg : bolean
+        convert to degrees from radians
+
+    Notes:
+    ------
+    General comments
+    ::
+        2 points - subtract 2nd and 1st points, effectively making the
+        calculation relative to the origin and x axis, aka... slope
+        n points - sequential angle between 3 points
+
+        Check whether 1st and last points are duplicates.
+        'True' for polygons and closed loop polylines, it is checked using
+        np.allclose(a[0], a[-1])  # check first and last point
+
+        a rolling tuple is constructed to produce the point triplets
+        r = (-1,) + tuple(range(len(a))) + (0,)
+        for np.arctan2(np.linalg.norm(np.cross(ba, bc)), np.dot(ba, bc))
+
+    Notes to keep
+    ::
+        *** keep to convert object to array
+        a - a shape from the shape field
+        a = p1.getPart()
+        b =np.asarray([(i.X, i.Y) if i is not None else ()
+                       for j in a for i in j])
+    Reference:
+    ----------
+
+    [1] https://stackoverflow.com/questions/21483999/using-atan2-to-find-
+    angle-between-two-vectors
+
     """
     if len(a) < 2:
         return None
@@ -692,8 +715,13 @@ def _densify_2D(a, fact=2):
 
 
 def _convert(a, fact=2):
-    """Do the shape conversion for the array parts.  Calls to _densify_2D
+    """Do the shape conversion for the array parts.  Calls _densify_2D
+
+    Requires:
+    ---------
+        >>> import arcpy  # uncomment the first line below if using _convert
     """
+#    import arcpy
     out = []
     parts = len(a)
     for i in range(parts):
@@ -852,7 +880,7 @@ def rectangle(dx=1, dy=1, cols=1, rows=1):
 def hex_flat(dx=1, dy=1, cols=1, rows=1):
     """Generate the points for the flat-headed hexagon
 
-    `dy_dx` - number
+    `dy_dx` : number
         The radius width, remember this when setting hex spacing
     `dx` : number
         Increment in x direction, +ve moves west to east, left/right
@@ -988,7 +1016,10 @@ def _demo(prn=True):
     : ---- Ontario boundary polyline, shape (49,874, 2) ----
     :  x = "...script location.../Data/Ontario.npy"
 #   : a = np.load(x)
-    :
+    : alternates... but slower
+    : def PolyArea(x, y):
+    :     return 0.5*np.abs(np.dot(x, np.roll(y,1))-np.dot(y, np.roll(x,1)))
+
     """
     x = "/".join(script.split("/")[:-1]) + "/Data/Ontario.npy"
     a = np.load(x)
@@ -1022,7 +1053,10 @@ def _demo(prn=True):
 
 def angle_between(p0, p1, p2):
     """angle between 3 sequential points
-    :p0, p1, p2 = np.array([[0, 0],[1, 1], [1, 0]])
+
+    >>> p0, p1, p2 = np.array([[0, 0],[1, 1], [1, 0]])
+    angle_between(p0, p1, p2)
+    (45.0, -135.0, -90.0)
     """
     d1 = p0 - p1
     d2 = p2 - p1
@@ -1035,18 +1069,23 @@ def angle_between(p0, p1, p2):
 
 def intersect_pnt(p0, p1, p2, p3):
     """Returns the point of intersection of the segment passing through two
-    :  line segments (p0, p1) and (p2, p3)
-    :Notes:
-    :------
-    :         p0,            p1,             p2,            p3
-    : (array([0, 0]), array([10, 10]),array([0, 5]), array([5, 0]))
-    : s: array([[ 0,  0],    h: array([[  0.,   0.,   1.],
-    :           [10, 10],              [ 10.,  10.,   1.],
-    :           [ 0,  5],              [  0.,   5.,   1.],
-    :           [ 5,  0]])             [  5.,   0.,   1.]])
-    :Reference:
-    :---------
-    : https://stackoverflow.com/questions/3252194/numpy-and-line-intersections
+    line segments (p0, p1) and (p2, p3)
+
+    Notes:
+    ------
+
+    >>> p0, p1, p2, p3
+    (array([0, 0]), array([10, 10]),array([0, 5]), array([5, 0]))
+     s: array([[ 0,  0],    h: array([[  0.,   0.,   1.],
+               [10, 10],              [ 10.,  10.,   1.],
+               [ 0,  5],              [  0.,   5.,   1.],
+               [ 5,  0]])             [  5.,   0.,   1.]])
+
+    Reference:
+    ---------
+
+    [1]
+    https://stackoverflow.com/questions/3252194/numpy-and-line-intersections
     """
     s = np.vstack([p0, p1, p2, p3])      # s for stacked
     h = np.hstack((s, np.ones((4, 1))))  # h for homogeneous
@@ -1072,10 +1111,10 @@ if __name__ == "__main__":
 #    args = _arrs_(prn=False)  # prn=True to see array properties
 #    a0, a1, a2, a3, a_1a, a_1b, a_2a, a_2b, a_3a, a_3b = args[:10]
 #    sze, shp, dtn = args[10:]
-    a = np.array([[0, 0.05], [1, 1.05], [2, 1.95], [3, 3.0],
-                  [4, 4.1], [5, 5.2], [6, 5.9]])
+#    a = np.array([[0, 0.05], [1, 1.05], [2, 1.95], [3, 3.0],
+#                  [4, 4.1], [5, 5.2], [6, 5.9]])
 #    dist, xc, yc, pc, slope, xn, yn, x2 = _test(a0)
-    fc = r"C:\Git_Dan\a_Data\arcpytools_demo.gdb\polylines_pnts"
+#    fc = r"C:\Git_Dan\a_Data\arcpytools_demo.gdb\polylines_pnts"
 
 # for Ontario_LCC
 # total_length(a)  #: 6804096.2018476073  same as arcmap

@@ -308,9 +308,10 @@ __all__ = ['col_hdr',
 # (1) Short, or reused code section
 #
 # (1a) col_hdr ... code section .....
-def col_hdr():
-    """Print numbers from 1 to 70 to show column positions"""
-    args = [(('{:<10}')*7).format(*'0123456789'), '0123456789'*7, '-'*70]
+def col_hdr(num=7):
+    """Print numbers from 1 to 10*num to show column positions"""
+    args = [(('{:<10}')*num).format(*'0123456789'),
+            '0123456789'*num, '-'*10*num]
     s = "\n{}\n{}\n{}".format(args[0][1:], args[1][1:], args[2])  # *args)
     print(s)
 
@@ -736,8 +737,8 @@ def frmt_rec(a, deci=2, use_names=True, prn=True):
 # ----------------------------------------------------------------------
 # (5) form_ ... code section .....
 #  form_ requires make_row_format
-def make_row_format(dim=2, cols=3, a_kind='f', deci=1,
-                    a_max=10, a_min=-10, prnt=False):
+def make_row_format(dim=3, cols=5, a_kind='f', deci=1,
+                    a_max=10, a_min=-10, wdth=100, prnt=False):
     """Format the row based on input parameters
 
     `dim` - int
@@ -753,12 +754,17 @@ def make_row_format(dim=2, cols=3, a_kind='f', deci=1,
     w_, m_ = [[':{}.0f', '{:0.0f}'], [':{}.{}f', '{:0.{}f}']][a_kind == 'f']
     m_fmt = max(len(m_.format(a_max, deci)), len(m_.format(a_min, deci))) + 1
     w_fmt = w_.format(m_fmt, deci)
-    row_frmt = ((('{' + w_fmt + '}')*cols + '  ')*dim).strip()
+    suffix = '  '
+    while m_fmt*cols*dim > wdth:
+        cols -= 1
+        suffix = '.. '
+    row_sub = (('{' + w_fmt + '}')*cols + suffix)
+    row_frmt = (row_sub*dim).strip()
     if prnt:
         frmt = "Row format: dim cols: ({}, {})  kind: {} decimals: {}\n\n{}"
         print(dedent(frmt).format(dim, cols, a_kind, deci, row_frmt))
         a = np.random.randint(a_min, a_max+1, dim*cols)
-        col_hdr()  # run col_hdr to produce the column headers
+        col_hdr(wdth//10)  # run col_hdr to produce the column headers
         print(row_frmt.format(*a))
     else:
         return row_frmt
@@ -794,7 +800,9 @@ def form_(a, deci=2, wdth=100, title="Array", prefix=". . ", prn=True):
                            a_kind=a.dtype.kind,
                            deci=deci,
                            a_max=a.max(),
-                           a_min=a.min(), prnt=False)
+                           a_min=a.min(),
+                           wdth=wdth,
+                           prnt=False)
     if a.ndim == 3:
         s0, s1, s2 = a.shape
         out += _piece(a, None, frmt, linewidth)  # ---- _piece ----

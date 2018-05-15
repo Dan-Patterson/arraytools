@@ -5,11 +5,13 @@ py_tools
 
 Script :   py_tools.py
 
-Author :   Dan.Patterson@carleton.ca
+Author :   Dan_Patterson@carleton.ca
 
-Modified : 2018-04-14
+Modified: 2018-04-14
 
-Purpose :  tools for working with python, numpy and other python packages
+-------
+
+Purpose : tools for working with python, numpy and other python packages
 
 - iterables :
     _flatten, flatten_shape, pack, unpack
@@ -19,9 +21,9 @@ Useage:
 
 References:
 
-:---------------------------------------------------------------------:
+------------------------------------------------------------------------------
 """
-# ---- imports, formats, constants ----
+# ---- (1) imports, formats, constants ---------------------------------------
 import sys
 import os
 from textwrap import dedent, wrap
@@ -43,8 +45,8 @@ __all__ = ['get_dir', 'folders', 'sub_folders',  # basic folder functions
            'pack', 'unpack']
 
 
-# ----------------------------------------------------------------------
-# (1) general file functions ... code section ---
+# ---- (2) general file functions ... code section ---------------------------
+#
 def get_dir(path):
     """Get the directory list from a path, excluding geodatabase folders.
     Used by.. folders
@@ -103,8 +105,8 @@ def sub_folders(path):
     print("{}".format(f))
 
 
-# ----------------------------------------------------------------------
-# (2) dirr ... code section ...
+# ---- (3) dirr ... code section ... -----------------------------------------
+#
 def dirr2(obj, sub=None, colwise=False, cols=3, prn=True):
     """call either numpy or python dirr function
     """
@@ -251,7 +253,7 @@ def dirr(obj, colwise=False, cols=4, sub=None, prn=True):
         return txt_out
 
 
-# ---- iterables -------------------------------------------------------------
+# ---- (4) iterables ---------------------------------------------------------
 #
 def _flatten(a_list, flat_list=None):
     """Change the isinstance as appropriate.
@@ -323,15 +325,17 @@ def unpack(iterable, param='__iter__'):
             xy.append(x)
     return xy
 
-# ----------------------------------------------------------------------
+
+# ---- (5) demos  -------------------------------------------------------------
 #
 def _demo():
     """
     : -
     """
     pass
-# ----------------------------------------------------------------------
-# __main__ .... code section
+
+# ----------------------------------------------------------------------------
+# ---- __main__ .... code section --------------------------------------------
 if __name__ == "__main__":
     """Optionally...
     : - print the script source name.

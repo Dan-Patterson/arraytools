@@ -367,7 +367,7 @@ numpy  # stride for convolve 4d
 
 ---------------------------------------------------------------------
 """
-# ---- imports, formats, constants ----
+# ---- imports, formats, constants -------------------------------------------
 import sys
 from textwrap import dedent, indent
 import warnings
@@ -398,7 +398,7 @@ script = sys.argv[0]  # print this should you need to locate the script
 data_path = script.replace('tools.py', 'Data')
 
 
-# ---- decorators and helpers ----
+# ---- decorators and helpers ------------------------------------------------
 
 def time_deco(func):  # timing originally
     """timing decorator function
@@ -463,8 +463,8 @@ def run_deco(func):
     return wrapper
 
 
-# ----------------------------------------------------------------------
-# (1) doc_func ... code section ...
+# ----------------------------------------------------------------------------
+# ---- (1) doc_func ... code section ... ----
 def doc_func(func=None, verbose=True):
     """(doc_func)...Documenting code using inspect
 
@@ -547,7 +547,7 @@ def doc_func(func=None, verbose=True):
 
 
 # ----------------------------------------------------------------------
-# (2) get_func .... code section
+# ---- (2) get_func .... code section ----
 def get_func(func, line_nums=True, verbose=True):
     """Get function information (ie. for a def)
 
@@ -617,7 +617,7 @@ def get_func(func, line_nums=True, verbose=True):
 
 
 # ----------------------------------------------------------------------
-# (3) get_modu .... code section
+# ---- (3) get_modu .... code section ----
 def get_modu(obj, code=False, verbose=True):
     """Get module (script) information, including source code for
     documentation purposes.
@@ -687,7 +687,7 @@ def get_modu(obj, code=False, verbose=True):
 
 
 # ----------------------------------------------------------------------
-# (4) info .... code section
+# ---- (4) info .... code section ----
 def info(a, prn=True):
     """Returns basic information about an numpy array.
 
@@ -765,7 +765,7 @@ def info(a, prn=True):
 # ----------------------------------------------------------------------
 # ---- make arrays, change format or arrangement ----
 # ----------------------------------------------------------------------
-# (5a) num_to_nan ... code section .....
+# ---- (5a) num_to_nan ... code section .... ----
 def num_to_nan(a, nums=None):
     """Reverse of nan_to_num introduced in numpy 1.13
 
@@ -786,7 +786,7 @@ def num_to_nan(a, nums=None):
     return a
 
 
-# (5b) num_to_mask ... code section .....
+# ---- (5b) num_to_mask ... code section .... ----
 def num_to_mask(a, nums=None, hardmask=True):
     """Reverse of nan_to_num introduced in numpy 1.13
 
@@ -806,7 +806,7 @@ def num_to_mask(a, nums=None, hardmask=True):
     return b
 
 
-# (6) make_blocks ... code section .....
+# ---- (6) make_blocks ... code section .... ----
 #
 def make_blocks(rows=3, cols=3, r=2, c=2, dt='int'):
     """Make a block array with rows * cols containing r*c sub windows.
@@ -843,7 +843,7 @@ def make_blocks(rows=3, cols=3, r=2, c=2, dt='int'):
     return a
 
 
-# (7) make_flds .... code section
+# ---- (7) make_flds .... code section ----
 #
 def make_flds(n=1, as_type='float', names=None, def_name="col"):
     """Create float or integer fields for statistics and their names.
@@ -886,7 +886,7 @@ def make_flds(n=1, as_type='float', names=None, def_name="col"):
     return dt
 
 
-# (8)  make nd_rec, nd_struct.... code section
+# ---- (8)  make nd_rec, nd_struct.... code section ----
 #
 def nd_rec(a, flds=None, types=None):
     """Change a uniform array to an array of mixed dtype as a recarray
@@ -1028,7 +1028,7 @@ def nd2rec(a, fld_names=None):
     return a.view(type=np.recarray)
 
 
-# (9) arr2xyz .... code section
+# ---- (9) arr2xyz sparse arrays and rc_vals, xy_vals.... code section ----
 #
 def arr2xyz(a, keep_masked=False, verbose=False):
     """Produce an array such that the row, column values are used for x,y
@@ -1097,7 +1097,7 @@ def arr2xyz(a, keep_masked=False, verbose=False):
             m = tbl[:, 2].mask
             tbl = tbl[~m].data
     else:
-        tbl = np.stack((XX, YY, a), axis=1)
+        tbl = np.stack((XX, YY, a.ravel()), axis=1)
     if verbose:
         frmt = """
         ----------------------------
@@ -1120,7 +1120,7 @@ def arr2xyz(a, keep_masked=False, verbose=False):
     else:
         return tbl
 
-# (27) rc_vals
+# ---- rc_vals ----
 def rc_vals(a):
     """Convert a 2D ndarray to a structured row, col, values array.
     """
@@ -1130,7 +1130,7 @@ def rc_vals(a):
     return vals
 
 
-# (28) xy_vals ----
+# ---- xy_vals ----
 def xy_vals(a):
     """Convert a 2D ndarray to a structured x, y, values array.
     """
@@ -1144,8 +1144,9 @@ def xy_vals(a):
     out['Vals'] = a.ravel()
     return out
 
+
 # ----------------------------------------------------------------------------
-# (10) change_arr ... code section .....
+# ---- (10) change_arr ... code section ----
 #
 def change_arr(a, order=None, prn=False):
     """Reorder and/or drop columns in an ndarray or structured array.
@@ -1195,7 +1196,7 @@ def change_arr(a, order=None, prn=False):
     return b
 
 
-# (12) scale .... code section
+# ---- (12) scale .... code section ----
 def scale(a, x=2, y=2, num_z=None):
     """Scale the input array repeating the array values up by the
     x and y factors.
@@ -1255,7 +1256,7 @@ def scale(a, x=2, y=2, num_z=None):
     return z3
 
 
-# (13) split_array .... code section
+# ---- (13) split_array .... code section ----
 def split_array(a, fld='ID'):
     """Split a structured or recarray array using unique values in the
     `fld` field.  It is assumed that there is a sequential ordering to
@@ -1278,9 +1279,8 @@ def split_array(a, fld='ID'):
 
 
 # ----------------------------------------------------------------------
-# stride, block and pad .... code section
-#
-# (14) _pad_ .... code section .....
+# ---- stride, block and pad .... code section
+# ---- (14) _pad_ .... code section ----
 def _pad_(a, pad_with=None, size=(1, 1)):
     """To use when padding a strided array for window construction.
 
@@ -1307,10 +1307,10 @@ def _pad_(a, pad_with=None, size=(1, 1)):
     return a
 
 
-# (15) stride .... code section .....
+# ---- (15) stride .... code section ----
 def stride(a, win=(3, 3), stepby=(1, 1)):
     """Provide a 2D sliding/moving view of an array.
-    There is no edge correction for outputs. Use a _pad_** function first.
+    There is no edge correction for outputs. Use the `_pad_` function first.
 
     Requires
     --------
@@ -1329,8 +1329,8 @@ def stride(a, win=(3, 3), stepby=(1, 1)):
     Examples
     --------
     >>> a = np.arange(10)
-    >>> stride(a, (3,), (1,)) 3 value moving window, step by 1
-    >>> stride(z, (3,), (2,))
+    >>> # stride(a, (3,), (1,)) 3 value moving window, step by 1
+    >>> stride(a, (3,), (2,))
     array([[0, 1, 2],
            [2, 3, 4],
            [4, 5, 6],
@@ -1348,7 +1348,8 @@ def stride(a, win=(3, 3), stepby=(1, 1)):
     ----------------------------------------------------------
     """
     err = """Array shape, window and/or step size error.
-    Use win=(3,3) with stepby=(1,1) for 2D array
+    Use win=(3,) with stepby=(1,) for 1D array
+    or win=(3,3) with stepby=(1,1) for 2D array
     or win=(1,3,3) with stepby=(1,1,1) for 3D
     ----    a.ndim != len(win) != len(stepby) ----
     """
@@ -1362,6 +1363,7 @@ def stride(a, win=(3, 3), stepby=(1, 1)):
     return a_s
 
 
+# ---- sliding_window_view .... new ----
 def sliding_window_view(x, shape=None):
     """Create rolling window views of the 2D array with the given shape.
     proposed for upcoming numpy version.
@@ -1375,7 +1377,7 @@ def sliding_window_view(x, shape=None):
     return np.lib.stride_tricks.as_strided(x, view_shape, view_strides)
 
 
-# (16) block .... code section .....
+# ---- (16) block .... code section ----
 def block(a, win=(3, 3)):
     """Calls stride with step_by equal to win size.
     No padding of the array, so this works best when win size is divisible
@@ -1388,7 +1390,7 @@ def block(a, win=(3, 3)):
     return a_b
 
 
-# (17) block .... code section .....
+# ---- (17) block .... code section ----
 def block_arr(a, win=[3, 3], nodata=-1, as_masked=False):
     """Block array into window sized chunks padding to the right and bottom
     to accommodate array and window shape.
@@ -1443,7 +1445,7 @@ def block_arr(a, win=[3, 3], nodata=-1, as_masked=False):
 # ----------------------------------------------------------------------
 # ---- querying, working with arrays ----
 # ----------------------------------------------------------------------
-# (18, 18a) find .... code section
+# ---- (18, 18a) find .... code section ----
 def _func(fn, a, this):
     """Called by 'find' see details there
     (cumsum, eq, neq, ls, lseq, gt, gteq, btwn, btwni, byond)
@@ -1558,7 +1560,7 @@ def find(a, func, this=None, count=0, keep=None, prn=False, r_lim=2):
     return final
 
 
-# (19)
+# ---- (19) group_pnts .... code section ----
 def group_pnts(a, key_fld='IDs', shp_flds=['Xs', 'Ys']):
     """Group points for a feature that has been exploded to points by
     `arcpy.da.FeatureClassToNumPyArray`.
@@ -1601,7 +1603,7 @@ def group_pnts(a, key_fld='IDs', shp_flds=['Xs', 'Ys']):
     return groups
 
 
-# (20)
+# ---- (20) group_vals .... code section ----
 def group_vals(seq, delta=1, oper='!='):
     """Group consecutive values separated by no more than delta
 
@@ -1639,7 +1641,7 @@ def group_vals(seq, delta=1, oper='!='):
     return s
 
 
-# (21) reclass .... code section
+# ---- (21) reclass .... code section ----
 def reclass(a, bins=None, new_bins=[], mask_=False, mask_val=None):
     """Reclass an array of integer or floating point values.
 
@@ -1693,7 +1695,7 @@ def reclass(a, bins=None, new_bins=[], mask_=False, mask_val=None):
     return a_rc
 
 
-# (22) rolling stats .... code section
+# ---- (22) rolling stats .... code section ----
 def rolling_stats(a, no_null=True, prn=True):
     """Statistics on the last two dimensions of an array.
 
@@ -1747,7 +1749,7 @@ def rolling_stats(a, no_null=True, prn=True):
         return a_min, a_max, a_mean, a_med, a_sum, a_std, a_var, a_ptp
 
 
-# (23) uniq  ---- np.unique for versions < 1.13 ----
+# ---- (23) uniq  ---- np.unique for versions < 1.13 ----
 def uniq(ar, return_index=False, return_inverse=False,
          return_counts=False, axis=None):
     """Taken from, but modified for simple axis 0 and 1 and structured
@@ -1802,7 +1804,7 @@ def uniq(ar, return_index=False, return_inverse=False,
         return (uniq,) + output[1:]
 
 
-# (24) ---- is_in equivalent to np.isin() for numpy versions < 1.13
+# ---- (24) is_in .... equivalent to np.isin() for numpy versions < 1.13 ----
 def is_in(find_in, using, not_in=False):
     """Equivalent to np.isin for numpy versions < 1.13
 
@@ -1832,7 +1834,7 @@ def is_in(find_in, using, not_in=False):
     return r
 
 
-# (25) size-based ---- n largest
+# ---- (25) size-based .... n largest, n_smallest
 def n_largest(a, num=1, by_row=True):
     """Return the 'num' largest entries in an array by row sorted by column.
     Array dimensions <=3 supported
@@ -1850,7 +1852,7 @@ def n_largest(a, num=1, by_row=True):
     return b
 
 
-# (26) size-based ---- n smallest
+# ---- n_smallest
 def n_smallest(a, num=1, by_row=True):
     """Return the 'n' smallest entries in an array by row sorted by column.
     Array dimensions <=3 supported
@@ -1868,9 +1870,9 @@ def n_smallest(a, num=1, by_row=True):
     return b
 
 
-# ---- sorting ---------------------------------------------------------------
-# column and row sorting
-# (29) sort_rows_by_col ----
+# ---- sorting,  column and row sorting --------------------------------------
+#
+# ---- (29) sort_rows_by_col .... code section ----
 def sort_rows_by_col(a, col=0, descending=False):
     """Sort a 2D array by column.
 
@@ -1888,14 +1890,14 @@ def sort_rows_by_col(a, col=0, descending=False):
     return a_s
 
 
-# (30) sort_cols_by_row ----
+# ---- (30) sort_cols_by_row ----
 def sort_cols_by_row(a, col=0, descending=False):
     """Sort the rows of an array in the order of their column values
     :  Uses lexsort """
     return a[np.lexsort(np.transpose(a)[::-1])]
 
 
-# (31) radial sort -----
+# ---- (31) radial sort -----
 def radial_sort(pnts, cent=None):
     """Sort about the point cloud center or from a given point
 
@@ -1936,7 +1938,7 @@ def pack_last_axis(arr, names=None):
 
 
 # ----------------------------------------------------------------------
-# _help .... code section
+# ----  _help .... code section
 def _help():
     """arraytools.tools help...
 
@@ -1961,7 +1963,7 @@ def _help():
     (8)  rec_arr(a, flds=None, types=None)
     (9)  arr2xyz(a, verbose=False)
          array (col, rows) to (x, y) and array values for z.
-    (10) change(a, order=[], prn=False)
+    (10) change_arr(a, order=[], prn=False)
          reorder and/or drop columns
     (11) nd2struct(a)
          convert an ndarray to a structured array with fields
@@ -2001,7 +2003,7 @@ def _help():
 
 
 # ----------------------------------------------------------------------
-# _demo .... code section
+# ---- _demo .... code section
 # @run_deco
 def _demo_tools():
     """
@@ -2042,7 +2044,7 @@ def _demo_tools():
 {}\n
 :(2)  block_arr(a, win=[2, 2], nodata=-1)
 {}\n
-:(3) change(b, order=['B', 'C', 'A'], prn=False
+:(3) change_arr(b, order=['B', 'C', 'A'], prn=False
 :    Array 'b', reordered with 2 fields dropped...
 {!r:}\n
 :(4) doc_func(col_hdr) ... documenting a function...
@@ -2085,7 +2087,7 @@ def pyramid(core=9, steps=10, incr=(1, 1), posi=True):
 
 
 # ----------------------------------------------------------------------
-# __main__ .... code section
+# ---- __main__ .... code section
 if __name__ == "__main__":
     """Optionally...
     : - print the script source name.
