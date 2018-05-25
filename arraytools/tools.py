@@ -341,6 +341,8 @@ Sort 2d ndarray by column
 
 **31. radial_sort(pnts, cent=None)**
 
+**32. sequences(data, stepsize)**
+
 
 References:
 ----------
@@ -1924,6 +1926,61 @@ def radial_sort(pnts, cent=None):
     return ang_ab, sort_order
 # ---- ******* add ... used in nd2struct *****
 
+# ---- (32) sequences ----
+def sequences(data, stepsize=0):
+    """Return a list of arrays of sequences values denoted by stepsize
+
+    data :
+        List/array of values in 1D
+    stepsize :
+        Separation between the values.  If stepsize=0, sequences of equal
+        values will be searched.  If stepsize is 1, then sequences incrementing
+        by 1... etcetera.  Stepsize can be both positive or negative
+
+    >>> # check for incrementing sequence by 1's
+    d = [1, 2, 3, 4, 4, 5]
+    s, o = sequences(d, 1, True)
+    # s = [array([1, 2, 3, 4]), array([4, 5])]
+    # o = array([[1, 4, 4],
+    #            [4, 2, 6]])
+
+    Notes:
+    ------
+    For strings, use
+
+    >>> partitions = np.where(a[1:] != a[:-1])[0] + 1
+
+    Variants:
+    ---------
+    Change `N` in the expression to find other splits in the data
+
+    >>> np.split(data, np.where(np.abs(np.diff(data)) >= N)[0]+1)
+
+    References:
+    -----------
+    https://stackoverflow.com/questions/7352684/how-to-find-the-groups-of-
+    sequences-elements-from-an-array-in-numpy
+    """
+    #
+    a = np.array(data)
+    a_dt = a.dtype.kind
+    if a_dt in ('U', 'S'):
+        seqs = np.split(a, np.where(a[1:] != a[:-1])[0] + 1)
+        dt = [('ID', '<i4'), ('Value', a.dtype.str), ('Count', '<i4'),
+              ('From_', '<i4'), ('To_', '<i4')]
+    elif a_dt in ('i', 'f'):
+        seqs = np.split(a, np.where(np.diff(a) != stepsize)[0] + 1)
+        dt = [('ID', '<i4'), ('Value', '<i4'), ('Count', '<i4'),
+              ('From_', '<i4'), ('To_', '<i4')]
+    vals = [i[0] for i in seqs]
+    cnts = [len(i) for i in seqs]
+    seq_num = np.arange(len(cnts))
+    too = np.cumsum(cnts)
+    frum = np.zeros_like(too)
+    frum[1:] = too[:-1]
+    out = np.array(list(zip(seq_num, vals, cnts, frum, too)), dtype=dt)
+    return out
+
 
 def pack_last_axis(arr, names=None):
     """Find source *****
@@ -1996,6 +2053,7 @@ def _help():
     (29) sort_rows_by_col
     (30) sort_cols_by_row
     (31) radial_sort
+    (32) sequences(data, stepsize)
      ---  _help  this function
     :-------------------------------------------------------------------:
     """
