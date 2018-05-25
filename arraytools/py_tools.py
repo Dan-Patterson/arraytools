@@ -23,7 +23,7 @@ References:
 
 ------------------------------------------------------------------------------
 """
-# ---- (1) imports, formats, constants ---------------------------------------
+# ---- imports, formats, constants ---------------------------------------
 import sys
 import os
 from textwrap import dedent, wrap
@@ -43,6 +43,36 @@ __all__ = ['get_dir', 'folders', 'sub_folders',  # basic folder functions
            'dirr2', 'dir_py', 'dirr',    # object and directory functions
            '_flatten', 'flatten_shape',  # iterables
            'pack', 'unpack']
+
+
+# ---- (1) computer, python stuff ... code section ---------------------------
+#
+def comp_info():
+    """Return information for the computer and python version
+    """
+    import platform
+    winv =platform.platform()
+    py_ver = platform.python_version()
+    plat = platform.architecture()
+    proc = platform.processor()
+    p_node = platform._node()
+    u_name = platform.uname()
+    ud = u_name._asdict()
+    udl = list(zip(ud.keys(), ud.values()))
+    frmt = """
+    ---------------------------
+    Computer/python information
+
+    Platform:        {}
+    python version:  {}
+    windows version: {}
+    processor:       {}
+    node:            {}
+    user/machine:    {}\n
+    Alternate form...."""
+    args = [winv, py_ver,plat, proc, p_node, u_name]
+    print(dedent(frmt).format(*args))
+    print("\n".join(["{:<10}: {}".format(*i) for i in udl]))
 
 
 # ---- (2) general file functions ... code section ---------------------------

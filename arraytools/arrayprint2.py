@@ -26,6 +26,10 @@ __docformat__ = 'restructuredtext'
 
 import sys
 import functools
+import warnings
+import numpy as np
+from numpy.core import multiarray, bool_
+
 if sys.version_info[0] >= 3:
     try:
         from _thread import get_ident
@@ -36,10 +40,6 @@ else:
         from thread import get_ident
     except ImportError:
         from dummy_thread import get_ident
-
-import numpy as np
-from np import *
-
 
 
 _format_options = {
@@ -54,6 +54,7 @@ _format_options = {
     'sign': '-',
     'formatter': None,
     'legacy': False}
+
 
 def _make_options_dict(precision=None, threshold=None, edgeitems=None,
                        linewidth=None, suppress=None, nanstr=None, infstr=None,

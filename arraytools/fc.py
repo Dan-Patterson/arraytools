@@ -283,9 +283,10 @@ def _two_arrays(in_fc, both=True, split=True):
             True, split points by their geometry groups as an object array;
             False, a sequential array with shape = (N,)
     variables:
-        dt_a = [('IDs', '<i4'), ('Xs', '<f8'), ('Ys', '<f8')]
-        dt_b = [('IDs', '<i4'), ('Xc', '<f8'), ('Yc', '<f8')]
-        dt_b.extend(b.dtype.descr[2:])
+
+    >>> dt_a = [('IDs', '<i4'), ('Xs', '<f8'), ('Ys', '<f8')]
+    >>> dt_b = [('IDs', '<i4'), ('Xc', '<f8'), ('Yc', '<f8')]
+    >>> dt_b.extend(b.dtype.descr[2:])
 
         Extend the dtype using the attribute dtype minus geometry and id
     """
@@ -358,39 +359,36 @@ def _xy_idx(in_fc):
     return a, idx
 
 
-def orig_dest_pnts(fc):
+def orig_dest_pnts(fc, SR):
     """Convert sequential points to origin-destination pairs to enable
     construction of a line.
 
     Notes:
     -----
     a : array
-        arcpy.da.FeatureClassToNumPyArray(
+
+    >>> arcpy.da.FeatureClassToNumPyArray(
             in_table=fc,
-
             field_names=["OID@","Shape@X", "Shape@Y"],
-
             where_clause=None
-
             spatial_reference="2951")
-
             explode_to_points=False, skip_nulls=False,
-
             null_value=None, sql_clause=(None, None)
+
     out : from_to_pnts(fc)
-        arcpy.da.ExtendTable(
+
+    >>> arcpy.da.ExtendTable(
          in_table=fc,
-
          table_match_field='OBJECTID',  # normally
-
          in_array = out,                # the array you created
-
          array_match_field='IDs',       # created by this script
-
          append_only=True)
+
+    Sample:
+        fc = 'C:/Git_Dan/a_Data/arcpytools_demo.gdb/polylines_pnts'
+
+        SR = '2951'
     """
-    fc = r"C:\Git_Dan\a_Data\arcpytools_demo.gdb\polylines_pnts"
-    SR = "2951"
     a = arcpy.da.FeatureClassToNumPyArray(fc, ["OID@", "Shape@X", "Shape@Y"],
                                           spatial_reference=SR)
     in_names = list(a.dtype.names)
