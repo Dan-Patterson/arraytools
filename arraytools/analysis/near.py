@@ -5,13 +5,15 @@ near
 
 Script :   near.py
 
-Author :   Dan.Patterson@carleton.ca
+Author :   Dan_Patterson@carleton.ca
 
 Modified: 2018-03-28
 
 Purpose :
     Determine the nearest points based on euclidean distance within
-    a point file.  Also, a function to ensure points have a minimum spacing.
+    a point file.
+
+    Also, a function to ensure points have a minimum spacing.
 
 References:
 ----------
@@ -233,10 +235,11 @@ def _n_near_demo():
     {}\n
     output array
     """
-    vals = [[0, 0], [0, 2], [2, 2], [2, 0], [1, 1]]
+    vals = [[0.0, 0.0], [0, 0.5], [0, 1], [0, 1.5], [0, 2], [1, 2],
+            [2, 2], [2, 1], [2, 0], [1, 0], [1, 0]]
     vals = [tuple(i) for i in vals]      # has to be tuples
 #    dt = np.dtype([('X', '<f8'), ('Y', '<f8')])
-    a = np.array(vals, dtype='int32')
+    a = np.array(vals, dtype='float64')
 #    b = np.array(vals, dtype=dt)
     N = 2
     coords, dist, n_r = n_near(a, N=N, ordered=True)  # a, coords, dist,
