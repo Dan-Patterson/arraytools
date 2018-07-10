@@ -7,7 +7,7 @@ Script :   geom.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2018-03-28
+Modified : 2018-06-08
 
 Purpose :  tools for working with numpy arrays
 
@@ -34,6 +34,8 @@ See ein_geom.py for full details and examples
 
   https://iliauk.com/2016/03/02/centroids-and-centres-numpy-r/
 
+  https://stackoverflow.com/questions/50751135/iterating-operation-with-two-
+  arrays-using-numpy  *includes KDTree as well*
 ------
 """
 # ---- imports, formats, constants ----
@@ -50,6 +52,7 @@ import numpy as np
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
       'float_kind': '{: 0.2f}'.format}
 np.set_printoptions(edgeitems=3, linewidth=80, precision=3, suppress=True,
+                    nanstr='nan', infstr='inf',
                     threshold=100, formatter=ft)
 np.ma.masked_print_option.set_display('-')  # change to a single -
 
@@ -234,7 +237,10 @@ def _center(a, remove_dup=True):
 
 def _centroid(a):
     """Return the centroid of a closed polygon.
-    `e_area` required
+
+    `a` : array
+
+    `e_area` : function (required)
     """
     x, y = a.T
     t = ((x[:-1] * y[1:]) - (y[:-1] * x[1:]))
@@ -313,11 +319,12 @@ def e_area(a, b=None):
 
 def e_dist(a, b, metric='euclidean'):
     """Distance calculation for 1D, 2D and 3D points using einsum
+
     `a`, `b` : array like
-        Inputs, list, tuple, array in 1,2 or 3D form
-    `metric : string
-        euclidean ('e','eu'...), sqeuclidean ('s','sq'...),
-    :-----------------------------------------------------------------------
+        Inputs, list, tuple, array in 1, 2 or 3D form
+    `metric` : string
+        euclidean ('e', 'eu'...), sqeuclidean ('s', 'sq'...),
+    -----------------------------------------------------------------------
     """
     a = np.asarray(a)
     b = np.atleast_2d(b)
@@ -339,8 +346,10 @@ def e_dist(a, b, metric='euclidean'):
 
 def e_leng(a):
     """Length/distance between points in an array using einsum
+
     Requires:
     --------
+    `a` : array-like
         A list/array coordinate pairs, with ndim = 3 and the minimum
         shape = (1,2,2), eg. (1,4,2) for a single line of 4 pairs
 
@@ -534,13 +543,13 @@ def azim_np(a, fld):
 
 # ---- ndarrays
 def angle_2pnts(p0, p1):
-    """Two point angle
+    """Two point angle. p0 represents the `from` point and p1 the `to` point.
     ::
         angle = atan2(vector2.y, vector2.x) - atan2(vector1.y, vector1.x)
     Accepted answer from the poly_angles link
     """
     p0, p1 = [np.asarray(i) for i in [p0, p1]]
-    ba = p0 - p1
+    ba = p1 - p0
     ang_ab = np.arctan2(*ba[::-1])
     return np.rad2deg(ang_ab % (2 * np.pi))
 

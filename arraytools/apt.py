@@ -7,7 +7,7 @@ Script :   apt.py ... (arcpytools.py)
 
 Author :   Dan.Patterson@carleton.ca
 
-Modified : 2018-03-28
+Modified : 2018-05-25
 
 Purpose :  tools for working with arcpy and numpy arrays
 
@@ -29,6 +29,7 @@ Functions
 -  fc_array : featureclass to array
 -  change_fld : convert arc to np field types
 -  tbl_arr : convert a table to an array
+-  tbl_2_np_array : shortcut to TableToNumPyArray
 -  to_fc : convert the results back to a featureclass
 
 **Common variables used in the functions**
@@ -100,6 +101,7 @@ References:
 import sys
 from textwrap import dedent
 import numpy as np
+from _common import fc_info, tweet
 import arcpy
 
 
@@ -110,7 +112,8 @@ __all__ = ['_arr_common', '_split_array', 'shapes_fc',
            'pnts_arr', 'arr_polyline_fc', 'arr_polygon_fc',
            'shapes_fc', '_id_geom_array',
            'polylines_arr', 'polygons_arr',
-           'fc_array', 'change_fld', 'tbl_arr', 'to_fc'
+           'fc_array', 'change_fld',
+           'tbl_2_np_array', 'tbl_arr', 'to_fc'
            ]
 
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
@@ -472,7 +475,7 @@ def _id_geom_array(in_fc):
     """The main code segment which gets the id and shape information and
     explodes the geometry to individual points
     """
-    shp_fld, oid_fld, SR, shp_type = fc_info(in_fc)
+    shp_fld, oid_fld, shp_type, SR = fc_info(in_fc)
     a_flds = [oid_fld, shp_fld]
     a = arcpy.da.FeatureClassToNumPyArray(in_fc, field_names=a_flds,
                                           explode_to_points=True,
@@ -518,7 +521,7 @@ def fc_array(in_fc, flds="", allpnts=True):
         FeatureClassToNumPyArray, ListFields for more information
     """
     out_flds = []
-    shp_fld, oid_fld, SR, shp_type = fc_info(in_fc)  # get the base information
+    shp_fld, oid_fld, shp_type, SR = fc_info(in_fc)  # get the base information
     fields = arcpy.ListFields(in_fc)       # all fields in the shapefile
     if flds == "":                         # return just OID and Shape field
         out_flds = [oid_fld, shp_fld]      # FID and Shape field required
@@ -575,6 +578,39 @@ def tbl_arr(in_fc):
     dt = [(i.replace('OBJECTID', 'Idx'), j) for i, j in dt]
     a = np.asarray(vals, dtype=dt)
     return a  # vals, az
+
+
+def tbl_2_np_array(in_tbl, flds):
+    """Form the TableToNumPyArray to account for nulls for various dtypes.
+    This is essentially a shortcut to `arcpy.da.TableToNumPyArray`
+
+    Requires
+    --------
+    `in_tbl` :
+        table, or featureclass table name
+    `flds` :
+        list of field names
+    `skip_nulls` = False :
+        set within function
+    `null_value` :
+        determined from the dtype of the array...
+        otherwise you may as well do it manually
+
+    Source
+    ------
+    arraytools, apt.py module
+    """
+    int_min = np.iinfo(np.int32).min
+    float_min = np.finfo(np.float64).min
+    str_val = "None"
+    nulls = {'Double':float_min, 'Integer':int_min, 'String':str_val}
+    #
+    fld_dict = {i.name: i.type for i in arcpy.ListFields(in_tbl)}
+    null_dict = {f:nulls[fld_dict[f]] for f in flds}
+    t = arcpy.da.TableToNumPyArray(in_table=in_tbl, field_names=flds,
+                                   skip_nulls=False,
+                                   null_value=null_dict)
+    return t
 
 
 # ---- functions to convert between array and featureclass ----
@@ -661,7 +697,7 @@ if __name__ == "__main__":
     : - print the script source name.
     : - run the _demo
     """
-    from _common import fc_info, tweet
+#    from _common import fc_info, tweet
     # from arcpytools import array_fc, array_struct, tweet
 #    print("Script... {}".format(script))
 #    _demo()

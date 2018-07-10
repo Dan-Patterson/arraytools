@@ -5,9 +5,9 @@ fc.py  featureclass.py
 
 Script   :   fc.py  (featureclass.py)
 
-Author   :   Dan.Patterson@carleton.ca
+Author   :   Dan_Patterson@carleton.ca
 
-Modified : 2018-03-28
+Modified : 2018-05-25
 
 Purpose  :
     Tools for working with featureclass arcpy geometry objects and conversion
@@ -238,12 +238,17 @@ def _ndarray(in_fc, to_pnts=True, flds=None, SR=None):
 
     Requires
     --------
-    in_fc :
+    in_fc : string
         input featureclass
-    to_pnts :
+    to_pnts : boolean
         True, convert the shape to points. False, centroid returned.
-    flds :
-        '*' for all, others: 'Shape',  ['SHAPE@X', 'SHAPE@Y'], or specify
+    flds : string or list of strings
+      - '*' for all
+      - others : 'OID@', 'Shape',  ['SHAPE@X', 'SHAPE@Y'], or specify
+
+    Example:
+    --------
+    a = _ndarray(in_fc, True, ['OID@',' SHAPE@X', 'SHAPE@Y', None]
     """
     if flds is None:
         flds = "*"

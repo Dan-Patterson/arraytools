@@ -5,9 +5,9 @@ arraytools tools
 
 Script :   tools.py
 
-Author :   Dan.Patterson@carleton.ca
+Author :   Dan_Patterson@carleton.ca
 
-Modified : 2018-03-28
+Modified : 2018-05-25
 
 Purpose :  tools for working with numpy arrays
 
@@ -143,7 +143,7 @@ Useage:
 
 **8.  nd_rec and nd_struct** : example
 
-**. nd2struct(a)** : np2rec ... shell around above
+** nd2struct(a)** : np2rec ... shell around above
 
 ndarray to structured array or recarray
 
@@ -382,18 +382,33 @@ __all__ = ['_func', '_help', '_pad_', 'arr2xyz', 'block', 'block_arr',
            'change_arr', 'doc_func', 'find', 'get_func', 'get_modu',
            'group_pnts', 'group_vals', 'info', 'is_in', 'make_blocks',
            'make_flds', 'n_largest', 'n_smallest', 'nd2struct',
-           'num_to_mask', 'num_to_nan', 'rc_vals', 'nd_rec', 'reclass',
-           'rolling_stats', 'scale', 'sort_cols_by_row', 'sort_rows_by_col',
-           'split_array', 'stride', 'uniq', 'xy_vals']
+           'num_to_mask', 'num_to_nan', 'pack_last_axis',
+           'rc_vals', 'nd_rec', 'reclass',
+           'rolling_stats', 'scale', 'sequences', 'sort_cols_by_row',
+           'sort_rows_by_col', 'split_array', 'stride', 'uniq', 'xy_vals']
 
 __xtras__ = ['_check', 'time_deco', 'run_deco', '_demo_tools']
 __outside__ = ['dedent', 'indent']
 
+"""  Alphabetical listing
+:Members: .....
+  ['__all__', '__builtins__', '__cached__', '__doc__', '__file__',
+  '__loader__','__name__', '__outside__', '__package__', '__spec__',
+  '__xtras__', '_demo_tools', '_func', '_help', '_pad_', 'arr2xyz',
+  'as_strided', 'block', 'block_arr', 'change_arr', 'data_path', 'dedent',
+  'doc_func', 'find', 'ft', 'get_func', 'get_modu', 'group_pnts', 'group_vals',
+  'indent', 'info', 'is_in', 'make_blocks', 'make_flds', 'n_largest',
+  'n_smallest', 'nd2rec', 'nd2struct', 'nd_rec', 'nd_struct', 'np',
+  'num_to_mask', 'num_to_nan', 'pack_last_axis', 'pyramid', 'radial_sort',
+  'rc_vals', 'reclass', 'rolling_stats', 'run_deco', 'scale', 'script',
+  'sequences', 'sliding_window_view', 'sort_cols_by_row', 'sort_rows_by_col',
+  'split_array', 'stride', 'sys', 'time_deco', 'uniq', 'warnings', 'xy_vals']
+"""
+
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
       'float_kind': '{: 0.3f}'.format}
-np.set_printoptions(edgeitems=5, linewidth=80, precision=2,
-                    suppress=True, threshold=200,
-                    formatter=ft)
+np.set_printoptions(edgeitems=5, linewidth=80, precision=2, suppress=True,
+                    nanstr='nan', infstr='inf',threshold=200, formatter=ft)
 np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
