@@ -7,7 +7,7 @@ Script :   py_tools.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified: 2018-04-14
+Modified: 2018-05-25
 
 -------
 
@@ -39,7 +39,8 @@ np.ma.masked_print_option.set_display('-')  # change to a single -
 script = sys.argv[0]  # print this should you need to locate the script
 
 
-__all__ = ['get_dir', 'folders', 'sub_folders',  # basic folder functions
+__all__ = ['comp_info',
+           'get_dir', 'folders', 'sub_folders',  # basic folder functions
            'dirr2', 'dir_py', 'dirr',    # object and directory functions
            '_flatten', 'flatten_shape',  # iterables
            'pack', 'unpack']
