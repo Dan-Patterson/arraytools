@@ -2,7 +2,7 @@
 ***Arraytools***
 ================
 
-2018-01-06 - I added some array format examples in the arraytools/examples folder
+2018-09-16 - Beginning of the reorganization of arraytools to separate the purely array functionality from functionality that uses arcpy
 
 
 **Purpose**
@@ -29,12 +29,65 @@ import numpy as np
 
 Available modules and subpackages
 ---------------------------------
-**a_io.py**  (7)   io tools for numpy arrays and operating system access
+
+**art.dirr(art)**
+
+  (001)    __all__          __art_version__  __builtins__     __cached__       
+  (005)    __doc__          __file__         __loader__       __mods__         
+  (009)    __name__         __package__      __path__         __spec__         
+  (013)    _center          _centroid        _chunks          _convert         
+  (017)    _densify_2D      _even_odd        _extent          _flat_           
+  (021)    _flatten         _func            _help            _max             
+  (025)    _min             _new_view_       _pad_            _pad_even_odd    
+  (029)    _pad_nan         _pad_zero        _reshape_        _unpack          
+  (033)    _view_           a_filter         a_io             analysis         
+  (037)    angle_2pnts      angle_np         angle_seq        angles_poly      
+  (041)    areas            arr2xyz          arr_json         azim_np          
+  (045)    block            block_arr        centers          centroids        
+  (049)    change_arr       check_shapes     check_stack      circle           
+  (053)    circular         col_hdr          combine_         comp_info        
+  (057)    compass          conversion       crosstab         dedent           
+  (061)    deline           densify          dir_py           dirr             
+  (065)    dist_bearing     doc_func         dx_dy_np         e_area           
+  (069)    e_dist           e_leng           ellipse          equalize         
+  (073)    expand_zone      fc_tools         fill_arr         find             
+  (077)    flatten_shape    folders          form_            frmt_            
+  (081)    frmt_ma          frmt_rec         frmts            geom             
+  (085)    geomtools        get_dir          get_func         get_modu         
+  (089)    graphing         grid             gridstats        group_pnts       
+  (093)    group_vals       hex_flat         hex_pointy       image            
+  (097)    in_by            indent           info             is_in            
+  (101)    lengths          line_dir         load_npy         make_blocks      
+  (105)    make_flds        make_row_format  mask_stack       mesh_pnts        
+  (109)    mst              n_largest        n_near           n_smallest       
+  (113)    n_spaced         nd2struct        nd_rec           normalize        
+  (117)    not_closer       np               num_to_mask      num_to_nan       
+  (121)    pack             pack_last_axis   pd_              pip              
+  (125)    plot_img         plot_pnts_       py_tools         radial_sort      
+  (129)    rasters          rc_vals          read_txt         reclass          
+  (133)    reclass_ranges   reclass_vals     rectangle        redent           
+  (137)    repeat           rgb_gray         rolling_stats    rotate           
+  (141)    run_deco         save_npy         save_txt         scale            
+  (145)    scale_up         seg_lengths      sequences        simplify         
+  (149)    sort_cols_by_row sort_rows_by_col split_array      stack_cumprod    
+  (153)    stack_cumsum     stack_max        stack_mean       stack_median     
+  (157)    stack_min        stack_percentile stack_prod       stack_stats      
+  (161)    stack_stats_tbl  stack_std        stack_sum        stack_var        
+  (165)    stats            stride           sub_folders      tifffile         
+  (169)    time_deco        tools            total_length     trans_rot        
+  (173)    uniq             unpack           utils                             
+  (177)    vincenty         wrap             xy_vals     
+  
+
+**a_io.py**  (5)   io tools for numpy arrays
 
 :__all_aio__
 
-    'arr_json', 'get_dir', 'load_npy', 'read_txt', 'save_npy', 'save_txt',
-    'sub_folders']
+    1.  load_npy    - load numpy npy files
+    2.  save_npy    - save array to *.npy format
+    3.  read_txt    - read array created by save_txtt
+    4.  save_txt    - save array to npy format
+    5.  arr_json    - save to json format
 
 **apt.py  (15)**    tools for arcpy tools
 
