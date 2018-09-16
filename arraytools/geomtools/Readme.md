@@ -1,3 +1,3 @@
-**geom_tools**
+**geomtools**
 
 Reorganizing geometry functions
