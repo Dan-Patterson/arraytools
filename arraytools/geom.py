@@ -7,7 +7,7 @@ Script :   geom.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2018-06-08
+Modified : 2018-10-15
 
 Purpose :  tools for working with numpy arrays
 
@@ -30,24 +30,28 @@ References:
 ----------
 See ein_geom.py for full details and examples
 
-  https://en.wikipedia.org/wiki/Centroid#Centroid_of_polygon
+`<https://www.redblobgames.com/grids/hexagons/>`_
 
-  https://iliauk.com/2016/03/02/centroids-and-centres-numpy-r/
+`<https://en.wikipedia.org/wiki/Centroid#Centroid_of_polygon>`_
 
-  https://stackoverflow.com/questions/50751135/iterating-operation-with-two-
-  arrays-using-numpy  *includes KDTree as well*
+`<https://iliauk.com/2016/03/02/centroids-and-centres-numpy-r/>`_
+
+*includes KDTree as well*
+
+`<https://stackoverflow.com/questions/50751135/iterating-operation-with-two-
+arrays-using-numpy>`_
+
+`<https://stackoverflow.com/questions/21483999/using-atan2-to-find-angle-
+between-two-vectors>`_
+
 ------
 """
 # ---- imports, formats, constants ----
 import sys
 from textwrap import dedent
 import numpy as np
-
-# from arraytools.tools import arr2xyz
+from numpy.lib.stride_tricks import as_strided
 # from arraytools.fc import _xy
-
-
-# from tools import group_pnts
 
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
       'float_kind': '{: 0.2f}'.format}
@@ -58,7 +62,7 @@ np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
 
-__all__ = ['_flat_', '_unpack',
+__all__ = ['_flat_', '_unpack', 'segment', 'stride',
            '_new_view_', '_view_', '_reshape_',
            '_min', '_max', '_extent',
            '_center', '_centroid', 'centers', 'centroids',
@@ -70,11 +74,22 @@ __all__ = ['_flat_', '_unpack',
            'angle_2pnts', 'angle_seq', 'angles_poly', 'dist_bearing',
            '_densify_2D', '_convert', 'densify',
            'simplify',
-           'rotate',  'repeat',
+           'rotate',  'trans_rot', 'repeat',
            'circle', 'ellipse',
            'rectangle', 'hex_flat', 'hex_pointy'
            ]
-
+"""
+['__all__', '__builtins__', '__cached__', '__doc__', '__file__',
+ '__loader__', '__name__', '__package__', '__spec__', '_arrs_', '_center',
+ '_centroid', '_convert', '_demo', '_densify_2D', '_extent', '_flat_',
+ '_max', '_min', '_new_view_', '_reshape_', '_test', '_unpack', '_view_',
+ 'adjacency_edge', 'angle_2pnts', 'angle_between', 'angle_np', 'angle_seq',
+ 'angles_poly', 'areas', 'as_strided', 'azim_np', 'centers', 'centroids',
+ 'circle', 'dedent', 'densify', 'dist_bearing', 'dx_dy_np', 'e_area',
+ 'e_dist', 'e_leng', 'ellipse', 'ft', 'hex_flat', 'hex_pointy',
+ 'intersect_pnt', 'lengths', 'np', 'pnt_', 'radial_sort', 'rectangle',
+ 'repeat', 'rotate', 'script', 'seg_lengths', 'segment', 'simplify',
+ 'stride', 'sys', 'total_length', 'trans_rot']"""
 
 # ---- array functions -------------------------------------------------------
 #
@@ -106,6 +121,45 @@ def _unpack(iterable, param='__iter__'):
     return xy
 
 
+def segment(a):
+    """Segment poly* structures into o-d pairs from start to finish
+
+    `a` : array
+        A 2D array of x,y coordinates representing polyline or polygons.
+    `fr_to` : array
+        Returns a 3D array of point pairs.
+    """
+    s0, s1 = a.shape
+    fr_to = np.zeros((s0-1, s1, 2), dtype=a.dtype)
+    fr_to[..., 0] = a[:-1]
+    fr_to[..., 1] = a[1:]
+    return fr_to
+
+
+def stride(a, win=(3, 3), stepby=(1, 1)):
+    """Provide a 2D sliding/moving view of an array.
+    There is no edge correction for outputs. Use the `_pad_` function first.
+
+    Note:
+    -----
+        Origin arraytools.tools  stride, see it for more information
+    """
+    err = """Array shape, window and/or step size error.
+    Use win=(3,) with stepby=(1,) for 1D array
+    or win=(3,3) with stepby=(1,1) for 2D array
+    or win=(1,3,3) with stepby=(1,1,1) for 3D
+    ----    a.ndim != len(win) != len(stepby) ----
+    """
+    assert (a.ndim == len(win)) and (len(win) == len(stepby)), err
+    shape = np.array(a.shape)  # array shape (r, c) or (d, r, c)
+    win_shp = np.array(win)    # window      (3, 3) or (1, 3, 3)
+    ss = np.array(stepby)      # step by     (1, 1) or (1, 1, 1)
+    newshape = tuple(((shape - win_shp) // ss) + 1) + tuple(win_shp)
+    newstrides = tuple(np.array(a.strides) * ss) + a.strides
+    a_s = as_strided(a, shape=newshape, strides=newstrides, subok=True).squeeze()
+    return a_s
+
+
 # ---- _view and _reshape_ are helper functions -----------------------------
 #
 def _new_view_(a):
@@ -129,15 +183,15 @@ def _view_(a):
 def _reshape_(a):
     """Reshape arrays, structured or recarrays of coordinates to a 2D ndarray.
 
-    Notes:
+    Notes
     -----
 
     1. The length of the dtype is checked. Only object ('O') and arrays with
-       a uniform dtype return 0.  Structured and recarrays will yield 1 or >.
+       a uniform dtype return 0.  Structured/recarrays will yield 1 or more.
 
     2. dtypes are stripped and the array reshaped
-    ::
-        a = np.array([(341000., 5021000.), (341000., 5022000.),
+
+    >>> a = np.array([(341000., 5021000.), (341000., 5022000.),
                       (342000., 5022000.), (341000., 5021000.)],
                      dtype=[('X', '<f8'), ('Y', '<f8')])
         becomes...
@@ -146,8 +200,8 @@ def _reshape_(a):
         a.dtype = dtype('float64')
 
     3. 3D arrays are collapsed to 2D
-    ::
-        a.shape = (2, 5, 2) => np.product(a.shape[:-1], 2) => (10, 2)
+
+    >>> a.shape = (2, 5, 2) => np.product(a.shape[:-1], 2) => (10, 2)
 
     4. Object arrays are processed object by object but assumed to be of a
        common dtype within, as would be expected from a gis package.
@@ -235,16 +289,20 @@ def _center(a, remove_dup=True):
     return a.mean(axis=0)
 
 
-def _centroid(a):
+def _centroid(a, a_6=None):
     """Return the centroid of a closed polygon.
 
     `a` : array
-
+        A 2D or more of point coordinates
+    `a_6` : number
+        If area has been precalculated, you can use its value.
     `e_area` : function (required)
+        Contained in this module.
     """
     x, y = a.T
     t = ((x[:-1] * y[1:]) - (y[:-1] * x[1:]))
-    a_6 = e_area(a) * 6.0  # area * 6.0
+    if a_6 is None:
+        a_6 = e_area(a) * 6.0  # area * 6.0
     x_c = np.sum((x[:-1] + x[1:]) * t) / a_6
     y_c = np.sum((y[:-1] + y[1:]) * t) / a_6
     return np.asarray([-x_c, -y_c])
@@ -354,6 +412,7 @@ def e_leng(a):
         shape = (1,2,2), eg. (1,4,2) for a single line of 4 pairs
 
         The minimum input needed is a pair, a sequence of pairs can be used.
+
     Returns:
     -------
     `length` : float
@@ -492,8 +551,7 @@ def radial_sort(pnts, cent=None):
         An array of points (x,y) as array or list
     `cent` : coordinate
         list, tuple, array of the center's x,y coordinates
-        ::
-            cent = [0, 0] or np.array([0, 0])
+    >>> cent = [0, 0] or np.array([0, 0])
 
     Returns:
     -------
@@ -565,7 +623,7 @@ def angle_seq(a):
     return np.degrees(ang_ab % (2 * np.pi))
 
 
-def angles_poly(a, inside=True, in_deg=True):
+def angles_poly(a=None, inside=True, in_deg=True):
     """Sequential 3 point angles from a poly* shape
 
     a : array
@@ -583,50 +641,39 @@ def angles_poly(a, inside=True, in_deg=True):
         calculation relative to the origin and x axis, aka... slope
         n points - sequential angle between 3 points
 
-        Check whether 1st and last points are duplicates.
-        'True' for polygons and closed loop polylines, it is checked using
-        np.allclose(a[0], a[-1])  # check first and last point
-
-        a rolling tuple is constructed to produce the point triplets
-        r = (-1,) + tuple(range(len(a))) + (0,)
-        for np.arctan2(np.linalg.norm(np.cross(ba, bc)), np.dot(ba, bc))
-
     Notes to keep
     ::
         *** keep to convert object to array
         a - a shape from the shape field
         a = p1.getPart()
-        b =np.asarray([(i.X, i.Y) if i is not None else ()
+        b = np.asarray([(i.X, i.Y) if i is not None else ()
                        for j in a for i in j])
-    Reference:
-    ----------
 
-    [1] https://stackoverflow.com/questions/21483999/using-atan2-to-find-
-    angle-between-two-vectors
+    Sample data
+
+    >>>
 
     """
     if len(a) < 2:
         return None
-    elif len(a) == 2:  # **** check
+    elif len(a) == 2:
         ba = a[1] - a[0]
         return np.arctan2(*ba[::-1])
+    a0 = a[0:-2]
+    a1 = a[1:-1]
+    a2 = a[2:]
+    ba = a1 - a0
+    bc = a1 - a2
+    cr = np.cross(ba, bc)
+    dt = np.einsum('ij,ij->i', ba, bc)
+    ang = np.arctan2(cr, dt)
+    two_pi = np.pi*2.
+    if inside:
+        ang = np.where(ang<0, ang + two_pi, ang)
     else:
-        angles = []
-        if np.allclose(a[0], a[-1]):  # closed loop
-            a = a[:-1]
-            r = (-1,) + tuple(range(len(a))) + (0,)
-        else:
-            r = tuple(range(len(a)))
-        for i in range(len(r)-2):
-            p0, p1, p2 = a[r[i]], a[r[i+1]], a[r[i+2]]
-            ba = p1 - p0
-            bc = p1 - p2
-            cr = np.cross(ba, bc)
-            dt = np.dot(ba, bc)
-            ang = np.arctan2(np.linalg.norm(cr), dt)
-            angles.append(ang)
+        ang = np.where(ang>0, two_pi - ang, ang)
     if in_deg:
-        angles = np.degrees(angles)
+        angles = np.degrees(ang)
     return angles
 
 
@@ -723,14 +770,16 @@ def _densify_2D(a, fact=2):
     return c
 
 
-def _convert(a, fact=2):
+def _convert(a, fact=2, check_arcpy=True):
     """Do the shape conversion for the array parts.  Calls _densify_2D
 
     Requires:
     ---------
         >>> import arcpy  # uncomment the first line below if using _convert
     """
-#    import arcpy
+    if check_arcpy:
+        #import arcpy
+        from arcpy.arcobjects import Point
     out = []
     parts = len(a)
     for i in range(parts):
@@ -738,14 +787,14 @@ def _convert(a, fact=2):
         p = np.asarray(a[i]).squeeze()
         if p.ndim == 2:
             shp = _densify_2D(p, fact=fact)  # call _densify_2D
-            arc_pnts = [arcpy.Point(*p) for p in shp]
+            arc_pnts = [Point(*p) for p in shp]
             sub_out.append(arc_pnts)
             out.extend(sub_out)
         else:
             for i in range(len(p)):
                 pp = p[i]
                 shp = _densify_2D(pp, fact=fact)
-                arc_pnts = [arcpy.Point(*p) for p in shp]
+                arc_pnts = [Point(*p) for p in shp]
                 sub_out.append(arc_pnts)
             out.append(sub_out)
     return out
@@ -810,6 +859,48 @@ def rotate(pnts, angle=0):
     aff_matrix = np.array([[c, s], [-s, c]])  # rotation matrix
     XY_r = np.dot(pnts, aff_matrix)           # numpy magic to rotate pnts
     return XY_r
+
+
+def trans_rot(a, angle=0.0, unique=True):
+    """Translate and rotate and array of points about the point cloud origin.
+
+    Requires:
+    ---------
+    a : array
+        2d array of x,y coordinates.
+    angle : double
+        angle in degrees in the range -180. to 180
+    unique :
+        If True, then duplicate points are removed.  If False, then this would
+        be similar to doing a weighting on the points based on location.
+
+    Returns:
+    --------
+    Points rotated about the origin and translated back.
+
+    >>> a = np.array([[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]])
+    >>> b = trans_rot(b, 45)
+    >>> b
+    array([[ 0.5,  1.5],
+           [ 1.5,  1.5],
+           [ 0.5, -0.5],
+           [ 1.5, -0.5]])
+
+    Notes:
+    ------
+    - if the points represent a polygon, make sure that the duplicate
+    - np.einsum('ij,kj->ik', a - cent, R)  =  np.dot(a - cent, R.T).T
+    - ik does the rotation in einsum
+
+    >>> R = np.array(((c, s), (-s,  c)))  # clockwise about the origin
+    """
+    if unique:
+        a = np.unique(a, axis=0)
+    cent = a.mean(axis=0)
+    angle = np.radians(angle)
+    c, s = np.cos(angle), np.sin(angle)
+    R = np.array(((c, s), (-s,  c)))
+    return  np.einsum('ij,kj->ik', a - cent, R) + cent
 
 
 def repeat(seed=None, corner=[0, 0], cols=1, rows=1, angle=0):
@@ -934,9 +1025,11 @@ def hex_pointy(dx=1, dy=1, cols=1, rows=1):
 
 # ---- Extras ----------------------------------------------------------------
 #
-def _test(a0):
+def _test(a0=None):
     """testing stuff using a0"""
     import math
+    if a0 is None:
+        a0 = np.array([[10, 10], [10, 20], [20, 20], [10, 10]])
     x0, y0 = p0 = a0[-2]
     x1, y1 = p1 = a0[-1]
     dx, dy = p1 - p0
@@ -951,7 +1044,7 @@ def _test(a0):
     step = 2.0
     stop = 10.0 + step/2
     x2 = np.arange(start, stop + step, step)
-    return dist, xc, yc, pc, slope, xn, yn, x2
+    return a0, dist, xc, yc, pc, slope, xn, yn, x2
 
 
 def adjacency_edge():
@@ -968,12 +1061,11 @@ def adjacency_edge():
     XX = np.ma.masked_array(XX, mask=m)
     YY = np.ma.masked_array(YY, mask=m)
     edge = np.stack((XX.ravel(), YY.ravel(), adj.ravel()), axis=1)
-    edge = np.stack((XX.ravel(), YY.ravel(), adj.ravel()), axis=1)
-#    edge = arr2xyz(adj)
     frmt = """
-    :Adjacency edge list association...
+    Adjacency edge list association...
     {}
-    :edge...
+    edge...
+    (col, row, value)
     {}
     """
     print(dedent(frmt).format(adj, edge))
@@ -1056,8 +1148,7 @@ def _demo(prn=True):
         args = [a.shape[0], fact, b.shape[0], t0, t1, min_l,
                 avg_l, max_l, ar1, ar2]
         print(dedent(frmt).format(*args))
-    else:
-        return a
+    return a
 
 
 def angle_between(p0, p1, p2):
@@ -1129,8 +1220,7 @@ if __name__ == "__main__":
 # total_length(a)  #: 6804096.2018476073  same as arcmap
 # areas(a)  #: [1074121438784.0]  1074121438405.34021
 
-
-#     ---- end ----
+#     ---- end
 #    in_fc = r'C:\Git_Dan\a_Data\arcpytools_demo.gdb\Can_geom_sp_LCC'
 #    in_fc = r"C:\Git_Dan\a_Data\testdata.gdb\Carp_5x5"   # full 25 polygons
 #    a = _xy(in_fc)

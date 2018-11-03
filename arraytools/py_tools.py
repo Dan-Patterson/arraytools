@@ -7,7 +7,7 @@ Script :   py_tools.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified: 2018-05-25
+Modified: 2018-10-15
 
 -------
 
@@ -16,7 +16,7 @@ Purpose : tools for working with python, numpy and other python packages
 - iterables :
     _flatten, flatten_shape, pack, unpack
 - folders :
-    get_dir, folders, sub-folders, dirr2, dir_py, *dirr*
+    get_dir, folders, sub-folders, dir_py
 Useage:
 
 References:
@@ -26,7 +26,7 @@ References:
 # ---- imports, formats, constants ---------------------------------------
 import sys
 import os
-from textwrap import dedent, wrap
+from textwrap import dedent
 import numpy as np
 
 
@@ -41,9 +41,10 @@ script = sys.argv[0]  # print this should you need to locate the script
 
 __all__ = ['comp_info',
            'get_dir', 'folders', 'sub_folders',  # basic folder functions
-           'dirr2', 'dir_py', 'dirr',    # object and directory functions
+           'dir_py',    # object and directory functions
            '_flatten', 'flatten_shape',  # iterables
-           'pack', 'unpack']
+           'pack', 'unpack',
+           'combine_dicts']
 
 
 # ---- (1) computer, python stuff ... code section ---------------------------
@@ -52,7 +53,7 @@ def comp_info():
     """Return information for the computer and python version
     """
     import platform
-    winv =platform.platform()
+    winv = platform.platform()
     py_ver = platform.python_version()
     plat = platform.architecture()
     proc = platform.processor()
@@ -138,18 +139,6 @@ def sub_folders(path):
 
 # ---- (3) dirr ... code section ... -----------------------------------------
 #
-def dirr2(obj, sub=None, colwise=False, cols=3, prn=True):
-    """call either numpy or python dirr function
-    """
-    obj = dir(obj)
-    if sub is not None:
-        obj = [i for i in obj if sub in i]
-    if 'np' in globals().keys():
-        dirr(obj, colwise=colwise, cols=cols, prn=prn)
-    else:
-        dir_py(obj, colwise=colwise, cols=cols, prn=prn)
-
-
 def dir_py(obj, colwise=False, cols=4, prn=True):
     """The non-numpy version of dirr
     """
@@ -176,108 +165,6 @@ def dir_py(obj, colwise=False, cols=4, prn=True):
         frmt = (("{{!s:<{}}} ".format(w)))*len(i)
         txt += frmt.format(*i)
         txt_out += txt
-    if prn:
-        print(txt_out)
-    else:
-        return txt_out
-
-
-def dirr(obj, colwise=False, cols=4, sub=None, prn=True):
-    """A formatted `dir` listing of an object, module, function... anything you
-    can get a listing for.
-
-    Source : arraytools module in py_tools.py
-
-    Return a directory listing of a module's namespace or a part of it if the
-    `sub` option is specified.
-
-    Use `prn=True`, to print. `prn=False`, returns a string.
-
-    Parameters
-    ----------
-    colwise : boolean
-        `True` or `1`, otherwise, `False` or `0`
-    cols : number
-      pick a size to suit
-    sub : text
-      sub array with wildcards
-      ::
-        `arr*`  begin with `arr`
-        `*arr`  endswith `arr` or
-        `*arr*` contains `arr`
-    prn : boolean
-      `True` for print or `False` to return output as string
-
-    Notes
-    -----
-    See the `inspect` module for possible additions like `isfunction`,
-    'ismethod`, `ismodule`
-
-    **Examples**::
-
-        dirr(art, colwise=True, cols=3, sub=None, prn=True)  # all columnwise
-        dirr(art, colwise=True, cols=3, sub='arr', prn=True) # just the `arr`'s
-
-          (001)    _arr_common     arr2xyz         arr_json
-          (002)    arr_pnts        arr_polygon_fc  arr_polyline_fc
-          (003)    array2raster    array_fc
-          (004)    array_struct    arrays_cols
-    """
-    err = """
-    ...No matches found using substring .  `{0}`
-    ...check with wildcards, *, ... `*abc*`, `*abc`, `abc*`
-    """
-    d_arr = dir(obj)
-    a = np.array(d_arr)
-    dt = a.dtype.descr[0][1]
-    if sub not in (None, '', ' '):
-        start = [0, 1][sub[0] == "*"]
-        end = [0, -1][sub[-1] == "*"]
-        if not start and end:
-            a = [i for i in d_arr
-                 if i.startswith(sub[start:end], start, len(i))]
-        elif start and end:
-            a = [i for i in d_arr
-                 if sub[1:4] in i[start:len(i)]]
-        elif not end:
-            sub = sub.replace("*", "")
-            a = [i for i in d_arr
-                 if i.endswith(sub, start, len(i))]
-        else:
-            a = []
-        if len(a) == 0:
-            print(dedent(err).format(sub))
-            return None
-        num = max([len(i) for i in a])
-    else:
-        num = int("".join([i for i in dt if i.isdigit()]))
-    frmt = ("{{!s:<{}}} ".format(num)) * cols
-    if colwise:
-        z = np.array_split(a, cols)
-        zl = [len(i) for i in z]
-        N = max(zl)
-        e = np.empty((N, cols), dtype=z[0].dtype)
-        for i in range(cols):
-            n = min(N, zl[i])
-            e[:n, i] = z[i]
-    else:
-        csze = len(a) / cols
-        rows = int(csze) + (csze % 1 > 0)
-        z = np.array_split(a, rows)
-        e = np.empty((len(z), cols), dtype=z[0].dtype)
-        N = len(z)
-        for i in range(N):
-            n = min(cols, len(z[i]))
-            e[i, :n] = z[i][:n]
-    if hasattr(obj, '__name__'):
-        args = ["-"*70, obj.__name__, obj]
-    else:
-        args = ["-"*70, type(obj), "np version"]
-    txt_out = "\n{}\n| dir({}) ...\n|    {}\n-------".format(*args)
-    cnt = 1
-    for i in e:
-        txt_out += "\n  ({:>03.0f})    {}".format(cnt, frmt.format(*i))
-        cnt += cols
     if prn:
         print(txt_out)
     else:
@@ -356,6 +243,22 @@ def unpack(iterable, param='__iter__'):
             xy.append(x)
     return xy
 
+def combine_dicts(ds):
+    """Combine dictionary values from multiple dictionaries and combine
+    their keys if needed.
+    Requires: import numpy as np
+    Returns: a new dictionary
+    """
+    a = np.array([(k, v)                 # key, value pairs
+                  for d in ds            # dict in dictionaries
+                  for k, v in d.items()  # get the key, values from items
+                  ])
+    ks, idx = np.unique(a[:, 0], True)
+    ks = ks[np.lexsort((ks, idx))]       # optional sort by appearance
+    uniq = [np.unique(a[a[:, 0] == i][:, 1]) for i in ks]
+    nd = [" ".join(u.tolist()) for u in uniq]
+    new_d = dict(zip(ks, nd))
+    return new_d
 
 # ---- (5) demos  -------------------------------------------------------------
 #

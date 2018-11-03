@@ -7,7 +7,7 @@ Script :   tools.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2018-05-25
+Modified : 2018-10-15
 
 Purpose :  tools for working with numpy arrays
 
@@ -65,106 +65,32 @@ Useage:
 -------------
     Tool function examples follow...
 
-**1.  doc_func(func=None)** : see get_func and get_modu
+**1.  n largest, n_smallest**
 
-**2.  get_func** : retrieve function information
-::
-    get_func(func, line_nums=True, verbose=True)
-    print(art.get_func(art.main))
+>>> a = np.arange(0, 9)  # array([0, 1, 2, 3, 4, 5, 6, 7, 8])
+>>> n_largest(a, num=2, by_row=True)
+array([[ 2,  3],
+       [ 6,  7],
+       [10, 11]])
+>>> n_largest(a, num=2, by_row=False)
+array([[ 4,  8],
+       [ 5,  9],
+       [ 6, 10],
+       [ 7, 11]])
 
-    Function: .... main ....
-    Line number... 1334
-    Docs:
-    Do nothing
-    Defaults: None
-    Keyword Defaults: None
-    Variable names:
-    Source code:
-       0  def main():
-       1   '''Do nothing'''
-       2      pass
+**2.  num_to_nan, num_to_mask** : nan stuff
 
-**3.  get_modu** : retrieve module info
+>>> a = np.arange(6)  # array([0, 1, 2, 3, 4, 5])
+>>> num_to_nan(a, nums=[2, 3])
+array([ 0.,  1., nan, nan,  4.,  5.])
+>>> num_to_mask(a, nums=[2, 3]) ...
+masked_array(data = [0 1 - - 4 5],
+             mask = [False False  True  True False False],
+       fill_value = 999999)
 
-    get_modu(obj, code=False, verbose=True)
+**3. arr2xyz** : convert 2/3D arrays into xyz values (ie 2D)
 
-**4.  info(a, prn=True)** : retrieve array information
-::
-    - array([(0, 1, 2, 3, 4), (5, 6, 7, 8, 9),
-             (10, 11, 12, 13, 14), (15, 16, 17, 18, 19)],
-      dtype=[('A', '<i8'), ('B', '<i8')... snip ..., ('E', '<i8')])
-    ---------------------
-    Array information....
-    array
-      |__shape (4,)
-      |__ndim  1
-      |__size  4
-      |__type  <class 'numpy.ndarray'>
-    dtype      [('A', '<i8'), ('B', '<i8') ... , ('E', '<i8')]
-      |__kind  V
-      |__char  V
-      |__num   20
-      |__type  <class 'numpy.void'>
-      |__name  void320
-      |__shape ()
-      |__description
-         |__name, itemsize
-         |__['A', '<i8']
-         |__['B', '<i8']
-         |__['C', '<i8']
-         |__['D', '<i8']
-         |__['E', '<i8']
-
-**5.  num_to_nan, num_to_mask** : nan stuff
-::
-    num_to_nan(a, nums=[2, 3]) .... array([  0.,   1.,  nan,  nan,   4.,   5.])
-    num_to_mask(a, nums=[2, 3]) ...
-    masked_array(data = [0 1 - - 4 5],
-                 mask = [False False  True  True False False],
-           fill_value = 999999)
-
-**6.  make_blocks(rows=2, cols=4, r=2, c=2, dt='int')** : create array blocks
-::
-     array([[0, 0, 1, 1, 2, 2, 3, 3],
-            [0, 0, 1, 1, 2, 2, 3, 3],
-            [4, 4, 5, 5, 6, 6, 7, 7],
-            [4, 4, 5, 5, 6, 6, 7, 7]])
-
-**7.  make_flds(n=1, names=None, default="col")** : example
-::
-   >>> make_flds(3, names='A,B,C', default='A')
-   dtype([('A', '<f8'), ('B', '<f8'), ('C', '<f8')])
-   >>> names = 'A, B, C'
-   >>> easy(f, names)
-   dtype([('A', '<f8'), ('B', '<f8'), ('C', '<f8')])
-   >>> names = 'A, B'   # missing a name, so default kicks in
-   >>> easy(f, names, name)
-   dtype([('A', '<f8'), ('B', '<f8'), ('A00', '<f8')]
-
-**8.  nd_rec and nd_struct** : example
-
-** nd2struct(a)** : np2rec ... shell around above
-
-ndarray to structured array or recarray
-
-Keep the dtype the same
-::
-    aa = nd2struct(a)       # produce a structured array from inputs
-    aa.reshape(-1,1)   # structured array
-    array([[(0, 1, 2, 3, 4)],
-           [(5, 6, 7, 8, 9)],
-           [(10, 11, 12, 13, 14)],
-           [(15, 16, 17, 18, 19)]],
-       dtype=[('A', '<i4'), ... snip ... , ('E', '<i4')])
-
-Upcast the dtype
-::
-       a_f = nd2struct(a.astype('float'))  # note astype allows a view
-       array([(0.0, 1.0, 2.0, 3.0, 4.0), ... snip... ,
-              (15.0, 16.0, 17.0, 18.0, 19.0)],
-          dtype=[('A', '<f8'), ... snip ... , ('E', '<f8')])
-
-**9.  arr2xyz(a, verbose=False)** : convert an array to x,y,z values, using
+arr2xyz(a, verbose=False)** : convert an array to x,y,z values, using
 row/column values for x and y
 ::
     a= np.arange(2*3).reshape(2,3)
@@ -176,25 +102,35 @@ row/column values for x and y
            [1, 1, 4],
            [2, 1, 5]])
 
-**10. change_arr(a, order=[], prn=False)** : merely a convenience function
+**4. make_blocks** : create array blocks
+
+>>> make_blocks(rows=2, cols=4, r=2, c=2, dt='int')
+array([[0, 0, 1, 1, 2, 2, 3, 3],
+       [0, 0, 1, 1, 2, 2, 3, 3],
+       [4, 4, 5, 5, 6, 6, 7, 7],
+       [4, 4, 5, 5, 6, 6, 7, 7]])
+
+**5. group_vals(seq, stepsize=1)**
 ::
-    a = np.arange(4*5).reshape((4, 5))
-    change(a, [2, 1, 0, 3, 4])
-    array([[ 2,  1,  0,  3,  4],
-           [ 7,  6,  5,  8,  9],
-           [12, 11, 10, 13, 14],
-           [17, 16, 15, 18, 19]])
+    seq = [1, 2, 4, 5, 8, 9, 10]
+    stepsize = 1
+    [array([1, 2]), array([4, 5]), array([ 8,  9, 10])]
 
-**shortcuts**
+**6. reclass(z, bins, new_bins, mask=False, mask_val=None)**
+
+Reclass an array using existing class breaks (bins) and new bins both must be
+in ascending order.
 ::
-    b = a[:, [2, 1, 0, 3, 4]]    # reorder the columns, keeping the rows
-    c = a[:, [0, 2, 3]]          # delete columns 1 and 4
-    d = a[[0, 1, 3, 4], :]       # delete row 2, keeping the columns
-    e = a[[0, 1, 3], [1, 2, 3]]  # keep [0, 1], [1, 2], [3, 3]
-                                   => ([ 1, 7, 18])
+      z = np.arange(3*5).reshape(3,5)
+      bins = [0, 5, 10, 15]
+      new_bins = [1, 2, 3, 4]
+      z_recl = reclass(z, bins, new_bins, mask=False, mask_val=None)
+      ==> .... z                     ==> .... z_recl
+      array([[ 0,  1,  2,  3,  4],   array([[1, 1, 1, 1, 1],
+             [ 5,  6,  7,  8,  9],          [2, 2, 2, 2, 2],
+             [10, 11, 12, 13, 14]])         [3, 3, 3, 3, 3]])
 
-
-**12. scale(a, x=2, y=2)** : scale an array by x, y factors
+**7. scale(a, x=2, y=2)** : scale an array by x, y factors
 ::
       a = np.array([[0, 1, 2], [3, 4, 5]]
       b = scale(a, x=2, y=2)
@@ -215,7 +151,7 @@ using scale with np.tile
                                        [2, 2, 3, 3, 2, 2, 3, 3],
                                        [2, 2, 3, 3, 2, 2, 3, 3]])
 
-**13. split_array(a, fld='Id')**
+**8. split_array(a, fld='Id')**
 ::
      array 'b'
      array([(0, 1, 2, 3), (4, 5, 6, 7), (8, 9, 10, 11)],
@@ -228,10 +164,68 @@ using scale with np.tile
      array([(8, 9, 10, 11)],
           dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')])]
 
-**14. _pad_(a, pad_with=None, size=(1, 1))**
+**9.  make_flds(n=1, as_type=names=None, default="col")** : example
 
+>>> from numpy.lib._iotools import easy_dtype as easy
+>>> make_flds(n=1, as_type='float', names=None, def_name="col")
+dtype([('col_00', '<f8')])
 
-**15. stride(a, r_c=(3, 3))**
+>>> make_flds(n=2, as_type='int', names=['f01', 'f02'], def_name="col")
+dtype([('f01', '<i8'), ('f02', '<i8')])
+
+**10.  nd_rec** : ndarray to structured array or recarray
+
+**11.  nd_struct** :
+
+**12. nd2struct(a)**
+
+Keep the dtype the same
+::
+    aa = nd2struct(a)       # produce a structured array from inputs
+    aa.reshape(-1,1)   # structured array
+    array([[(0, 1, 2, 3, 4)],
+           [(5, 6, 7, 8, 9)],
+           [(10, 11, 12, 13, 14)],
+           [(15, 16, 17, 18, 19)]],
+       dtype=[('A', '<i4'), ... snip ... , ('E', '<i4')])
+
+Upcast the dtype
+::
+    a_f = nd2struct(a.astype('float'))  # note astype allows a view
+    array([(0.0, 1.0, 2.0, 3.0, 4.0), ... snip... ,
+           (15.0, 16.0, 17.0, 18.0, 19.0)],
+          dtype=[('A', '<f8'), ... snip ... , ('E', '<f8')])
+
+**13. np2rec** : shell around above
+
+**14. rc_vals(a)**
+
+**15. xy_vals(a) ... array to x, y, values**
+
+**16. array_cols**
+
+**17. change_arr(a, order=[], prn=False)** : merely a convenience function
+::
+    a = np.arange(4*5).reshape((4, 5))
+    change(a, [2, 1, 0, 3, 4])
+    array([[ 2,  1,  0,  3,  4],
+           [ 7,  6,  5,  8,  9],
+           [12, 11, 10, 13, 14],
+           [17, 16, 15, 18, 19]])
+
+**shortcuts**
+::
+    b = a[:, [2, 1, 0, 3, 4]]    # reorder the columns, keeping the rows
+    c = a[:, [0, 2, 3]]          # delete columns 1 and 4
+    d = a[[0, 1, 3, 4], :]       # delete row 2, keeping the columns
+    e = a[[0, 1, 3], [1, 2, 3]]  # keep [0, 1], [1, 2], [3, 3]
+                                   => ([ 1, 7, 18])
+
+**18. concat_arrs**
+
+**19. pad__(a, pad_with=None, size=(1, 1))**
+
+**20. stride(a, r_c=(3, 3))**
 
 Produce a strided array using a window of r_c shape.
 
@@ -243,15 +237,16 @@ Calls _check(a, r_c, subok=False) to check for array compliance
               [ 5,  6,  7],   [ 6,  7,  8],   [ 7,  8,  9],
               [10, 11, 12]],  [11, 12, 13]],  [12, 13, 14]]])
 
-`_pad`  to pad an array prior to striding or blocking
+`pad_`  to pad an array prior to striding or blocking
 
 `block`  calls stride with non-overlapping blocks with no padding
 
 
-**16. block(a, win=(3, 3))**
+**21. block(a, win=(3, 3))**
 
+**22. sliding_window_view**
 
-**17.  block_arr(a, win=[3, 3], nodata=-1)**
+**23.  block_arr(a, win=[3, 3], nodata=-1)**
 
 Block an array given an input array, a window and a nodata value.
 ::
@@ -273,13 +268,16 @@ Block an array given an input array, a window and a nodata value.
           [15 -- --]]],
     mask .... snipped ....
 
+**24. rolling_stats() : stats for a strided array**
 
-**18. find(a, func, this=None, count=0, keep=[], prn=False, r_lim=2)**
+    min, max, mean, sum, std, var, ptp
+
+**25. find(a, func, this=None, count=0, keep=[], prn=False, r_lim=2)**
 
     func - (cumsum, eq, neq, ls, lseq, gt, gteq, btwn, btwni, byond)
            (        ==,  !=,  <,   <=,  >,   >=,  >a<, =>a<=,  <a> )
 
-**18a. _func(fn, a, this)**
+**25a. _func(fn, a, this)**
 
     called by 'find' see details there
     (cumsum, eq, neq, ls, lseq, gt, gteq, btwn, btwni, byond)
@@ -287,48 +285,18 @@ Block an array given an input array, a window and a nodata value.
 Note  see ``find1d_demo.py`` for examples
 
 
-**19. group_pnts(a, key_fld='ID', keep_flds=['X', 'Y', 'Z'])**
+**26. group_pnts(a, key_fld='ID', keep_flds=['X', 'Y', 'Z'])**
 
-**20. group_vals(seq, stepsize=1)**
-::
-    seq = [1, 2, 4, 5, 8, 9, 10]
-    stepsize = 1
-    [array([1, 2]), array([4, 5]), array([ 8,  9, 10])]
+**27. uniq(ar, return_index=False, return_inverse=False, return_counts=False,
+          axis=0)**
 
-**21. reclass(z, bins, new_bins, mask=False, mask_val=None)**
+**28. is_in(find_in, using, not_in=False)**
 
-Reclass an array using existing class breaks (bins) and new bins both must be
-in ascending order.
-::
-      z = np.arange(3*5).reshape(3,5)
-      bins = [0, 5, 10, 15]
-      new_bins = [1, 2, 3, 4]
-      z_recl = reclass(z, bins, new_bins, mask=False, mask_val=None)
-      ==> .... z                     ==> .... z_recl
-      array([[ 0,  1,  2,  3,  4],   array([[1, 1, 1, 1, 1],
-             [ 5,  6,  7,  8,  9],          [2, 2, 2, 2, 2],
-             [10, 11, 12, 13, 14]])         [3, 3, 3, 3, 3]])
+**29. running_count**
 
+**30. sequences(data, stepsize)**
 
-**22. rolling_stats() : stats for a strided array**
-
-    min, max, mean, sum, std, var, ptp
-
-
-**23. uniq(ar, return_index=False, return_inverse=False, return_counts=False,**
-     **axis=0)**
-
-**24. is_in(find_in, using, not_in=False)**
-
-**25. n_largest(a, n)... n largest in an array**
-
-**26. n_smallest(a, n).. n smallest counterpart**
-
-**27. rc_vals(a)**
-
-**28. xy_vals(a) ... array to x, y, values**
-
-**29. sort_rows_by_col(a, col=0, descending=False)**
+**31. sort_rows_by_col(a, col=0, descending=False)**
 
 Sort 2d ndarray by column
 ::
@@ -337,11 +305,9 @@ Sort 2d ndarray by column
              [1, 4, 1, 3],               [2, 3, 2, 2],
              [2, 1, 2, 4]])              [1, 4, 1, 3]])
 
-**30. sort_cols_by_row**
+**32. sort_cols_by_row**
 
-**31. radial_sort(pnts, cent=None)**
-
-**32. sequences(data, stepsize)**
+**33. radial_sort(pnts, cent=None)**
 
 
 References:
@@ -349,23 +315,28 @@ References:
 
 general
 
-- https://github.com/numpy/numpy
-- https://github.com/numpy/numpy/blob/master/numpy/lib/_iotools.py
+`<https://github.com/numpy/numpy>`_.
+`<https://github.com/numpy/numpy/blob/master/numpy/lib/_iotools.py>`_.
 
 striding
 
-- https://github.com/numpy/numpy/blob/master/numpy/lib/stride_tricks.py
-- http://www.johnvinyard.com/blog/?p=268
+`<https://github.com/numpy/numpy/blob/master/numpy/lib/stride_tricks.py>`_.
+`<http://www.johnvinyard.com/blog/?p=268>`_.
 
 for strided arrays
 
-- https://stackoverflow.com/questions/47469947/as-strided-linking-stepsize-\
-strides-of-conv2d-with-as-strided-strides-paramet#47470711
-- https://stackoverflow.com/questions/48097941/strided-convolution-of-2d-in-
+`<https://stackoverflow.com/questions/47469947/as-strided-linking-stepsize-
+strides-of-conv2d-with-as-strided-strides-paramet#47470711>`_.
+`<https://stackoverflow.com/questions/48097941/strided-convolution-of-2d-in-
+numpy>`_.
+
+`<https://stackoverflow.com/questions/45960192/using-numpy-as-strided-
+function-to-create-patches-tiles-rolling-or-sliding-w>`_.
 
 numpy  # stride for convolve 4d
 
-- https://stackoverflow.com/questions/2828059/sorting-arrays-in-numpy-by-column
+`<https://stackoverflow.com/questions/2828059/sorting-arrays-in-numpy-by-
+column>`_.
 
 ---------------------------------------------------------------------
 """
@@ -378,453 +349,144 @@ from numpy.lib.stride_tricks import as_strided
 
 warnings.simplefilter('ignore', FutureWarning)
 
-__all__ = ['_func', '_help', '_pad_', 'arr2xyz', 'block', 'block_arr',
-           'change_arr', 'doc_func', 'find', 'get_func', 'get_modu',
-           'group_pnts', 'group_vals', 'info', 'is_in', 'make_blocks',
-           'make_flds', 'n_largest', 'n_smallest', 'nd2struct',
-           'num_to_mask', 'num_to_nan', 'pack_last_axis',
-           'rc_vals', 'nd_rec', 'reclass',
-           'rolling_stats', 'scale', 'sequences', 'sort_cols_by_row',
-           'sort_rows_by_col', 'split_array', 'stride', 'uniq', 'xy_vals']
+__all__ = ['_tools_help_',
+           'arr2xyz', 'make_blocks',     # (3-8) ndarrays ... make arrays,
+           'group_vals', 'reclass',      #     change shape, arangement
+           'scale', 'split_array',
+           'make_flds', 'nd_rec',        # (9-16) structured/recdarray
+           'nd_struct', 'nd2struct',
+           'nd2rec', 'rc_vals', 'xy_vals',
+           'arrays_struct',
+           'change_arr', 'concat_arrs',  # (17-18) change/modify arrays
+           'pad_', 'stride', 'block',    # (19-24) stride, block and pad
+           'sliding_window_view',
+           'block_arr', 'rolling_stats',
+           '_func', 'find', 'group_pnts', # (25-30) querying, analysis
+           'uniq','is_in',
+           'running_count', 'sequences',
+           'sort_cols_by_row',            # (31-33) column and row sorting
+           'sort_rows_by_col',
+           'radial_sort',
+           'pack_last_axis'  # extras -------
+            ]
 
-__xtras__ = ['_check', 'time_deco', 'run_deco', '_demo_tools']
-__outside__ = ['dedent', 'indent']
 
 """  Alphabetical listing
 :Members: .....
-  ['__all__', '__builtins__', '__cached__', '__doc__', '__file__',
-  '__loader__','__name__', '__outside__', '__package__', '__spec__',
-  '__xtras__', '_demo_tools', '_func', '_help', '_pad_', 'arr2xyz',
-  'as_strided', 'block', 'block_arr', 'change_arr', 'data_path', 'dedent',
-  'doc_func', 'find', 'ft', 'get_func', 'get_modu', 'group_pnts', 'group_vals',
-  'indent', 'info', 'is_in', 'make_blocks', 'make_flds', 'n_largest',
-  'n_smallest', 'nd2rec', 'nd2struct', 'nd_rec', 'nd_struct', 'np',
-  'num_to_mask', 'num_to_nan', 'pack_last_axis', 'pyramid', 'radial_sort',
-  'rc_vals', 'reclass', 'rolling_stats', 'run_deco', 'scale', 'script',
-  'sequences', 'sliding_window_view', 'sort_cols_by_row', 'sort_rows_by_col',
-  'split_array', 'stride', 'sys', 'time_deco', 'uniq', 'warnings', 'xy_vals']
+   ['_func', '_tools_help_', 'arr2xyz', 'arrays_cols', 'block', 'block_arr',
+   'change_arr', 'concat_arrs', 'find', 'group_pnts', 'group_vals', 'is_in',
+   'make_blocks', 'make_flds', 'n_largest', 'n_smallest', 'nd2rec',
+   'nd2struct', 'nd_rec', 'nd_struct', 'num_to_mask', 'num_to_nan',
+   'pack_last_axis', 'pad_', 'radial_sort', 'rc_vals', 'reclass',
+   'rolling_stats', 'running_count', 'scale', 'sequences',
+   'sliding_window_view', 'sort_cols_by_row', 'sort_rows_by_col',
+   'split_array', 'stride', 'uniq', 'xy_vals']
 """
 
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
-      'float_kind': '{: 0.3f}'.format}
-np.set_printoptions(edgeitems=5, linewidth=80, precision=2, suppress=True,
-                    nanstr='nan', infstr='inf',threshold=200, formatter=ft)
+      'float_kind': '{: 8.2f}'.format}
+
+np.set_printoptions(
+        edgeitems=3,
+        threshold=60,
+        floatmode='maxprec',
+        precision=2, suppress=True, linewidth=100,
+        nanstr='nan', infstr='inf', sign='-',
+        formatter=ft)
 np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
-data_path = script.replace('tools.py', 'Data')
 
 
-# ---- decorators and helpers ------------------------------------------------
 
-def time_deco(func):  # timing originally
-    """timing decorator function
-
-    - Requires : from functools import wraps
-
-    Uncomment the import or move it to within the script.
-
-    Useage::
-
-        @time_deco  # on the line above the function
-        def some_func():
-            '''do stuff'''
-            return None
-
-    """
-    import time
-    from functools import wraps
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        t_0 = time.perf_counter()        # start time
-        result = func(*args, **kwargs)  # ... run the function ...
-        t_1 = time.perf_counter()        # end time
-        dt = t_1 - t_0
-        print("\nTiming function for... {}".format(func.__name__))
-        if result is None:
-            result = 0
-        print("  Time: {: <8.2e}s for {:,} objects".format(dt, result))
-        # return result                   # return the result of the function
-        return dt                       # return delta time
-    return wrapper
-
-
-def run_deco(func):
-    """Prints basic function information and the results of a run.
-
-    - Requires : from functools import wraps
-
-    Uncomment the import or move it to within the script.
-
-    Useage::
-
-        @func_run  # on the line above the function
-        def some_func():
-            '''do stuff'''
-            return None
-
-    """
-    from functools import wraps
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        """wrapper function"""
-        frmt = "\n".join(["Function... {}", "  args.... {}",
-                          "  kwargs.. {}", "  docs.... {}"])
-        ar = [func.__name__, args, kwargs, func.__doc__]
-        print(dedent(frmt).format(*ar))
-        result = func(*args, **kwargs)
-        print("{!r:}\n".format(result))  # comment out if results not needed
-        return result                    # for optional use outside.
-    return wrapper
-
-
-# ----------------------------------------------------------------------------
-# ---- (1) doc_func ... code section ... ----
-def doc_func(func=None, verbose=True):
-    """(doc_func)...Documenting code using inspect
-
-    Requires:
-      import inspect  # module
-
-    Returns
-    -------
-
-    A listing of the source code with line numbers
-
-    Parameters
-    ----------
-    - func : function to document
-    - verbose : True prints the result, False returns a string of the result.
-
-    **Notes**::
-
-        Source code for...
-
-        module level
-        - inspect.getsourcelines(sys.modules[__name__])[0]
-
-        function level
-        - as a list => inspect.getsourcelines(num_41)[0]
-        - as a string => inspect.getsource(num_41)
-
-        file level
-        - script = sys.argv[0]
-
-    """
-    def demo_func():
-        """dummy...
-        : Demonstrates retrieving and documenting module and function info.
-        """
-        def sub():
-            """sub in dummy"""
-            pass
-        return None
-    import inspect
-    if not inspect.isfunction(func):
-        out = "\nError... `{}` is not a function, but is of type... {}\n"
-        print(out.format(func.__name__, type(func)))
-        return None
-    if func is None:
-        func = demo_func
-    script = sys.argv[0]  # a useful way to get a file's name
-    lines, line_num = inspect.getsourcelines(func)
-    code = "".join(["{:4d}  {}".format(idx+line_num, line)
-                    for idx, line in enumerate(lines)])
-    nmes = ['args', 'varargs', 'varkw', 'defaults', 'kwonlyargs',
-            'kwonlydefaults', 'annotations']
-    f = inspect.getfullargspec(func)
-    f_args = "\n".join([str(i) for i in list(zip(nmes, list(f)))])
-    args = [line_num, code,
-            inspect.getcomments(func),
-            inspect.isfunction(func),
-            inspect.ismethod(func),
-            inspect.getmodulename(script),
-            f_args]
-    frmt = """
-    :----------------------------------------------------------------------
-    :---- doc_func(func) ----
-    :Code for a function on line...{}...
-    :
-    {}
-    Comments preceeding function
-    {}
-    function?... {} ... or method? {}
-    Module name... {}
-    Full specs....
-    {}
-    ----------------------------------------------------------------------
-    """
-    out = (dedent(frmt)).format(*args)
-    if verbose:
-        print(out)
-    else:
-        return out
-
-
-# ----------------------------------------------------------------------
-# ---- (2) get_func .... code section ----
-def get_func(func, line_nums=True, verbose=True):
-    """Get function information (ie. for a def)
-
-    Requires
-    --------
-
-    - from textwrap import dedent, indent, wrap
-    - import inspect
-
-    Returns
-    -------
-
-    The function information includes arguments and source code.
-    A string is returned for printing.
-
-    Notes
-    -----
-
-    Import the module containing the function and put the object name in
-    without quotes...
-
-        from tools import get_func
-
-        get_func(get_func)  # returns this source code etc.
-
-    """
-    frmt = """
-    :-----------------------------------------------------------------
-    :Function: .... {} ....
-    :Line number... {}
-    :Docs:
-    {}
-    :Defaults: {}
-    :Keyword Defaults: {}
-    :Variable names:
-    {}\n
-    :Source code:
-    {}
-    :
-    :-----------------------------------------------------------------
-    """
-    import inspect
-    from textwrap import dedent, wrap
-
-    if not inspect.isfunction(func):
-        out = "\nError... `{}` is not a function, but is of type... {}\n"
-        print(out.format(func.__name__, type(func)))
-        return None
-
-    lines, ln_num = inspect.getsourcelines(func)
-    if line_nums:
-        code = "".join(["{:4d}  {}".format(idx + ln_num, line)
-                        for idx, line in enumerate(lines)])
-    else:
-        code = "".join(["{}".format(line) for line in lines])
-
-    vars_ = ", ".join([i for i in func.__code__.co_varnames])
-    vars_ = wrap(vars_, 50)
-    vars_ = "\n".join([i for i in vars_])
-    args = [func.__name__, ln_num, dedent(func.__doc__), func.__defaults__,
-            func.__kwdefaults__, indent(vars_, "    "), code]
-    code_mem = dedent(frmt).format(*args)
-    if verbose:
-        print(code_mem)
-    else:
-        return code_mem
-
-
-# ----------------------------------------------------------------------
-# ---- (3) get_modu .... code section ----
-def get_modu(obj, code=False, verbose=True):
-    """Get module (script) information, including source code for
-    documentation purposes.
-
-    Requires
-    --------
-    >>> from textwrap import dedent, indent
-    >>> import inspect
-
-    Returns
-    -------
-    A string is returned for printing.  It will be the whole module
-    so use with caution.
-
-    Notes
-    -----
-    Useage::
-
-    >>> import tools
-    >>> tools.get_modu(tools, code=False, verbose=True)
-    >>> # No quotes around module name, code=True for module code
-
-   """
-    frmt = """
-    :-----------------------------------------------------------------
-    :Module: .... {} ....
-    :------
-    :File: ......
-    {}\n
-    :Docs: ......
-    {}\n
-    :Members: .....
-    {}
-    """
-    frmt0 = """
-    :{}
-    :-----------------------------------------------------------------
-    """
-    frmt1 = """
-    :Source code: .....
-    {}
-    :
-    :-----------------------------------------------------------------
-    """
-    import inspect
-    from textwrap import dedent
-
-    if not inspect.ismodule(obj):
-        out = "\nError... `{}` is not a module, but is of type... {}\n"
-        print(out.format(obj.__name__, type(obj)))
-        return None
-    if code:
-        lines, _ = inspect.getsourcelines(obj)
-        frmt = frmt + frmt1
-        code = "".join(["{:4d}  {}".format(idx, line)
-                        for idx, line in enumerate(lines)])
-    else:
-        lines = code = ""
-        frmt = frmt + frmt0
-    memb = [i[0] for i in inspect.getmembers(obj)]
-    args = [obj.__name__, obj.__file__, obj.__doc__, memb, code]
-    mod_mem = dedent(frmt).format(*args)
-    if verbose:
-        print(mod_mem)
-    else:
-        return mod_mem
-
-
-# ----------------------------------------------------------------------
-# ---- (4) info .... code section ----
-def info(a, prn=True):
-    """Returns basic information about an numpy array.
-
-    Requires:
-    --------
-
-    - a : an array
-    - prn : True to print, False to return as string.
-
-    Returns
-    -------
-
-    example::
-
-        a = np.arange(2. * 3.).reshape(2, 3) # quick float64 array
-        arr_info(a)
-        ---------------------
-        Array information....
-         OWNDATA: if 'False', data are a view
-        flags....
-        ... snip ...
-        array
-            |__shape (2, 3)
-            |__ndim  2
-            |__size  6
-            |__bytes
-            |__type  <class 'numpy.ndarray'>
-            |__strides  (24, 8)
-        dtype      float64
-            |__kind  f
-            |__char  d
-            |__num   12
-            |__type  <class 'numpy.float64'>
-            |__name  float64
-            |__shape ()
-            |__description
-                 |__name, itemsize
-                 |__['', '<f8']
-    ---------------------
-    """
-    if not isinstance(a, (np.ndarray, np.ma.core.MaskedArray)):
-        s = "\n... Requires a numpy ndarray or variant...\n... Read the docs\n"
-        print(s)
-        return None
-    frmt = """
-    :---------------------
-    :Array information....
-    : OWNDATA: if 'False', data are a view
-    :flags....
-    {}
-    :array
-    :  |__shape {}\n    :  |__ndim  {}\n    :  |__size  {}
-    :  |__bytes {}\n    :  |__type  {}\n    :  |__strides  {}
-    :dtype      {}
-    :  |__kind  {}\n    :  |__char  {}\n    :  |__num   {}
-    :  |__type  {}\n    :  |__name  {}\n    :  |__shape {}
-    :  |__description
-    :  |  |__name, itemsize"""
-    dt = a.dtype
-    flg = indent(a.flags.__str__(), prefix=':   ')
-    info_ = [flg, a.shape, a.ndim, a.size,
-             a.nbytes, type(a), a.strides, dt,
-             dt.kind, dt.char, dt.num, dt.type, dt.name, dt.shape]
-    flds = sorted([[k, v] for k, v in dt.descr])
-    out = dedent(frmt).format(*info_) + "\n"
-    leader = "".join([":     |__{}\n".format(i) for i in flds])
-    leader = leader + ":---------------------"
-    out = out + leader
-    if prn:
-        print(out)
-    else:
-        return out
-
-
-# ----------------------------------------------------------------------
-# ---- make arrays, change format or arrangement ----
-# ----------------------------------------------------------------------
-# ---- (5a) num_to_nan ... code section .... ----
-def num_to_nan(a, nums=None):
-    """Reverse of nan_to_num introduced in numpy 1.13
-
-    Example
-    -------
-    >>> a = np.arange(10)
-    >>> num_to_nan(a, num=[2, 3])
-    array([  0.,   1.,   nan,  nan,   4.,   5.,   6.,   7.,   8.,   9.])
-    """
-    a = a.astype('float64')
-    if nums is None:
-        return a
-    if isinstance(nums, (list, tuple, np.ndarray)):
-        m = is_in(a, nums)  # ---- call to is_in below
-        a[m] = np.nan
-    else:
-        a = np.where(a == nums, np.nan, a)
-    return a
-
-
-# ---- (5b) num_to_mask ... code section .... ----
-def num_to_mask(a, nums=None, hardmask=True):
-    """Reverse of nan_to_num introduced in numpy 1.13
-
-    Example
-    -------
-    >>> a = np.arange(10)
-    >>> art.num_to_mask(a, nums=[1, 2, 4])
-    masked_array(data = [0 - - 3 - 5 6 7 8 9],
-                mask = [False  True  True False  True False
-                        False False False False], fill_value = 999999)
-    """
-    if nums is None:
-        return a
-    else:
-        m = is_in(a, nums)  # ---- call to is_in below
-        b = np.ma.MaskedArray(a, mask=m, hard_mask=hardmask)
-    return b
-
-
-# ---- (6) make_blocks ... code section .... ----
+# ---- (3) ndarrays ... code section .... ----
+# ---- make arrays, change shape, arrangement
+# ---- arr2xyz, makeblocks, rc_vals, xy_vals ----
 #
+def arr2xyz(a, keep_masked=False, verbose=False):
+    """Produce an array such that the row, column values are used for x,y
+    and array values for z.  Masked arrays are sorted.
+
+    Returns
+    --------
+    A mesh grid with values, dimensions and shapes are changed so
+    that ndim=2, ie shape(3,4,5), ndim=3 becomes shape(12,5), ndim=2
+
+    >>> a = np.arange(9).reshape(3, 3)
+    array([[0, 1, 2],
+           [3, 4, 5],
+           [6, 7, 8]])
+    >>> arr2xyz(am, keep_masked=True)   # keep the masked values...
+    masked_array(data =
+    [[0 0 0]
+     [1 0 -]
+     [2 0 2]
+     [0 1 -]
+     [1 1 4]
+     [2 1 -]
+     [0 2 6]
+     [1 2 7]
+     [2 2 8]],
+             mask =
+     [[False False False]... snip
+     [False False False]],
+           fill_value = 999999)
+    >>>
+    >>> arr2xyz(am, keep_masked=False)  # remove the masked values
+    array([[0, 0, 0],
+           [2, 0, 2],
+           [1, 1, 4],
+           [0, 2, 6],
+           [1, 2, 7],
+           [2, 2, 8]])
+
+    See also
+    --------
+    `xy_vals(a)` and `rc_vals(a)` for simpler versions.
+
+    `num_to_mask(a)` and  `num_to_nan(a)` if you want structured arrays,
+    to produce masks prior to conversion.
+
+    """
+    if a.ndim == 1:
+        a = a.reshape(a.shape[0], 1)
+    if a.ndim > 2:
+        a = a.reshape(np.product(a.shape[:-1]), a.shape[-1])
+    r, c = a.shape
+    XX, YY = np.meshgrid(np.arange(c), np.arange(r))
+    XX = XX.ravel()
+    YY = YY.ravel()
+    if isinstance(np.ma.getmask(a), np.ndarray):
+        tbl = np.ma.vstack((XX, YY, a.ravel()))
+        tbl = tbl.T
+        if not keep_masked:
+            m = tbl[:, 2].mask
+            tbl = tbl[~m].data
+    else:
+        tbl = np.stack((XX, YY, a.ravel()), axis=1)
+    if verbose:
+        frmt = """
+        ----------------------------
+        Meshgrid demo: array to x,y,z table
+        :Formulation...
+        :  XX,YY = np.meshgrid(np.arange(x.shape[1]),np.arange(x.shape[0]))
+        :Input table
+        {!r:<}
+        :Raveled array, using x.ravel()
+        {!r:<}
+        :XX in mesh: columns shape[1]
+        {!r:<}
+        :YY in mesh: rows shape[0]
+        {!r:<}
+        :Output:
+        {!r:<}
+        :-----------------------------
+        """
+        print(dedent(frmt).format(a, a.ravel(), XX, YY, tbl))
+    else:
+        return tbl
+
+
 def make_blocks(rows=3, cols=3, r=2, c=2, dt='int'):
     """Make a block array with rows * cols containing r*c sub windows.
     Specify the rows, columns, then the block size as r, c and dtype
@@ -832,11 +494,16 @@ def make_blocks(rows=3, cols=3, r=2, c=2, dt='int'):
 
     Requires
     --------
-    - rows : rows in initial array
-    - cols : columns in the initial array
-    - r : rows in sub window
-    - c : columns in sub window
-    - dt : array data type
+    rows : integer
+        rows in initial array
+    cols : integer
+        columns in the initial array
+    r : integer
+        rows in sub window
+    c : integer
+        columns in sub window
+    dt : np.dtype
+        array data type
 
     Returns
     --------
@@ -844,7 +511,7 @@ def make_blocks(rows=3, cols=3, r=2, c=2, dt='int'):
     The defaults produce an 8 column by 8 row array numbered from
     0 to (rows*cols) - 1
 
-    array.shape = (rows * r, cols * c) = (6, 6)
+    >>> array.shape = (rows * r, cols * c)  # (6, 6)
 
     >>> make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
     array([[0, 0, 1, 1, 2, 2],
@@ -860,22 +527,197 @@ def make_blocks(rows=3, cols=3, r=2, c=2, dt='int'):
     return a
 
 
-# ---- (7) make_flds .... code section ----
+def group_vals(seq, delta=1, oper='!='):
+    """Group consecutive values separated by no more than delta
+
+    Parameters
+    ----------
+    `seq` :
+        sequence of values
+    `delta` :
+        difference between consecutive values
+    `oper` :
+        'eq', '==', 'ne', '!=', 'gt', '>', 'lt', '<'
+
+    Reference
+    ---------
+        `https://stackoverflow.com/questions/7352684/
+         how-to-find-the-groups-of-consecutive-elements-from-an-array-in-numpy`
+
+    Notes
+    -----
+        return np.split(data, np.where(np.diff(data) != stepsize)[0]+1)
+    """
+    valid = ('eq', '==', 'ne', '!=', 'gt', '>', 'lt', '<')
+    if oper not in valid:
+        raise ValueError("operand not in {}".format(valid))
+    elif oper in ('==', 'eq'):
+        s = np.split(seq, np.where(np.diff(seq) == delta)[0]+1)
+    elif oper in ('!=', 'ne'):
+        s = np.split(seq, np.where(np.diff(seq) != delta)[0]+1)
+    elif oper in ('>', 'gt'):
+        s = np.split(seq, np.where(np.diff(seq) > delta)[0]+1)
+    elif oper in ('<', 'lt'):
+        s = np.split(seq, np.where(np.diff(seq) < delta)[0]+1)
+    else:
+        s = seq
+    return s
+
+
+def reclass(a, bins=None, new_bins=[], mask_=False, mask_val=None):
+    """Reclass an array of integer or floating point values.
+
+    Requires:
+    --------
+    bins :
+        sequential list/array of the lower limits of each class
+        include one value higher to cover the upper range.
+    new_bins :
+        new class values for each bin
+    mask :
+        whether the raster contains nodata values or values to
+        be masked with mask_val
+
+    Array dimensions will be squeezed.
+
+    Example
+    -------
+    inputs::
+
+        z = np.arange(3*5).reshape(3,5)
+        bins = [0, 5, 10, 15]
+        new_bins = [1, 2, 3, 4]
+        z_recl = reclass(z, bins, new_bins, mask=False, mask_val=None)
+
+    outputs::
+
+        ==> .... z                     ==> .... z_recl
+        array([[ 0,  1,  2,  3,  4],   array([[1, 1, 1, 1, 1],
+               [ 5,  6,  7,  8,  9],          [2, 2, 2, 2, 2],
+               [10, 11, 12, 13, 14]])         [3, 3, 3, 3, 3]])
+
+    """
+    a_rc = np.zeros_like(a)
+    c_0 = isinstance(bins, (list, tuple))
+    c_1 = isinstance(new_bins, (list, tuple))
+    err = "Bins = {} new = {} won't work".format(bins, new_bins)
+    if not c_0 or not c_1:
+        print(err)
+        return a
+    if len(bins) < 2:  # or (len(new_bins <2)):
+        print(err)
+        return a
+    if len(new_bins) < 2:
+        new_bins = np.arange(1, len(bins)+2)
+    new_classes = list(zip(bins[:-1], bins[1:], new_bins))
+    for rc in new_classes:
+        q1 = (a >= rc[0])
+        q2 = (a < rc[1])
+        a_rc = a_rc + np.where(q1 & q2, rc[2], 0)
+    return a_rc
+
+
+def scale(a, x=2, y=2, num_z=None):
+    """Scale the input array repeating the array values up by the
+    x and y factors.
+
+    Parameters:
+    ----------
+    `a` : An ndarray, 1D arrays will be upcast to 2D.
+
+    `x y` : Factors to scale the array in x (col) and y (row).  Scale factors
+    must be greater than 2.
+
+    `num_z` : For 3D, produces the 3rd dimension, ie. if num_z = 3 with the
+    defaults, you will get an array with shape=(3, 6, 6),
+
+    Examples:
+    --------
+    >>> a = np.array([[0, 1, 2], [3, 4, 5]]
+    >>> b = scale(a, x=2, y=2)
+    array([[0, 0, 1, 1, 2, 2],
+           [0, 0, 1, 1, 2, 2],
+           [3, 3, 4, 4, 5, 5],
+           [3, 3, 4, 4, 5, 5]])
+
+    Notes:
+    -----
+    >>> a = np.arange(2*2).reshape(2,2)
+    array([[0, 1],
+           [2, 3]])
+
+    >>> frmt_(scale(a, x=2, y=2, num_z=2))
+    Array... shape (3, 4, 4), ndim 3, not masked
+      0, 0, 1, 1    0, 0, 1, 1    0, 0, 1, 1
+      0, 0, 1, 1    0, 0, 1, 1    0, 0, 1, 1
+      2, 2, 3, 3    2, 2, 3, 3    2, 2, 3, 3
+      2, 2, 3, 3    2, 2, 3, 3    2, 2, 3, 3
+      sub (0)       sub (1)       sub (2)
+
+    """
+    if (x < 1) or (y < 1):
+        print("x or y scale < 1... read the docs\n{}".format(scale.__doc__))
+        return None
+    a = np.atleast_2d(a)
+    z0 = np.tile(a.repeat(x), y)  # repeat for x, then tile
+    z1 = np.hsplit(z0, y)         # split into y parts horizontally
+    z2 = np.vstack(z1)            # stack them vertically
+    if a.shape[0] > 1:            # if there are more, repeat
+        z3 = np.hsplit(z2, a.shape[0])
+        z3 = np.vstack(z3)
+    else:
+        z3 = np.vstack(z2)
+    if num_z not in (0, None):
+        d = [z3]
+        for i in range(num_z):
+            d.append(z3)
+        z3 = np.dstack(d)
+        z3 = np.rollaxis(z3, 2, 0)
+    return z3
+
+
+def split_array(a, fld='ID'):
+    """Split a structured or recarray array using unique values in the
+    `fld` field.  It is assumed that there is a sequential ordering to
+    the values in the field.  If there is not, use np.where in conjunction
+    with np.unique or sort the array first.
+
+    Parameters
+    ----------
+    `a` : A structured or recarray.
+
+    `fld` : A numeric field assumed to be sorted which indicates which group
+    a record belongs to.
+
+    Returns
+    -------
+    A list of arrays split on the categorizing field
+
+    """
+    return np.split(a, np.where(np.diff(a[fld]))[0] + 1)
+
+
+
+# ----------------------------------------------------------------------
+# ---- (4) structured/recdarray section, change format or arrangement ----
+# ----------------------------------------------------------------------
+# ---- make_flds, nd_rec, nd_struct, nd_struct, np2rec, rc_vals, xy_vals
 #
-def make_flds(n=1, as_type='float', names=None, def_name="col"):
+def make_flds(n=2, as_type='float', names=None, def_name="col"):
     """Create float or integer fields for statistics and their names.
 
     Requires
     --------
-        n : number of fields to create excluding the names field
-
-        def_name : base name to use, numeric values will be produced for each
-                   dimension for the 3D array, ie Values_00... Values_nn
+    n : integer
+        number of fields to create excluding the names field
+    def_name : string
+        base name to use, numeric values will be produced for each dimension
+        for the 3D array, ie Values_00... Values_nn
 
     Returns
     -------
 
-    - a dtype : which contains the necessary fields to contain the values.
+    a dtype : which contains the necessary fields to contain the values.
 
     >>> from numpy.lib._iotools import easy_dtype as easy
     >>> make_flds(n=1, as_type='float', names=None, def_name="col")
@@ -903,8 +745,6 @@ def make_flds(n=1, as_type='float', names=None, def_name="col"):
     return dt
 
 
-# ---- (8)  make nd_rec, nd_struct.... code section ----
-#
 def nd_rec(a, flds=None, types=None):
     """Change a uniform array to an array of mixed dtype as a recarray
 
@@ -989,7 +829,6 @@ def nd_struct(a, flds=None, types=None):
     return a_s
 
 
-#  nd_struct and np2rec .... code section
 def nd2struct(a, fld_names=None):
     """Return a view of an ndarray as structured array with a uniform dtype/
 
@@ -1045,125 +884,70 @@ def nd2rec(a, fld_names=None):
     return a.view(type=np.recarray)
 
 
-# ---- (9) arr2xyz sparse arrays and rc_vals, xy_vals.... code section ----
-#
-def arr2xyz(a, keep_masked=False, verbose=False):
-    """Produce an array such that the row, column values are used for x,y
-    and array values for z.  Masked arrays are sorted
-
-    Returns
-    --------
-    A mesh grid with values, dimensions and shapes are changed so
-    that ndim=2, ie shape(3,4,5), ndim=3 becomes shape(12,5), ndim=2
-
-    Example::
-
-        >>> a = np.arange(9).reshape(3, 3)
-        array([[0, 1, 2],
-               [3, 4, 5],
-               [6, 7, 8]])
-        >>> arr2xyz(am, keep_masked=True)   # keep the masked values...
-        masked_array(data =
-        [[0 0 0]
-         [1 0 -]
-         [2 0 2]
-         [0 1 -]
-         [1 1 4]
-         [2 1 -]
-         [0 2 6]
-         [1 2 7]
-         [2 2 8]],
-                 mask =
-         [[False False False]... snip
-         [False False False]],
-               fill_value = 999999)
-
-    >>> arr2xyz(am, keep_masked=False)  # remove the masked values
-    array([[0, 0, 0],
-           [2, 0, 2],
-           [1, 1, 4],
-           [0, 2, 6],
-           [1, 2, 7],
-           [2, 2, 8]])
-
-
-    See also
-    --------
-        `xy_vals(a)` and
-
-        `rc_vals(a)`
-
-        for simpler versions or if you want structured arrays.
-
-        `num_to_mask(a)` and  `num_to_nan(a)` to produce masks prior to
-        conversion
-
-    """
-    if a.ndim == 1:
-        a = a.reshape(a.shape[0], 1)
-    if a.ndim > 2:
-        a = a.reshape(np.product(a.shape[:-1]), a.shape[-1])
-    r, c = a.shape
-    XX, YY = np.meshgrid(np.arange(c), np.arange(r))
-    XX = XX.ravel()
-    YY = YY.ravel()
-    if isinstance(np.ma.getmask(a), np.ndarray):
-        tbl = np.ma.vstack((XX, YY, a.ravel()))
-        tbl = tbl.T
-        if not keep_masked:
-            m = tbl[:, 2].mask
-            tbl = tbl[~m].data
-    else:
-        tbl = np.stack((XX, YY, a.ravel()), axis=1)
-    if verbose:
-        frmt = """
-        ----------------------------
-        Meshgrid demo: array to x,y,z table
-        :Formulation...
-        :  XX,YY = np.meshgrid(np.arange(x.shape[1]),np.arange(x.shape[0]))
-        :Input table
-        {!r:<}
-        :Raveled array, using x.ravel()
-        {!r:<}
-        :XX in mesh: columns shape[1]
-        {!r:<}
-        :YY in mesh: rows shape[0]
-        {!r:<}
-        :Output:
-        {!r:<}
-        :-----------------------------
-        """
-        print(dedent(frmt).format(a, a.ravel(), XX, YY, tbl))
-    else:
-        return tbl
-
-# ---- rc_vals ----
 def rc_vals(a):
-    """Convert a 2D ndarray to a structured row, col, values array.
-    """
-    dt = [('r', '<i8'), ('c', '<i8'), ('Val', a.dtype.str)]
-    r_c = [(*ij, v) for ij, v in np.ndenumerate(a)]
-    vals = np.asarray(r_c, dtype=dt)
-    return vals
-
-
-# ---- xy_vals ----
-def xy_vals(a):
-    """Convert a 2D ndarray to a structured x, y, values array.
+    """Convert array to rcv, for 2D arrays.  See xy_val for details.
     """
     r, c = a.shape
     n = r * c
     x, y = np.meshgrid(np.arange(c), np.arange(r))
-    dt = [('X', '<i8'), ('Y', '<i8'), ('Vals', a.dtype.str)]
+    dt = [('Row', '<i8'), ('Col', '<i8'), ('Val', a.dtype.str)]
+    out = np.zeros((n,), dtype=dt)
+    out['Row'] = x.ravel()
+    out['Col'] = y.ravel()
+    out['Val'] = a.ravel()
+    return out
+
+
+def xy_vals(a):
+    """Convert array to xyz, for 2D arrays
+
+    Parameters:
+    -----------
+    a : array
+        2D array of values
+    Returns:
+    --------
+    Triplets of x, y and vals as an nx3 array
+
+    >>> a = np.random.randint(1,5,size=(2,4))
+    >>> a
+    array([[4, 1, 4, 3],
+           [2, 3, 1, 3]])
+    >>> xy_val(a)
+    array([(0, 0, 4), (1, 0, 1), (2, 0, 4), (3, 0, 3),
+           (0, 1, 2), (1, 1, 3), (2, 1, 1), (3, 1, 3)],
+          dtype=[('X', '<i8'), ('Y', '<i8'), ('Val', '<i4')])
+    """
+    r, c = a.shape
+    n = r * c
+    x, y = np.meshgrid(np.arange(c), np.arange(r))
+    dt = [('X', '<i8'), ('Y', '<i8'), ('Val', a.dtype.str)]
     out = np.zeros((n,), dtype=dt)
     out['X'] = x.ravel()
     out['Y'] = y.ravel()
-    out['Vals'] = a.ravel()
+    out['Val'] = a.ravel()
+    return out
+
+
+# ---- arrays_cols ----
+def arrays_struct(arrs):
+    """Stack arrays of any dtype to form a structured array, stacked in
+    columns format.
+    """
+    if len(arrs) < 2:
+        return arrs
+    out_dt = [i.dtype.descr[0] for i in arrs]
+    N = arrs[0].shape[0]
+    out = np.empty((N,), dtype=out_dt)
+    names = np.dtype(out_dt).names
+    for i in range(len(names)):
+        out[names[i]] = arrs[i]
     return out
 
 
 # ----------------------------------------------------------------------------
-# ---- (10) change_arr ... code section ----
+# ---- (5) change/modify arrays ... code section ----
+# ---- change_arr, scale, split_array, concat_arrs
 #
 def change_arr(a, order=None, prn=False):
     """Reorder and/or drop columns in an ndarray or structured array.
@@ -1174,20 +958,24 @@ def change_arr(a, order=None, prn=False):
     ----------
     order : list of fields
         fields in the order that you want them
+    prn : boolean
+        True, prints additional information prior to returning the array
 
-    To reorder fields : ['a', 'c', 'b']
+    Notes:
+    ------
+    *reorder fields : ['a', 'c', 'b']*
         For a structured/recarray, the desired field order is required.
         An ndarray, not using named fields, will require the numerical
         order of the fields.
 
-    To remove fields : ['a', 'c']  # `b` dropped
+    *remove fields : ['a', 'c']*   ...  `b` is dropped
         To remove fields, simply leave them out of the list.  The
         order of the remaining fields will be reflected in the output.
         This is a convenience function.... see the module header for
         one-liner syntax.
 
-    Tip
-        Use... `info(a, verbose=True)`
+    Tip :
+        Use... `arraytools._base_functions.arr_info(a, verbose=True)`
         This gives field names which can be copied for use here.
 
     """
@@ -1213,121 +1001,76 @@ def change_arr(a, order=None, prn=False):
     return b
 
 
-# ---- (12) scale .... code section ----
-def scale(a, x=2, y=2, num_z=None):
-    """Scale the input array repeating the array values up by the
-    x and y factors.
+def concat_arrs(arrs, sep=" ", name=None, with_ids=True):
+    """Concatenate a sequence of arrays to string format and return a
+    structured array or ndarray
 
-    Parameters:
-    ----------
-    `a` : An ndarray, 1D arrays will be upcast to 2D.
-
-    `x y` : Factors to scale the array in x (col) and y (row).  Scale factors
-    must be greater than 2.
-
-    `num_z` : For 3D, produces the 3rd dimension, ie. if num_z = 3 with the
-    defaults, you will get an array with shape=(3, 6, 6),
-
-    Examples:
-    --------
-    >>> a = np.array([[0, 1, 2], [3, 4, 5]]
-    >>> b = scale(a, x=2, y=2)
-    array([[0, 0, 1, 1, 2, 2],
-           [0, 0, 1, 1, 2, 2],
-           [3, 3, 4, 4, 5, 5],
-           [3, 3, 4, 4, 5, 5]])
-
-    Notes:
-    -----
-    >>> a = np.arange(2*2).reshape(2,2)
-    array([[0, 1],
-           [2, 3]])
-
-    >>> frmt_(scale(a, x=2, y=2, num_z=2))
-    Array... shape (3, 4, 4), ndim 3, not masked
-      0, 0, 1, 1    0, 0, 1, 1    0, 0, 1, 1
-      0, 0, 1, 1    0, 0, 1, 1    0, 0, 1, 1
-      2, 2, 3, 3    2, 2, 3, 3    2, 2, 3, 3
-      2, 2, 3, 3    2, 2, 3, 3    2, 2, 3, 3
-      sub (0)       sub (1)       sub (2)
-
+    arrs : list
+        A list of single arrays of the same length
+    sep : string
+        The separator between lists
+    name : string
+        A default name used for constructing the array field names.
     """
-    if (x < 1) or (y < 1):
-        print("x or y scale < 1... read the docs\n{}".format(scale.__doc__))
-        return None
-    a = np.atleast_2d(a)
-    z0 = np.tile(a.repeat(x), y)  # repeat for x, then tile
-    z1 = np.hsplit(z0, y)         # split into y parts horizontally
-    z2 = np.vstack(z1)            # stack them vertically
-    if a.shape[0] > 1:            # if there are more, repeat
-        z3 = np.hsplit(z2, a.shape[0])
-        z3 = np.vstack(z3)
+    N = len(arrs)
+    if N < 2:
+        return arrs
+    a, b = arrs[0], arrs[1]
+    c = ["{}{}{}".format(i, sep, j) for i, j in list(zip(a, b))]
+    if N > 2:
+        for i in range(2, len(arrs)):
+            c = ["{}{}{}".format(i, sep, j) for i, j in list(zip(c, arrs[i]))]
+    c = np.asarray(c)
+    sze = c.dtype.str
+    if name is not None:
+        c.dtype = [(name, sze)]
     else:
-        z3 = np.vstack(z2)
-    if num_z not in (0, None):
-        d = [z3]
-        for i in range(num_z):
-            d.append(z3)
-        z3 = np.dstack(d)
-        z3 = np.rollaxis(z3, 2, 0)
-    return z3
-
-
-# ---- (13) split_array .... code section ----
-def split_array(a, fld='ID'):
-    """Split a structured or recarray array using unique values in the
-    `fld` field.  It is assumed that there is a sequential ordering to
-    the values in the field.  If there is not, use np.where in conjunction
-    with np.unique or sort the array first.
-
-    Parameters
-    ----------
-    `a` : A structured or recarray.
-
-    `fld` : A numeric field assumed to be sorted which indicates which group
-    a record belongs to.
-
-    Returns
-    -------
-    A list of arrays split on the categorizing field
-
-    """
-    return np.split(a, np.where(np.diff(a[fld]))[0] + 1)
+        name = 'f'
+    if with_ids:
+        tmp = np.copy(c)
+        dt = [('IDs', '<i8'), (name, sze)]
+        c = np.empty((tmp.shape[0], ), dtype=dt)
+        c['IDs'] = np.arange(1, tmp.shape[0] + 1)
+        c[name] = tmp
+    return c
 
 
 # ----------------------------------------------------------------------
-# ---- stride, block and pad .... code section
-# ---- (14) _pad_ .... code section ----
-def _pad_(a, pad_with=None, size=(1, 1)):
+# ---- (6) stride, block and pad .... code section
+# ----  pad_, stride, sliding_window_view, block
+#
+def pad_(a, pad_with=None, size=(1, 1)):
     """To use when padding a strided array for window construction.
 
     Parameters:
     ----------
-    pad_with : Selections could be.
-        ints - 0, +/-128, +/-32768 `np.iinfo(np.int16).min or max 8, 16, 32`.
-
-        float - 0., np.nan, np.inf, `-np.inf` or `np.finfo(float64).min or max`
-
-    size :
-        Size of padding on sides as rows and columns.
+    pad_with : number
+        Options for number types
+    - ints : 0, +/-128, +/-32768 `np.iinfo(np.int16).min or max 8, 16, 32`.
+    - float : 0., np.nan, np.inf, `-np.inf` or `np.finfo(float64).min or max`
+    size : list/tuple
+        Size of padding on sides in cells.
+    - 2D : 1 cell => (1,1)
+    - 3D : 1 cell => (1,1,1)
     """
-    print(pad_with)
     if pad_with is None:
         return a
     else:
         new_shape = tuple(i+2 for i in a.shape)
         tmp = np.zeros(new_shape, dtype=a.dtype)
         tmp.fill(pad_with)
-        tmp[1:-1, 1:-1] = a
+        if tmp.ndim == 2:
+            tmp[1:-1, 1:-1] = a
+        elif tmp.ndim == 3:
+            tmp[1:-1, 1:-1, 1:-1] = a
         a = np.copy(tmp, order='C')
         del tmp
     return a
 
 
-# ---- (15) stride .... code section ----
 def stride(a, win=(3, 3), stepby=(1, 1)):
     """Provide a 2D sliding/moving view of an array.
-    There is no edge correction for outputs. Use the `_pad_` function first.
+    There is no edge correction for outputs. Use the `pad_` function first.
 
     Requires
     --------
@@ -1370,13 +1113,14 @@ def stride(a, win=(3, 3), stepby=(1, 1)):
     or win=(1,3,3) with stepby=(1,1,1) for 3D
     ----    a.ndim != len(win) != len(stepby) ----
     """
+    from numpy.lib.stride_tricks import as_strided
     assert (a.ndim == len(win)) and (len(win) == len(stepby)), err
     shape = np.array(a.shape)  # array shape (r, c) or (d, r, c)
     win_shp = np.array(win)    # window      (3, 3) or (1, 3, 3)
     ss = np.array(stepby)      # step by     (1, 1) or (1, 1, 1)
     newshape = tuple(((shape - win_shp) // ss) + 1) + tuple(win_shp)
     newstrides = tuple(np.array(a.strides) * ss) + a.strides
-    a_s = as_strided(a, shape=newshape, strides=newstrides).squeeze()
+    a_s = as_strided(a, shape=newshape, strides=newstrides, subok=True).squeeze()
     return a_s
 
 
@@ -1394,7 +1138,6 @@ def sliding_window_view(x, shape=None):
     return np.lib.stride_tricks.as_strided(x, view_shape, view_strides)
 
 
-# ---- (16) block .... code section ----
 def block(a, win=(3, 3)):
     """Calls stride with step_by equal to win size.
     No padding of the array, so this works best when win size is divisible
@@ -1407,31 +1150,29 @@ def block(a, win=(3, 3)):
     return a_b
 
 
-# ---- (17) block .... code section ----
 def block_arr(a, win=[3, 3], nodata=-1, as_masked=False):
     """Block array into window sized chunks padding to the right and bottom
     to accommodate array and window shape.
 
     Parameters
     ----------
-        `a` - 2D array
-
-        `win` - [rows, cols], aka y,x, m,n sized window
-
-        `nodata - to use for the mask
+    `a` : array
+        2D array
+    `win` : [integer, integer]
+        [rows, cols], aka y,x, m,n sized window
+    `nodata` : number
+        to use for the mask
 
     Returns
     -------
-        The padded array and the masked array blocked.
+    The padded array and the masked array blocked.
 
     Reference
     ---------
-        `http://stackoverflow.com/questions/40275876/
-             how-to-reshape-this-image-array-in-python`
+    `<http://stackoverflow.com/questions/40275876/how-to-reshape-this-image-
+    array-in-python>`_.
 
-    extras::
-
-        def block_2(a, blocks=2)
+    >>> def block_2(a, blocks=2)
             B = blocks # Blocksize
             m, n = a.shape
             out = a.reshape(m//B, B, n//B, B).swapaxes(1, 2).reshape(-1, B, B)
@@ -1459,260 +1200,6 @@ def block_arr(a, win=[3, 3], nodata=-1, as_masked=False):
     return c
 
 
-# ----------------------------------------------------------------------
-# ---- querying, working with arrays ----
-# ----------------------------------------------------------------------
-# ---- (18, 18a) find .... code section ----
-def _func(fn, a, this):
-    """Called by 'find' see details there
-    (cumsum, eq, neq, ls, lseq, gt, gteq, btwn, btwni, byond)
-    """
-    #
-    fn = fn.lower().strip()
-    if fn in ['cumsum', 'csum', 'cu']:
-        return np.where(np.cumsum(a) <= this)[0]
-    if fn in ['eq', 'e', '==']:
-        return np.where(np.in1d(a, this))[0]
-    if fn in ['neq', 'ne', '!=']:
-        return np.where(~np.in1d(a, this))[0]  # (a, this, invert=True)
-    if fn in ['ls', 'les', '<']:
-        return np.where(a < this)[0]
-    if fn in ['lseq', 'lese', '<=']:
-        return np.where(a <= this)[0]
-    if fn in ['gt', 'grt', '>']:
-        return np.where(a > this)[0]
-    if fn in ['gteq', 'gte', '>=']:
-        return np.where(a >= this)[0]
-    if fn in ['btwn', 'btw', '>a<']:
-        low, upp = this
-        return np.where((a >= low) & (a < upp))[0]
-    if fn in ['btwni', 'btwi', '=>a<=']:
-        low, upp = this
-        return np.where((a >= low) & (a <= upp))[0]
-    if fn in ['byond', 'bey', '<a>']:
-        low, upp = this
-        return np.where((a < low) | (a > upp))[0]
-
-
-# @time_deco
-def find(a, func, this=None, count=0, keep=None, prn=False, r_lim=2):
-    """Find the conditions that are met in an array, defined by `func`.
-    `this` is the condition being looked for.  The other parameters are defined
-    in the Parameters section.
-
-        >>> a = np.arange(10)
-        >>> find(a, 'gt', this=5)
-        array([6, 7, 8, 9])
-
-    Parameters
-    ----------
-    `a` :
-        Array or array like.
-    `func` :
-        `(cumsum, eq, neq, ls, lseq, gt, gteq, btwn, btwni, byond)`
-        (        ==,  !=,  <,   <=,  >,   >=,  >a<, =>a<=,  <a> )
-    `count` :
-        only used for recursive functions
-    `keep` :
-        for future use
-    `verbose` :
-        True for test printing
-    `max_depth` :
-        prevent recursive functions running wild, it can be varied
-
-    Recursive functions:
-    -------------------
-    cumsum :
-        An example of using recursion to split a list/array of data
-        parsing the results into groups that sum to this.  For example,
-        split input into groups where the total population is less than
-        a threshold (this).  The default is to use a sequential list,
-        however, the inputs could be randomized prior to running.
-
-    Returns
-    -------
-        A 1D or 2D array meeting the conditions
-
-    """
-    a = np.asarray(a)              # ---- ensure array format
-    this = np.asarray(this)
-    if prn:                        # ---- optional print
-        print("({}) Input values....\n  {}".format(count, a))
-    ix = _func(func, a, this)      # ---- sub function -----
-    if ix is not None:
-        keep.append(a[ix])         # ---- slice and save
-        if len(ix) > 1:
-            a = a[(len(ix)):]      # ---- use remainder
-        else:
-            a = a[(len(ix)+1):]
-    if prn:                        # optional print
-        print("  Remaining\n  {}".format(a))
-    # ---- recursion functions check and calls ----
-    if func in ['cumsum']:  # functions that support recursion
-        if (len(a) > 0) and (count < r_lim):  # recursive call
-            count += 1
-            find(a, func, this, count, keep, prn, r_lim)
-        elif count == r_lim:
-            frmt = """Recursion check... count {} == {} recursion limit
-                   Warning...increase recursion limit, reduce sample size\n
-                   or changes conditions"""
-            print(dedent(frmt).format(count, r_lim))
-    # ---- end recursive functions ----
-    # print("keep for {} : {}".format(func,keep))
-    #
-    if len(keep) == 1:   # for most functions, this is it
-        final = keep[0]
-    else:                # for recursive functions, there will be more
-        temp = []
-        incr = 0
-        for i in keep:
-            temp.append(np.vstack((i, np.array([incr]*len(i)))))
-            incr += 1
-        temp = (np.hstack(temp)).T
-        dt = [('orig', '<i8'), ('class', '<i8')]
-        final = np.zeros((temp.shape[0],), dtype=dt)
-        final['orig'] = temp[:, 0]
-        final['class'] = temp[:, 1]
-        # ---- end recursive section
-    return final
-
-
-# ---- (19) group_pnts .... code section ----
-def group_pnts(a, key_fld='IDs', shp_flds=['Xs', 'Ys']):
-    """Group points for a feature that has been exploded to points by
-    `arcpy.da.FeatureClassToNumPyArray`.
-
-    Parameters:
-    ---------
-    `a`
-        a structured array, assuming ID, X, Y, {Z} and whatever else
-        the array is assumed to be sorted... which will be the case
-    `key_fld`
-        Normally this is the `IDs` or similar
-    `shp_flds`
-        The fields that are used to produce the geometry.
-
-    Returns:
-    -------
-        See np.unique descriptions below
-
-    References:
-    ----------
-        https://jakevdp.github.io/blog/2017/03/22/group-by-from-scratch/
-
-        http://esantorella.com/2016/06/16/groupby/
-
-    Notes:
-    -----
-        split-apply-combine .... that is the general rule
-
-    """
-    returned = np.unique(a[key_fld],           # the unique id field
-                         return_index=True,    # first occurrence index
-                         return_inverse=True,  # indices needed to remake array
-                         return_counts=True)   # number in each group
-    uni, idx, inv, cnt = returned
-#    from_to = [[idx[i-1], idx[i]] for i in range(1, len(idx))]
-    from_to = list(zip(idx, np.cumsum(cnt)))
-    subs = [a[shp_flds][i:j] for i, j in from_to]
-    groups = [sub.view(dtype='float').reshape(sub.shape[0], -1)
-              for sub in subs]
-    return groups
-
-
-# ---- (20) group_vals .... code section ----
-def group_vals(seq, delta=1, oper='!='):
-    """Group consecutive values separated by no more than delta
-
-    Parameters
-    ----------
-    `seq` :
-        sequence of values
-    `delta` :
-        difference between consecutive values
-    `oper` :
-        'eq', '==', 'ne', '!=', 'gt', '>', 'lt', '<'
-
-    Reference
-    ---------
-        `https://stackoverflow.com/questions/7352684/
-         how-to-find-the-groups-of-consecutive-elements-from-an-array-in-numpy`
-
-    Notes
-    -----
-        return np.split(data, np.where(np.diff(data) != stepsize)[0]+1)
-    """
-    valid = ('eq', '==', 'ne', '!=', 'gt', '>', 'lt', '<')
-    if oper not in valid:
-        raise ValueError("operand not in {}".format(valid))
-    elif oper in ('==', 'eq'):
-        s = np.split(seq, np.where(np.diff(seq) == delta)[0]+1)
-    elif oper in ('!=', 'ne'):
-        s = np.split(seq, np.where(np.diff(seq) != delta)[0]+1)
-    elif oper in ('>', 'gt'):
-        s = np.split(seq, np.where(np.diff(seq) > delta)[0]+1)
-    elif oper in ('<', 'lt'):
-        s = np.split(seq, np.where(np.diff(seq) < delta)[0]+1)
-    else:
-        s = seq
-    return s
-
-
-# ---- (21) reclass .... code section ----
-def reclass(a, bins=None, new_bins=[], mask_=False, mask_val=None):
-    """Reclass an array of integer or floating point values.
-
-    Requires:
-    --------
-    bins :
-        sequential list/array of the lower limits of each class
-        include one value higher to cover the upper range.
-    new_bins :
-        new class values for each bin
-    mask :
-        whether the raster contains nodata values or values to
-        be masked with mask_val
-
-    Array dimensions will be squeezed.
-
-    Example
-    -------
-    inputs::
-
-        z = np.arange(3*5).reshape(3,5)
-        bins = [0, 5, 10, 15]
-        new_bins = [1, 2, 3, 4]
-        z_recl = reclass(z, bins, new_bins, mask=False, mask_val=None)
-
-    outputs::
-
-        ==> .... z                     ==> .... z_recl
-        array([[ 0,  1,  2,  3,  4],   array([[1, 1, 1, 1, 1],
-               [ 5,  6,  7,  8,  9],          [2, 2, 2, 2, 2],
-               [10, 11, 12, 13, 14]])         [3, 3, 3, 3, 3]])
-
-    """
-    a_rc = np.zeros_like(a)
-    c_0 = isinstance(bins, (list, tuple))
-    c_1 = isinstance(new_bins, (list, tuple))
-    err = "Bins = {} new = {} won't work".format(bins, new_bins)
-    if not c_0 or not c_1:
-        print(err)
-        return a
-    if len(bins) < 2:  # or (len(new_bins <2)):
-        print(err)
-        return a
-    if len(new_bins) < 2:
-        new_bins = np.arange(1, len(bins)+2)
-    new_classes = list(zip(bins[:-1], bins[1:], new_bins))
-    for rc in new_classes:
-        q1 = (a >= rc[0])
-        q2 = (a < rc[1])
-        a_rc = a_rc + np.where(q1 & q2, rc[2], 0)
-    return a_rc
-
-
-# ---- (22) rolling stats .... code section ----
 def rolling_stats(a, no_null=True, prn=True):
     """Statistics on the last two dimensions of an array.
 
@@ -1766,7 +1253,171 @@ def rolling_stats(a, no_null=True, prn=True):
         return a_min, a_max, a_mean, a_med, a_sum, a_std, a_var, a_ptp
 
 
-# ---- (23) uniq  ---- np.unique for versions < 1.13 ----
+# ----------------------------------------------------------------------
+# ---- (7) querying, working with arrays ----
+# ----------------------------------------------------------------------
+# ---- _func, find, group_pnts, group_vals, reclass
+#
+def _func(fn, a, this):
+    """Called by 'find' see details there
+    (cumsum, eq, neq, ls, lseq, gt, gteq, btwn, btwni, byond)
+    """
+    #
+    fn = fn.lower().strip()
+    if fn in ['cumsum', 'csum', 'cu']:
+        return np.where(np.cumsum(a) <= this)[0]
+    if fn in ['eq', 'e', '==']:
+        return np.where(np.in1d(a, this))[0]
+    if fn in ['neq', 'ne', '!=']:
+        return np.where(~np.in1d(a, this))[0]  # (a, this, invert=True)
+    if fn in ['ls', 'les', '<']:
+        return np.where(a < this)[0]
+    if fn in ['lseq', 'lese', '<=']:
+        return np.where(a <= this)[0]
+    if fn in ['gt', 'grt', '>']:
+        return np.where(a > this)[0]
+    if fn in ['gteq', 'gte', '>=']:
+        return np.where(a >= this)[0]
+    if fn in ['btwn', 'btw', '>a<']:
+        low, upp = this
+        return np.where((a >= low) & (a < upp))[0]
+    if fn in ['btwni', 'btwi', '=>a<=']:
+        low, upp = this
+        return np.where((a >= low) & (a <= upp))[0]
+    if fn in ['byond', 'bey', '<a>']:
+        low, upp = this
+        return np.where((a < low) | (a > upp))[0]
+
+
+# @time_deco
+def find(a, func, this=None, count=0, prn=False, r_lim=2):
+    """Find the conditions that are met in an array, defined by `func`.
+    `this` is the condition being looked for.  The other parameters are defined
+    in the Parameters section.
+
+    >>> a = np.arange(10)
+    >>> find(a, 'gt', this=5)
+    array([6, 7, 8, 9])
+
+    Parameters
+    ----------
+    `a` :
+        Array or array like.
+    `func` :
+        `(cumsum, eq, neq, ls, lseq, gt, gteq, btwn, btwni, byond)`
+        (        ==,  !=,  <,   <=,  >,   >=,  >a<, =>a<=,  <a> )
+    `count` :
+        only used for recursive functions
+    `keep` :
+        for future use
+    `verbose` :
+        True for test printing
+    `max_depth` :
+        prevent recursive functions running wild, it can be varied
+
+    Recursive functions:
+    -------------------
+    cumsum :
+        An example of using recursion to split a list/array of data
+        parsing the results into groups that sum to this.  For example,
+        split input into groups where the total population is less than
+        a threshold (this).  The default is to use a sequential list,
+        however, the inputs could be randomized prior to running.
+
+    Returns
+    -------
+        A 1D or 2D array meeting the conditions
+
+    """
+    a = np.asarray(a)              # ---- ensure array format
+    keep = []
+    this = np.asarray(this)
+    masked = np.ma.is_masked(a)    # ---- check for masked array
+    if prn:                        # ---- optional print
+        print("({}) Input values....\n  {}".format(count, a))
+    ix = _func(func, a, this)      # ---- sub function -----
+    if ix is not None:
+        keep.append(a[ix])         # ---- slice and save
+        if len(ix) > 1:
+            a = a[(len(ix)):]      # ---- use remainder
+        else:
+            a = a[(len(ix)+1):]
+    if prn:                        # optional print
+        print("  Remaining\n  {}".format(a))
+    # ---- recursion functions check and calls ----
+    if func in ['cumsum']:  # functions that support recursion
+        if (len(a) > 0) and (count < r_lim):  # recursive call
+            count += 1
+            find(a, func, this, count, keep, prn, r_lim)
+        elif count == r_lim:
+            frmt = """Recursion check... count {} == {} recursion limit
+                   Warning...increase recursion limit, reduce sample size\n
+                   or changes conditions"""
+            print(dedent(frmt).format(count, r_lim))
+    # ---- end recursive functions ----
+    # print("keep for {} : {}".format(func,keep))
+    #
+    if len(keep) == 1:   # for most functions, this is it
+        final = keep[0]
+    else:                # for recursive functions, there will be more
+        temp = []
+        incr = 0
+        for i in keep:
+            temp.append(np.vstack((i, np.array([incr]*len(i)))))
+            incr += 1
+        temp = (np.hstack(temp)).T
+        dt = [('orig', '<i8'), ('class', '<i8')]
+        final = np.zeros((temp.shape[0],), dtype=dt)
+        final['orig'] = temp[:, 0]
+        final['class'] = temp[:, 1]
+        # ---- end recursive section
+    return final
+
+
+def group_pnts(a, key_fld='IDs', shp_flds=['Xs', 'Ys']):
+    """Group points for a feature that has been exploded to points by
+    `arcpy.da.FeatureClassToNumPyArray`.
+
+    Parameters:
+    ---------
+    `a` : array
+        A structured array, assuming ID, X, Y, {Z} and whatever else
+        the array is assumed to be sorted... which will be the case
+    `key_fld` : string
+        Normally this is the `IDs` or similar
+    `shp_flds` : strings
+        The fields that are used to produce the geometry.
+
+    Returns:
+    -------
+    See np.unique descriptions below
+
+    References:
+    ----------
+    `<https://jakevdp.github.io/blog/2017/03/22/group-by-from-scratch/>`_.
+    `<http://esantorella.com/2016/06/16/groupby/>`_.
+
+    Notes:
+    -----
+    split-apply-combine .... that is the general rule
+
+    """
+    returned = np.unique(a[key_fld],           # the unique id field
+                         return_index=True,    # first occurrence index
+                         return_inverse=True,  # indices needed to remake array
+                         return_counts=True)   # number in each group
+    uni, idx, inv, cnt = returned
+#    from_to = [[idx[i-1], idx[i]] for i in range(1, len(idx))]
+    from_to = list(zip(idx, np.cumsum(cnt)))
+    subs = [a[shp_flds][i:j] for i, j in from_to]
+    groups = [sub.view(dtype='float').reshape(sub.shape[0], -1)
+              for sub in subs]
+    return groups
+
+
+# ---- (8) analysis .... code section ----
+# ---- uniq, is_in
+#
 def uniq(ar, return_index=False, return_inverse=False,
          return_counts=False, axis=None):
     """Taken from, but modified for simple axis 0 and 1 and structured
@@ -1781,115 +1432,139 @@ def uniq(ar, return_index=False, return_inverse=False,
     if np.version.version > '1.13':
         return np.unique(ar, return_index, return_inverse,
                          return_counts, axis=axis)
-    if axis is None:
-        return np.unique(ar, return_index, return_inverse, return_counts)
-    if not (-ar.ndim <= axis < ar.ndim):
-        raise ValueError('Invalid axis kwarg specified for unique')
-
-    ar = np.swapaxes(ar, axis, 0)
-    orig_shape, orig_dtype = ar.shape, ar.dtype
-    # Must reshape to a contiguous 2D array for this to work...
-    ar = ar.reshape(orig_shape[0], -1)
-    ar = np.ascontiguousarray(ar)
-
-    t_codes = (np.typecodes['AllInteger'] + np.typecodes['Datetime'] + 'S')
-    if ar.dtype.char in t_codes:
-        dtype = np.dtype((np.void, ar.dtype.itemsize * ar.shape[1]))
-    else:
-        dtype = [('f{i}'.format(i=i), ar.dtype) for i in range(ar.shape[1])]
-
-    try:
-        consolidated = ar.view(dtype)
-    except TypeError:
-        # There's no good way to do this for object arrays, etc...
-        msg = 'The axis argument to unique is not supported for dtype {dt}'
-        raise TypeError(msg.format(dt=ar.dtype))
-
-    def reshape_uniq(uniq):
-        """reshape uniq"""
-        uniq = uniq.view(orig_dtype)
-        uniq = uniq.reshape(-1, *orig_shape[1:])
-        uniq = np.swapaxes(uniq, 0, axis)
-        return uniq
-
-    output = np.unique(consolidated, return_index,
-                       return_inverse, return_counts)
-    if not (return_index or return_inverse or return_counts):
-        return reshape_uniq(output)
-    else:
-        uniq = reshape_uniq(output[0])
-        return (uniq,) + output[1:]
 
 
-# ---- (24) is_in .... equivalent to np.isin() for numpy versions < 1.13 ----
-def is_in(find_in, using, not_in=False):
-    """Equivalent to np.isin for numpy versions < 1.13
+def is_in(arr, look_for, keep_shape=True, binary=True, not_in=False):
+    """Similar to `np.isin` for numpy versions < 1.13, but with additions to
+    return the original shaped array with an `int` dtype
 
-    Parameters
+    Parameters:
     ----------
-
-    find_in :
+    arr : array
         the array to check for the elements
-    using :
+    look_for : number, list or array
         what to use for the check
+    keep_shape : boolean
+        True, returns the array's original shape.  False, summarizes all axes
+    not_in : boolean
+        Switch the query look_for True
 
-    Note
+    Note:
     ----
-
     >>> from numpy.lib import NumpyVersion
     >>> if NumpyVersion(np.__version__) < '1.13.0'):
         # can add for older versions later
     """
-    find_in = np.asarray(find_in)
-    shp = find_in.shape
-    using = np.asarray(using)
+    arr = np.asarray(arr)
+    shp = arr.shape
+    look_for = np.asarray(look_for)
     uni = False
     inv = False
     if not_in:
         inv = True
-    r = np.in1d(find_in, using, assume_unique=uni, invert=inv).reshape(shp)
+    r = np.in1d(arr, look_for, assume_unique=uni, invert=inv)
+    if keep_shape:
+        r = r.reshape(shp)
+    if binary:
+        r = r.astype('int')
     return r
 
 
-# ---- (25) size-based .... n largest, n_smallest
-def n_largest(a, num=1, by_row=True):
-    """Return the 'num' largest entries in an array by row sorted by column.
-    Array dimensions <=3 supported
+def running_count(a, to_label=False):
+    """Perform a running count on a 1D array identifying the order number
+    of the value ins the sequence
+
+    Parameters:
+    -----------
+    a : array
+        1D array of values, int, float or string
+    to_label : boolean
+        True - return the output as a concatenated string of value-sequence
+               numbers
+        False - return a structured array with a specified dtype.
+
+    Notes:
+    ------
+    >>> a = np.random.randint(1, 10, 20)
+    >>> b = np.array(list("zabcaabbdedbz"))
     """
-    assert a.ndim <= 3, "Only arrays with ndim <=3 supported"
-    if not by_row:
-        a = a.T
-    num = min(num, a.shape[-1])
-    if a.ndim == 1:
-        b = np.sort(a)[-num:]
-    elif a.ndim >= 2:
-        b = np.sort(a)[..., -num:]
-    else:
-        return None
-    return b
+    dt = [('Value', a.dtype.str), ('Count', '<i4')]
+    z = np.zeros((a.shape[0],), dtype=dt)
+    idx = a.argsort(kind='mergesort')
+    s_a = a[idx]
+    neq = np.where(s_a[1:] != s_a[:-1])[0] + 1
+    run = np.ones(a.shape, int)
+    run[neq[0]] -= neq[0]
+    run[neq[1:]] -= np.diff(neq)
+    out = np.empty_like(run)
+    out[idx] = run.cumsum()
+    z['Value'] = a
+    z['Count'] = out
+    if to_label:
+        z = np.array(["{}_{:0>3}".format(*i) for i in list(zip(a, out))])
+    return z
 
 
-# ---- n_smallest
-def n_smallest(a, num=1, by_row=True):
-    """Return the 'n' smallest entries in an array by row sorted by column.
-    Array dimensions <=3 supported
+def sequences(data, stepsize=0):
+    """Return an array of sequence information denoted by stepsize
+
+    data :
+        List/array of values in 1D
+    stepsize :
+        Separation between the values.  If stepsize=0, sequences of equal
+        values will be searched.  If stepsize is 1, then sequences incrementing
+        by 1... etcetera.  Stepsize can be both positive or negative
+
+    >>> # check for incrementing sequence by 1's
+    >>> d = [1, 2, 3, 4, 4, 5]
+    >>> s = sequences(d, 1)
+    array([(0, 1, 4, 0, 4), (1, 4, 2, 4, 6)],
+          dtype=[('ID', '<i4'), ('Value', '<i4'), ('Count', '<i4'),
+                 ('From_', '<i4'), ('To_', '<i4')])
+    >>> prn_rec(s)  # prn_rec in frmts.py
+     id  ID   Value   Count   From_   To_
+    ---------------------------------------
+     000    0       1       4       0     4
+     001    1       4       2       4     6
+
+    Notes:
+    ------
+    For strings, use
+
+    >>> partitions = np.where(a[1:] != a[:-1])[0] + 1
+
+    Variants:
+    ---------
+    Change `N` in the expression to find other splits in the data
+
+    >>> np.split(data, np.where(np.abs(np.diff(data)) >= N)[0]+1)
+
+    References:
+    -----------
+    https://stackoverflow.com/questions/7352684/how-to-find-the-groups-of-
+    sequences-elements-from-an-array-in-numpy
     """
-    assert a.ndim <= 3, "Only arrays with ndim <=3 supported"
-    if not by_row:
-        a = a.T
-    num = min(num, a.shape[-1])
-    if a.ndim == 1:
-        b = np.sort(a)[:num]
-    elif a.ndim >= 2:
-        b = np.sort(a)[..., :num]
-    else:
-        return None
-    return b
+    #
+    a = np.array(data)
+    a_dt = a.dtype.kind
+    dt = [('ID', '<i4'), ('Value', a.dtype.str), ('Count', '<i4'),
+          ('From_', '<i4'), ('To_', '<i4')]
+    if a_dt in ('U', 'S'):
+        seqs = np.split(a, np.where(a[1:] != a[:-1])[0] + 1)
+    elif a_dt in ('i', 'f'):
+        seqs = np.split(a, np.where(np.diff(a) != stepsize)[0] + 1)
+    vals = [i[0] for i in seqs]
+    cnts = [len(i) for i in seqs]
+    seq_num = np.arange(len(cnts))
+    too = np.cumsum(cnts)
+    frum = np.zeros_like(too)
+    frum[1:] = too[:-1]
+    out = np.array(list(zip(seq_num, vals, cnts, frum, too)), dtype=dt)
+    return out
 
 
-# ---- sorting,  column and row sorting --------------------------------------
-#
-# ---- (29) sort_rows_by_col .... code section ----
+# ---- (9) sorting,  column and row sorting .... code section ---------------
+# ---- sort_rows_by_col, sort_cols_by_row, radial_sort ----
 def sort_rows_by_col(a, col=0, descending=False):
     """Sort a 2D array by column.
 
@@ -1907,14 +1582,12 @@ def sort_rows_by_col(a, col=0, descending=False):
     return a_s
 
 
-# ---- (30) sort_cols_by_row ----
 def sort_cols_by_row(a, col=0, descending=False):
     """Sort the rows of an array in the order of their column values
     :  Uses lexsort """
     return a[np.lexsort(np.transpose(a)[::-1])]
 
 
-# ---- (31) radial sort -----
 def radial_sort(pnts, cent=None):
     """Sort about the point cloud center or from a given point
 
@@ -1939,66 +1612,12 @@ def radial_sort(pnts, cent=None):
     ang_ab = np.degrees(ang_ab)
     sort_order = np.argsort(ang_ab)
     return ang_ab, sort_order
-# ---- ******* add ... used in nd2struct *****
 
-# ---- (32) sequences ----
-def sequences(data, stepsize=0):
-    """Return a list of arrays of sequences values denoted by stepsize
 
-    data :
-        List/array of values in 1D
-    stepsize :
-        Separation between the values.  If stepsize=0, sequences of equal
-        values will be searched.  If stepsize is 1, then sequences incrementing
-        by 1... etcetera.  Stepsize can be both positive or negative
-
-    >>> # check for incrementing sequence by 1's
-    d = [1, 2, 3, 4, 4, 5]
-    s, o = sequences(d, 1, True)
-    # s = [array([1, 2, 3, 4]), array([4, 5])]
-    # o = array([[1, 4, 4],
-    #            [4, 2, 6]])
-
-    Notes:
-    ------
-    For strings, use
-
-    >>> partitions = np.where(a[1:] != a[:-1])[0] + 1
-
-    Variants:
-    ---------
-    Change `N` in the expression to find other splits in the data
-
-    >>> np.split(data, np.where(np.abs(np.diff(data)) >= N)[0]+1)
-
-    References:
-    -----------
-    https://stackoverflow.com/questions/7352684/how-to-find-the-groups-of-
-    sequences-elements-from-an-array-in-numpy
-    """
-    #
-    a = np.array(data)
-    a_dt = a.dtype.kind
-    if a_dt in ('U', 'S'):
-        seqs = np.split(a, np.where(a[1:] != a[:-1])[0] + 1)
-        dt = [('ID', '<i4'), ('Value', a.dtype.str), ('Count', '<i4'),
-              ('From_', '<i4'), ('To_', '<i4')]
-    elif a_dt in ('i', 'f'):
-        seqs = np.split(a, np.where(np.diff(a) != stepsize)[0] + 1)
-        dt = [('ID', '<i4'), ('Value', '<i4'), ('Count', '<i4'),
-              ('From_', '<i4'), ('To_', '<i4')]
-    vals = [i[0] for i in seqs]
-    cnts = [len(i) for i in seqs]
-    seq_num = np.arange(len(cnts))
-    too = np.cumsum(cnts)
-    frum = np.zeros_like(too)
-    frum[1:] = too[:-1]
-    out = np.array(list(zip(seq_num, vals, cnts, frum, too)), dtype=dt)
-    return out
-
+# ---- extras *****
 
 def pack_last_axis(arr, names=None):
-    """Find source *****
+    """used in nd2struct
     Then you could do:
     >>> pack_last_axis(uv).tolist()
     to get a list of tuples.
@@ -2011,7 +1630,7 @@ def pack_last_axis(arr, names=None):
 
 # ----------------------------------------------------------------------
 # ----  _help .... code section
-def _help():
+def _tools_help_():
     """arraytools.tools help...
 
     Function list follows:
@@ -2020,56 +1639,55 @@ def _help():
     :-------------------------------------------------------------------:
     : ---- arrtools functions  (loaded as 'art') ----
     : ---- from tools.py
-    (1)  doc_func(func=None)
-         documenting code using inspect
-    (2)  get_func(obj, line_nums=True, verbose=True)
-         pull in function code
-    (3)  get_modu(obj)
-         pull in module code
-    (4)  info(a)  array info
-    (5a, b) num_to_nan, num_to_mask
-    (6)  make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
-         make arrays consisting of blocks
-    (7)  make_flds(n=1, as_type='float', names=None, def_name='col')
-         make structured/recarray fields
-    (8)  rec_arr(a, flds=None, types=None)
-    (9)  arr2xyz(a, verbose=False)
+    (1)  n_largest, n_smallest,
+    (2)  num_to_nan, num_to_mask
+    (3)  arr2xyz(a, verbose=False)
          array (col, rows) to (x, y) and array values for z.
-    (10) change_arr(a, order=[], prn=False)
-         reorder and/or drop columns
-    (11) nd2struct(a)
-         convert an ndarray to a structured array with fields
-    (12) scale(a, x=2, y=2, num_z=None)
+    (4)  make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
+         make arrays consisting of blocks
+    (5)  group_vals(seq, delta=1, oper='!=')
+    (6)  reclass(a, bins=[], new_bins=[], mask=False, mask_val=None)
+         reclass an array
+    (7)  scale(a, x=2, y=2, num_z=None)
          scale an array up in size by repeating values
-    (13) split_array(a, fld='ID')
+    (8)  split_array(a, fld='ID')
          split an array using an index field
-    (14) _pad_
-    (15) stride(a, r_c=(3, 3))
+    (9)  make_flds(n=1, as_type='float', names=None, def_name='col')
+         make structured/recarray fields
+    (10) nd_rec
+    (11) nd_struct
+    (12) nd2struct(a)
+         convert an ndarray to a structured array with fields
+    (13) nd2rec
+    (14) rc_vals
+    (15) xy_vals
+    (16) array_cols
+    (17) change_arr(a, order=[], prn=False)
+         reorder and/or drop columns
+    (18) concat_arrs
+    (19) pad__
+    (20) stride(a, r_c=(3, 3))
          stride an array for moving window functions
-    (16) block
-    (17) block_arr(a, win=[3, 3], nodata=-1)
+    (21) block
+    (22) sliding_window_view
+    (23) block_arr(a, win=[3, 3], nodata=-1)
          break an array up into blocks
-    (18)  find(a, func, this=None, count=0, keep=[], prn=False, r_lim=2)
+    (24) rolling_stats((a0, no_null=True, prn=True))
+    (25) _func, find(a, func, this=None, count=0, keep=[], prn=False, r_lim=2)
          find elements in an array using...
          func - (cumsum, eq, neq, ls, lseq, gt, gteq, btwn, btwni, byond)
                (      , ==,  !=,  <,   <=,  >,   >=,  >a<, =>a<=,  <a> )
-    (19)  group_pnts(a, key_fld='ID', keep_flds=['X', 'Y', 'Z'])
-    (20)  group_vals(seq, delta=1, oper='!=')
-    (21) reclass(a, bins=[], new_bins=[], mask=False, mask_val=None)
-         reclass an array
-    (22) rolling_stats((a0, no_null=True, prn=True))
-    (23) uniq(ar, return_index=False, return_inverse=False,
+    (26)  group_pnts(a, key_fld='ID', keep_flds=['X', 'Y', 'Z'])
+    (27) uniq(ar, return_index=False, return_inverse=False,
               return_counts=False, axis=0)
-    (24) is_in
-    (25) n_largest(a, num=1, by_row=True)
-    (26) n_smallest(a, num=1, by_row=True)
-    (27) rc_vals
-    (28) xy_vals
-    (29) sort_rows_by_col
-    (30) sort_cols_by_row
-    (31) radial_sort
-    (32) sequences(data, stepsize)
-     ---  _help  this function
+    (28) is_in
+    (29) running_count
+    (30) sequences(data, stepsize)
+    (31) sort_rows_by_col
+    (32) sort_cols_by_row
+    (33) radial_sort
+    (34) pack_last_axis
+    ---  _tools_help_  this function
     :-------------------------------------------------------------------:
     """
     print(dedent(_hf))
@@ -2088,9 +1706,7 @@ def _demo_tools():
     d = np.arange(9*6).reshape(9, 6)
     bloc = block_arr(a, win=[2, 2], nodata=-1)  # for block
     chng = change_arr(b, order=['B', 'C', 'A'], prn=False)
-    docf = doc_func(pyramid)
     scal = scale(a, 2)
-    a_inf = info(d, prn=False)
     m_blk = make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
     m_fld = str(make_flds(n=3, as_type='int', names=["A", "B", "C"]))
     spl = split_array(b, fld='A')
@@ -2120,11 +1736,7 @@ def _demo_tools():
 :(3) change_arr(b, order=['B', 'C', 'A'], prn=False
 :    Array 'b', reordered with 2 fields dropped...
 {!r:}\n
-:(4) doc_func(col_hdr) ... documenting a function...
-{}\n
 :(5) scale() ... scale an array up by an integer factor...
-{}\n
-:(6) array info ... info(a)
 {}\n
 :(7) make_flds() ... create default field names ...
 {}\n
@@ -2141,8 +1753,8 @@ def _demo_tools():
 {}\n
 """
     args = ["-"*62, a, b, c, d,
-            arr2xyz(a), bloc, chng.reshape(a.shape[0], -1), docf, scal,  # 1 -5
-            a_inf, m_fld, spl, stri, m_blk, nd2struct(a), rsta]  # 6- 12
+            arr2xyz(a), bloc, chng.reshape(a.shape[0], -1), scal,  # 1 -5
+            m_fld, spl, stri, m_blk, nd2struct(a), rsta]  # 6- 12
     print(frmt.format(*args))
     # del args, d, e
 
@@ -2166,5 +1778,9 @@ if __name__ == "__main__":
     : - print the script source name.
     : - run the _demo
     """
-#    print("Script... {}".format(script))
+#    print("Script... {}".format(script))  # script =  sys.argv[0]
+#    data_path = script.replace('tools.py', 'Data')
+#    def f():
+#        pass
+#    print(f.__code__.co_filename)
 #    _demo_tools()

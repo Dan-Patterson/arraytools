@@ -1,16 +1,24 @@
 # -*- coding: UTF-8 -*-
 """
-:Script:   datamaker.py
-:Author:   Dan.Patterson@carleton.ca
-:Modified: 2018-02-07
-:Purpose:  tools for working with numpy arrays
-:Useage:
-:
-:References:
-:  blog post
-:  https://community.esri.com/blogs/dan_patterson/2016/04/04/
-:          numpy-lessons-6-creating-data-for-testing-purposes
-:---------------------------------------------------------------------:
+datamaker
+=========
+
+Script:   datamaker.py
+
+Author:   Dan_Patterson@carleton.ca
+
+Modified: 2018-10-16
+
+Purpose:  tools for working with numpy arrays
+
+Useage:
+
+References:
+
+`blog post_. https://community.esri.com/blogs/dan_patterson/2016/04/04/
+numpy-lessons-6-creating-data-for-testing-purposes`
+
+---------------------------------------------------------------------
 """
 # ---- imports, formats, constants ----
 import sys
@@ -57,7 +65,7 @@ def func_run(func):
 
 def time_deco(func):  # timing originally
     """timing decorator function
-    :print("\n  print results inside wrapper or use <return> ... ")
+    print("\n  print results inside wrapper or use <return> ... ")
     """
     import time
     from functools import wraps
@@ -78,10 +86,11 @@ def time_deco(func):  # timing originally
 
 
 def strip_concatenate(in_flds, strip_list=[" ", ",", None]):
-    """Provide the fields as a list ie [a, b, c] to strip spaces
-    : and remove nulls
-    : use: python parser
-    : syntax: strip_stuff('!a!, !b!, !c!]) assumed field names
+    """Provide a list of fields ie [a, b, c] to strip spaces and remove nulls
+
+    - use: python parser
+    - syntax: strip_stuff('!a!, !b!, !c!]) assumed field names
+
     """
     fixed = []
     fmt = []
@@ -100,10 +109,14 @@ def strip_concatenate(in_flds, strip_list=[" ", ",", None]):
 # ---- functions
 def concat_flds(a, flds=None, out_name="Concat", sep=" ", with_ids=True):
     """Concatenate a sequence of fields to string format and return a
-    :  structured array or ndarray
-    :  arrs - a list single arrays of the same length
-    :  sep - the separator between lists
-    :  name - used for structured array
+    structured array or ndarray
+
+    Requires
+    --------
+
+    - arrs : a list single arrays of the same length
+    -  sep : the separator between lists
+    -  name : used for structured array
     """
     strip_list = [" ", ",", None]
     if (flds is None) or (a.dtype.names is None):
@@ -139,12 +152,18 @@ def concat_flds(a, flds=None, out_name="Concat", sep=" ", with_ids=True):
 
 def colrow_txt(N=10, cols=2, rows=2, zero_based=True):
     """  Produce spreadsheet like labels either 0- or 1-based.
-    :N  - number of records/rows to produce.
-    :cols/rows - this combination will control the output of the values
-    :cols=2, rows=2 - yields (A0, A1, B0, B1)
-    :  as optional classes regardless of the number of records being produced
-    :zero-based - True for conventional array structure,
-    :             False for spreadsheed-style classes
+
+    Requires
+    --------
+    N : number
+        Number of records/rows to produce.
+    cols/rows : numbers
+        This combination will control the output of the values
+        cols=2, rows=2 - yields (A0, A1, B0, B1)
+        as optional classes regardless of the number of records being produced
+    zero-based : boolean
+        True for conventional array structure,
+        False for spreadsheed-style classes
     """
     if zero_based:
         start = 0
@@ -170,10 +189,11 @@ def rowcol_txt(N=10, rows=2, cols=2):
 
 def pnts_IdShape(N=10, x_min=0, x_max=10, y_min=0, y_max=10, simple=True):
     """Create an array with a nested dtype which emulates a shapefile's
-    : data structure.  This array is used to append other arrays to enable
-    :  import of the resultant into ArcMap.  Array construction, after hpaulj
-    :  http://stackoverflow.com/questions/32224220/
-    :    methods-of-creating-a-structured-array
+    data structure.  This array is used to append other arrays to enable
+    import of the resultant into ArcMap.  Array construction, after hpaulj
+
+    http://stackoverflow.com/questions/32224220/
+        methods-of-creating-a-structured-array
     """
     Xs = np.random.randint(x_min, x_max, size=N)
     Ys = np.random.randint(y_min, y_max, size=N)
@@ -196,10 +216,10 @@ def pnts_IdShape(N=10, x_min=0, x_max=10, y_min=0, y_max=10, simple=True):
 
 def rand_text(N=10, cases=3, vals=str_opt[3]):
     """Generate N samples from the letters of the alphabet denoted by the
-    :  number of cases.  If you want greater control on the text and
-    :  probability, see rand_case or rand_str.
-    :
-    : vals:  see str_opt in required constants section
+    number of cases.  If you want greater control on the text and
+    probability, see rand_case or rand_str.
+
+    vals:  see str_opt in required constants section
     """
     vals = list(vals)
     txt_vals = np.random.choice(vals[:cases], N)
@@ -208,11 +228,12 @@ def rand_text(N=10, cases=3, vals=str_opt[3]):
 
 def rand_str(N=10, low=1, high=10, vals=str_opt[3]):
     """Returns N strings constructed from 'size' random letters to form a
-    :  string
-    : - create the cases as a list:  string.ascii_lowercase or ascii_uppercase
-    : - determine how many letters. Ensure min <= max. Add 1 to max alleviate
-    :   low==high
-    : - shuffle the case list each time through loop
+    string
+
+    - create the cases as a list:  string.ascii_lowercase or ascii_uppercase
+    - determine how many letters. Ensure min <= max. Add 1 to max alleviate
+      low==high
+    - shuffle the case list each time through loop
     """
     vals = list(vals)
     letts = np.arange(min([low, high]), max([low, high])+1)  # num letters
@@ -227,8 +248,9 @@ def rand_str(N=10, low=1, high=10, vals=str_opt[3]):
 
 def rand_case(N=10, cases=["Aa", "Bb"], p_vals=[0.8, 0.2]):
     """Generate N samples from a list of classes with an associated probability
-    :  ensure: len(cases)==len(p_vals) and  sum(p_values) == 1
-    :  small sample sizes will probably not yield the desired p-values
+
+    - ensure: len(cases)==len(p_vals) and  sum(p_values) == 1
+    - small sample sizes will probably not yield the desired p-values
     """
     p = (np.array(p_vals))*N   # convert to integer
     kludge = [np.repeat(cases[i], p[i]).tolist() for i in range(len(cases))]
@@ -246,7 +268,8 @@ def rand_int(N=10, begin=0, end=10):
 
 
 def rand_float(N=10, begin=0, end=10):
-    """Generate N random floats within the range begin - end
+    """Generate N random floats within the range begin - end.
+
     Technically, N random integers are produced then a random
     amount within 0-1 is added to the value
     """
@@ -286,7 +309,7 @@ def blog_post2(N=20):
     ids = np.asarray(ids, dtype=[('Ids', '<i4')])
     int_fld = rand_int(N, begin=10, end=1000)
     case1 = rand_case(N,
-                      cases=['N', 'S', 'E', 'W', ""],
+                      cases=['N', 'S', 'E', 'W', ''],
                       p_vals=[0.1, 0.1, 0.2, 0.2, 0.4])
     case2 = rand_case(N,
                       cases=['Maple', 'Oak', 'Elm', 'Pine', 'Spruce'],

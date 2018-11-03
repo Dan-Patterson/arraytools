@@ -7,7 +7,7 @@ Script : __init__.py
 
 Author :   Dan.Patterson@carleton.ca
 
-Modified : 2018-04-17
+Modified : 2018-10-16
 
 **Purpose:**
 
@@ -25,64 +25,74 @@ Available modules and subpackages
 a_io.py :
     io tools for numpy arrays and operating system access
 >>>  art.a_io.__all__
-['arr_json', 'array2raster', 'load_npy', 'rasters2nparray', 'read_txt',
- 'save_npy', 'save_txt']
-
-apt.py :
-    tools for arcpy tools
->>> art.apt.__all__
-['_arr_common', '_id_geom_array', '_split_array', 'arc_np', 'arr_pnts',
- 'arr_polygon_fc', 'arr_polyline_fc', 'array_fc', 'array_struct', 'change_fld',
- 'fc_array', 'obj_polyline', 'obj_polyline', 'pnts_arr', 'polygons_arr',
- 'polylines_arr', 'shapes_fc', 'shapes_fc', 'struct_polygon',
- 'struct_polyline', 'tbl_arr', 'to_fc']
-
-fc.py :
-    tools for working with featureclasses
->>> art.fc.__all__
- ['_cursor_array', '_geo_array', '_get_shapes', '_ndarray', '_props',
- '_two_arrays', '_xy', '_xyID', '_xy_idx', 'arrays_cols', 'change_fld',
- 'concat_arrs', 'join_arr_fc', 'obj_array', 'orig_dest_pnts']
+load_npy, save_npy, read_txt, save_txt, arr_json
 
 frmts.py :
     Format options for viewing of numpy arrays in a variety of ways.
 >>> art.frmts.__all__
-['_demo_frmt', '_demo_ma', '_demo_rec', 'col_hdr', 'deline', 'form_', 'frmt_',
- 'frmt_ma', 'frmt_rec', 'in_by', 'make_row_format', 'pd_', 'redent']
+col_hdr, deline, in_by, redent, _chunks, frmt_, frmt_ma, frmt_rec,
+pd_, make_row_format, form_
 
 geom :
     Geometry related functions
 >>> art.geom.__all__
-['_center', '_centroid', '_convert', '_densify_2D', '_extent', '_flat_',
- '_max', '_min', '_new_view_', '_reshape_', '_unpack', '_view_', 'angle_2pnts',
- 'angle_np', 'angle_seq', 'angles_poly', 'areas', 'azim_np', 'centers',
- 'centroids', 'circle', 'densify', 'dist_bearing', 'dx_dy_np', 'e_area',
- 'e_dist', 'e_leng', 'ellipse', 'hex_flat', 'hex_pointy', 'lengths',
- 'radial_sort', 'rectangle', 'repeat', 'rotate', 'seg_lengths', 'simplify',
- 'total_length']
+_flat_, _unpack, segment, stride, _new_view_, _view_, _reshape_, _min,
+_max, _extent, _center, _centroid, centers, centroids, e_area, e_dist,
+e_leng, areas, lengths, total_length, seg_lengths, radial_sort,
+dx_dy_np, angle_np, azim_np, angle_2pnts, angle_seq, angles_poly,
+dist_bearing, _densify_2D, _convert, densify, simplify, rotate,
+trans_rot, repeat, circle, ellipse, rectangle, hex_flat, hex_pointy
+
+grid :
+    raster related statics
+>>> art.grid.__all__
+combine_, check_shapes, check_stack, mask_stack, combine_,
+stack_percentile, stack_sum, stack_cumsum, stack_prod, stack_cumprod,
+stack_min, stack_mean, stack_median, stack_max, stack_std, stack_var,
+stack_stats, expand_zone, fill_arr, reclass_vals, reclass_ranges,
+scale_up
+
+gridstats :
+    raster stack statistics
+>>> art.gridstats.__all__
+check_shapes, check_stack, mask_stack, stack_sum, stack_cumsum,
+stack_prod, stack_cumprod, stack_min, stack_mean, stack_median,
+stack_max, stack_std, stack_var, stack_percentile, stack_stats,
+stack_stats_tbl
 
 image :
     image related functions
 >>> art.image.__all__
-['_even_odd', '_pad_even_odd', '_pad_nan', '_pad_zero', 'a_filter', 'equalize',
- 'normalize', 'plot_img', 'rgb_gray']
+_even_odd, _pad_even_odd, _pad_nan, _pad_zero, a_filter, plot_img,
+rgb_gray, normalize, equalize
 
 py_tools :
     Python, numpy and other stack generic functions:
 >>> art.py_tools.__all__
-['_flatten', 'dir_py', 'dirr', 'dirr2', 'flatten_shape', 'folders', 'get_dir',
- 'pack', 'sub_folders', 'unpack']
+comp_info, get_dir, folders, sub_folders, dir_py, _flatten,
+flatten_shape, pack, unpack
 
-tools.py :
+surface :
+    surface tools for 2D arrays
+>>> art.surface.__all__
+pad_a, kernels, stride, filter_a, slope_a, aspect_a, hillshade_a
+
+tools :
     Main tool set containing the following functions...
 >>> art.tools.__all__
- ['_func', '_help', '_pad_', 'arr2xyz', 'block', 'block_arr', 'change_arr',
- 'doc_func', 'find', 'get_func', 'get_modu', 'group_pnts', 'group_vals',
- 'info', 'is_in', 'make_blocks', 'make_flds', 'n_largest', 'n_smallest',
- 'nd2struct', 'num_to_mask', 'num_to_nan', 'rc_vals', 'nd_rec', 'reclass',
- 'rolling_stats', 'scale', 'sort_cols_by_row', 'sort_rows_by_col',
- 'split_array', 'stride', 'uniq', 'xy_vals']
+_tools_help_, n_largest, n_smallest, num_to_nan, num_to_mask, arr2xyz,
+make_blocks, group_vals, reclass, scale, split_array, make_flds,
+nd_rec, nd_struct, nd2struct, nd2rec, rc_vals, xy_vals, arrays_cols,
+change_arr, concat_arrs, pad_, stride, block, sliding_window_view,
+block_arr, rolling_stats, _func, find, group_pnts, uniq, is_in,
+running_count, sequences, sort_cols_by_row, sort_rows_by_col,
+radial_sort, pack_last_axis
 
+utils :
+    Utilities
+>>> art.utils.__all__
+non_ascii, non_punc, time_deco, run_deco, doc_func, get_func,
+get_modu, info, dirr, wrapper
 
 **Folder tools**
 ================
@@ -113,76 +123,64 @@ examples :
 
 
 """
-from textwrap import dedent, indent, wrap
+import numpy as np
+#
 # ---- import *.py scripts and functions ----
+#
+from ._base_functions import (arr_info, n_largest, n_smallest,
+                              num_to_nan, num_to_mask)
+from . import utils
+from .utils import (doc_func, get_func, get_modu, dirr)
 from . import tools
 from .tools import *
-from . import _common
-from ._common import _describe, fc_info, fld_info, tweet
-from . import py_tools
-from .py_tools import *
 from . import a_io
-from .a_io import *
-from . import apt
-from .apt import *
-from . import fc
-from .fc import *
+from .a_io import load_npy, save_npy, load_txt, save_txt
+from .tbl import (find_text, tab_count, tab_sum)
 from . import frmts
 from .frmts import *
 from . import geom
 from .geom import *
 from . import image
-from .image import *
-#
-# ---- imports from subfolders
+from . import grid
+#from .grid import *
+from . import gridstats
+#from .gridstats import *
+#from .image import *
+from . import py_tools
+#from .py_tools import *
+from . import stats
+from .stats import cross_tab, field_stats, frequency
+from . import surface
+##from .surface import *
+##
+## ---- imports from subfolders
 from . import analysis
 from .analysis import *
+from . import fc_tools
 from . import geomtools
 from .geomtools import circular, mesh_pnts, mst, n_spaced, pip
 from . import graphing
-from .graphing import plot_pnts_
+#from .graphing import plot_pnts_
 from . import rasters
-from .rasters import  conversion, grid, rasterstats, surface
-from . import stats
-from .stats.cross_tab import crosstab
-
-
-def __art_modules__():
-    """print the array tools modules"""
-    frmt = """\
------------------------------------------------------------------------
-#Information on .... arraytools ....
-#More information can be obtained for the following modules...
-#Use ... dir(art.module) ... where 'module' is in...
-#- _common\n....{}
-#- a_io\n....{}
-#- apt\n....{}
-#- analysis\n....{}
-#- fc\n....{}
-#- frmts\n....{}
-#- geom\n....{}
-#- image\n...{}
-#- tools\n....{}
-#"""
-#    print(dedent(frmt).format(*__args))
-
+from .rasters import conversion, tifffile
+#from . import stats
+#from .stats.cross_tab import crosstab
 #
-__art_version__ = "Arraytools version 1.0"
-__all__ = ['__art_version__', '__art_modules__']
-__mods__ = {'_common': _common.__all__,
-            'a_io': a_io.__all__,
+##
+_art_version__ = "Arraytools version 1.0"
+__all__ = ['__art_version__']
+__mods__ = {'a_io': a_io.__all__,
             'analysis': analysis.__all__,
-            'apt': apt.__all__,
-            'fc': fc.__all__,
             'frmts': frmts.__all__,
             'geom': geom.__all__,
             'image': image.__all__,
             'py_tools': py_tools.__all__,
-            'tools': tools.__all__
+            'tools': tools.__all__,
+            'utils': utils.__all__
             }
-
+#
 __all__.extend(__mods__)
 #
-#__all__.sort()
+__all__.sort()
 #del _arg
 #del __args

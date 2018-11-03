@@ -7,7 +7,7 @@ Script :   a_io.py
 
 Author :   Dan.Patterson@carleton.ca
 
-Modified : 2018-04-22
+Modified : 2018-10-22
 
 Purpose : Basic io tools for numpy arrays and arcpy
 
@@ -18,14 +18,11 @@ Notes :
     3.  read_txt    - read array created by save_txtt
     4.  save_txt    - save array to npy format
     5.  arr_json    - save to json format
-    6.  array2raster - save array to raster
-    7.  rasters2nparray - batch rasters to numpy array
 
 ---------------------------------------------------------------------
 """
 # ---- imports, formats, constants ----
 import sys
-import os
 import numpy as np
 
 
@@ -37,10 +34,11 @@ np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
 
-__all__ = ['load_npy', 'save_npy',
-           'read_txt', 'save_txt',
+__all__ = ['load_npy',
+           'save_npy',
+           'load_txt',
+           'save_txt',
            'arr_json',
-           'array2raster', 'rasters2nparray',
            ]
 
 
@@ -76,7 +74,7 @@ def save_npy(a, f_name):
 
 # ----------------------------------------------------------------------
 # (3) read_txt .... code section ---
-def read_txt(name="arr.txt"):
+def load_txt(name="arr.txt"):
     """Read the structured/recarray created by save_txt.
 
     dtype : data type
@@ -87,11 +85,12 @@ def read_txt(name="arr.txt"):
 
     names : boolean
         If `True`, the first row contains the field names.
-
+    encoding :
+        Set to None to use system default
     see np.genfromtxt for all *args and **kwargs.
     """
     a = np.genfromtxt(name, dtype=None, delimiter=",",
-                      names=True, autostrip=True)  # ,skip_header=1)
+                      names=True, autostrip=True, encoding=None)  # ,skip_header=1)
     return a
 
 
@@ -113,7 +112,7 @@ def save_txt(a, name="arr.txt", sep=", ", dt_hdr=True):
     """
     a_names = ", ".join(i for i in a.dtype.names)
     hdr = ["", a_names][dt_hdr]  # use "" or names from input array
-    s = np.array(a.tolist(), dtype=np.string_)
+    s = np.array(a.tolist(), dtype=np.unicode_)
     widths = [max([len(i) for i in s[:, j]])
               for j in range(s.shape[1])]
     frmt = sep.join(["%{}s".format(i) for i in widths])
@@ -136,78 +135,136 @@ def arr_json(file_out, arr=None):
 
 
 # ----------------------------------------------------------------------
-# (6) batch load and save to/from arrays and rasters
-def array2raster(a, folder, fname, LL_corner, cellsize):
-    """It is easier if you have a raster to derive the values from.
+# (6) Dictionary - array section
+# dict_arrays, iterable_dict, struct_dict
+def dict_arrays(d):
+    """Dictionary to arrays
 
-    >>> # Get one of the original rasters since they will have the same
-    >>> # extent and cell size needed to produce output
-    >>> r01 = rasters[1]
-    >>> rast = arcpy.Raster(r01)
-    >>> lower_left = rast.extent.lowerLeft
-    >>> # this is a Point object... ie LL = arcpy.Point(10, 10)
-    >>> cell_size = rast.meanCellHeight  # --- we will use this for x and y
-    >>> f = r'c:/temp/result.tif'  # --- don't forget the extention
+    Parameters:
+    -----------
+    d : dictionary
+        The dictionary to convert to arrays
 
-    Requires:
-    ---------
-
-    `arcpy` and `os` if not previously imported
-    """
-    if 'arcpy' not in list(locals().keys()):
-        import arcpy
-    if not os.path.exists(folder):
-        return None
-    r = arcpy.NumPyArrayToRaster(a, LL_corner, cellsize, cellsize)
-    f = os.path.join(folder, fname)
-    r.save(f)
-    print("Array saved to...{}".format(f))
-
-
-# ----------------------------------------------------------------------
-# (7) batch load and save to/from arrays and rasters
-def rasters2nparray(folder=None, to3D=False):
-    """Batch the RasterToNumPyArray arcpy function to produce 3D or a list
-    of 2D arrays
-
-    NOTE:
-    ----
-        Edit the code... far simpler than accounting for everything.
-        There is a reasonable expectation that rasters exist in the folder.
-
-    Requires:
+    Returns:
     --------
-    modules :
-        os, arcpy if not already loaded
-    folder : folder
-        A folder on disk... a real one
-    to3D : boolean
-        If False, a list of arrays, if True a 3D array
+    A list, which can be converted to an array if needed.  It will probably
+    be an `object` array if the array types are mixed.
+
+    >>> d =  {'A': 1, 'B': [1, 2], 'C': (3.0, 4), 'D': (5.0, 6.0),
+              'E': ['a', 'bb'], 'F': ['ccc', 7, 8.0], 'G': [[1, 2], [3, 4]]}
+    >>> arr = np.asarray(dict_arrays(d))
+    >>> arr
+    array([array(1), array([1, 2]), array([3., 4.]), array([5., 6.]),
+           array(['a', 'bb'], dtype='<U2'),
+           array(['ccc', 7, 8.0], dtype=object),
+           array([[1, 2], [3, 4]], dtype=object)], dtype=object)
     """
-    if 'arcpy' not in list(locals().keys()):
-        import arcpy
-    arrs = []
-    if folder is None:
-        return None
-    if not os.path.exists(folder):
-        return None
-    arcpy.env.workspace = folder
-    rasters = arcpy.ListRasters("*", "TIF")
-    for raster in rasters:
-        arrs.append(arcpy.RasterToNumPyArray(raster))
-    if to3D:
-        return np.array(arrs)
+#    def dtstr(v):
+    keys = d.keys()
+    dts = []
+    vals = []
+    for k in keys:
+        v = d[k]
+        if isinstance(v, int):
+            dts.append('<i4')
+        elif isinstance(v, float):
+            dts.append('<f8')
+        if isinstance(v, (list, tuple, np.ndarray)):
+            if all(isinstance(x, (int, float)) for x in v):
+                dts.append(np.array(v).dtype.str)
+            elif all(isinstance(x, (str)) for x in v):
+                m = len(max(v, key=len))
+                dts.append('<U' + str(m))
+            else:
+                dts.append('O')
+        vals.append(v)
+    arrs = [np.array(i[0], dtype=i[1]) for i in list(zip(vals, dts))]
+    return arrs
+
+
+def iterable_dict(a, use_numbers=True):
+    """Iterable (list, tuple, np.ndarray) to dictionary
+
+    Parameters:
+    -----------
+    a : iterable
+        The iterable to convert to a dictionary.  Normally useful if it is a
+        list of lists or np.ndarray
+    use_numbers : boolean
+        True, the dictionary keys are assigned 0...n.  False, letters are
+        sliced from the lett_lst below
+
+    Returns:
+    --------
+    A dictionary.
+
+    >>> # see `arr` in `dict_arrays`
+    >>> iterable_dict(arr, use_numbers=False)
+    >>> {'A': array(1), 'B': array([1, 2]), 'C': array([3., 4.]),
+         'D': array([5., 6.]), 'E': array(['a', 'bb'], dtype='<U2'),
+         'F': array(['ccc', 7, 8.0], dtype=object),
+         'G': array([[1, 2], [3, 4]], dtype=object)}
+
+    Simpler cases
+
+    >>> z = 'abcde'
+    >>> iterable_dict(z)
+    {0: 'a', 1: 'b', 2: 'c', 3: 'd', 4: 'e'}
+    >>> iterable_dict(z, False)
+    {'A': 'a', 'B': 'b', 'C': 'c', 'D': 'd', 'E': 'e'}
+    >>> iterable_dict([1,'a', 2], False)
+    {'A': 1, 'B': 'a', 'C': 2}
+
+    """
+    if use_numbers:
+        d = {i: a[i] for i, e in enumerate(a)}
     else:
-        return arrs
+        lett_lst = list('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz')
+        d = {lett_lst[i]: a[i] for i, e in enumerate(a)}
+    return d
 
 
-def _demo_a_io():
+def dict_struct(d):
+    """Dictionary to simple tructured/recarray
+    """
+    if not isinstance(d, dict):
+        return d
+    lens = [len(i) for i in d.values()]
+    if max(lens) != min(lens):
+        return d
+    else:
+        names = [k for k in d.keys()]
+        data = list(d.values())
+        dt_str = [i.dtype.str for i in data]
+        dt = list(zip(names, dt_str))
+        N = lens[0]
+        n = len(dt_str)
+        arr = np.zeros((N,), dtype=dt)
+        for i in range(n):
+            arr[names[i]] = data[i]
+        return arr
+
+
+def struct_dict(a):
+    """Structured/recarray to dictionary
+    """
+    if not isinstance(a, np.ndarray):
+        return a
+    if a.dtype.names is None:
+        return a
+    else:
+        names = a.dtype.names
+        return {i: a[i].tolist() for i in names}
+
+
+def _demo():
     """
     : -
     """
-    _npy_file = "/Data/sample_20.npy"  # change to one in the Data folder
-    _npy_file = "{}".format(script.replace("a_io.py", _npy_file))
-    return _npy_file
+    _npy = "/Data/sample_10K.npy"  # change to one in the Data folder
+
+    _npy = "{}".format(script.replace("a_io.py", _npy))
+    return _npy
 
 
 # ----------------------------------------------------------------------
@@ -218,4 +275,4 @@ if __name__ == "__main__":
     : - run the _demo
     """
 #    print("Script... {}".format(script))
-#    fname = _demo_a_io()
+#    fname = _demo()
