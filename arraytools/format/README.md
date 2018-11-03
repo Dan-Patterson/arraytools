@@ -15,12 +15,14 @@ np.set_printoptions and np.printoptions
 
 https://github.com/numpy/numpy/blob/master/numpy/core/arrayprint.py.
 
->>> set_printoptions(precision=3, threshold=100, edgeitems=3, linewidth=80,
-                     suppress=True, nanstr='nan', infstr='inf',
-                     formatter=None, sign=None, floatmode=None, **kwarg)
->>> with np.printoptions(precision=deci, linewidth=ln_wdth):
-        print(a)  # the original options will be reset after printing
-Purpose:
+set_printoptions(precision=3, threshold=100, edgeitems=3, linewidth=80,
+                 suppress=True, nanstr='nan', infstr='inf',
+                 formatter=None, sign=None, floatmode=None, `**kwarg)
+
+with np.printoptions(precision=deci, linewidth=ln_wdth):
+    print(a)  # the original options will be reset after printing
+
+**Purpose**:
 
 The prn2d function is used to provide a side-by-side view of 2, 3, and 4D arrays. Specifically, 3D and 4D arrays are useful and for testing purposes, seeing the dimensions in a different view can facilitate understanding. For the best effect, the array shapes should be carefully considered. Some guidelines follow. The middle 'r' part of the shape is not as affected as the combination of the 'd' and 'c' parts. The array is trimmed beyond the 'wdth' parameter in prn2d.
 
