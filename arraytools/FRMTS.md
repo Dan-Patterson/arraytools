@@ -38,7 +38,7 @@ shape: (2, 3, 4, 5)
 ```
 
 -----
-**frmt_ demo** format multidimensional arrays partly by rows
+**prn2d** format multidimensional arrays partly by rows
 
 
 ```
@@ -59,7 +59,7 @@ frmt_demo ......
 ```
 
 -----
-**frmt_ma**  formatting of masked arrays
+**prn_ma**  formatting of masked arrays
 ```
 Sample run of frmt_ma...
 :Masked array... ndim: 2
@@ -93,7 +93,7 @@ Array reshaped to (2, 4, 5)
 ```
 
 -----
-**frmt_rec** formatting recarrays and structured arrays
+**prn_rec** formatting recarrays and structured arrays
 
 Sample data for 20 records.
 
@@ -133,7 +133,7 @@ record/structured array, with and without field names.
 ```
 
 -----
-**form_** a variant of frmt_
+**prn_** a variant of frmt_
 
 ```
 form_ demo...... ndim: 4  shape: (2, 3, 4, 5)
