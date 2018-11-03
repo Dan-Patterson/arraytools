@@ -1,53 +1,66 @@
 # -*- coding: UTF-8 -*-
 """
-frmts.py  formatting arrays
-===========================
+frmts
+=====
 
 Script:   frmts.py
 
-Author:   Dan.Patterson@carleton.ca
+Author:   Dan_Patterson@carleton.ca
 
-Modified: 2018-03-28
+Modified: 2018-11-02
+
+References:
+----------
+`np.set_printoptions` and `np.printoptions`
+
+`<https://github.com/numpy/numpy/blob/master/numpy/core/arrayprint.py>`_.
+
+>>> set_printoptions(precision=3, threshold=100, edgeitems=3, linewidth=80,
+                     suppress=True, nanstr='nan', infstr='inf',
+                     formatter=None, sign=None, floatmode=None, **kwarg)
+
+>>> with np.printoptions(precision=deci, linewidth=ln_wdth):
+        print(a)  # the original options will be reset after printing
 
 Purpose:
+--------
 
-  The frmt_ function is used to provide a side-by-side view of 2, 3, and 4D
-  arrays.  Specifically, 3D and 4D arrays are useful and for testing
-  purposes, seeing the dimensions in a different view can facilitate
-  understanding.  For the best effect, the array shapes should be carefully
-  considered. Some guidelines follow.  The middle 'r' part of the shape is
-  not as affected as the combination of the 'd' and 'c' parts.  The array is
-  trimmed beyond the 'wdth' parameter in frmt_.
+The prn2d function is used to provide a side-by-side view of 2, 3, and 4D
+arrays.  Specifically, 3D and 4D arrays are useful and for testing
+purposes, seeing the dimensions in a different view can facilitate
+understanding.  For the best effect, the array shapes should be carefully
+considered. Some guidelines follow.  The middle 'r' part of the shape is
+not as affected as the combination of the 'd' and 'c' parts.  The array is
+trimmed beyond the 'wdth' parameter in prn2d.
 
-  Sample the 3D array shape so that the format (d, r, c)
-  is within the 20-21 range for d*c ... for example::
+Sample the 3D array shape so that the format (d, r, c)
+is within the 20-21 range for d*c ... for example::
         integers          floats
         2, r, 10  = 20    2, r, 8 = 16
         3, r,  7  = 21    3, 4, 5 = 15
         4, r,  5  = 20    4, r, 4 = 16
         5, r,  4  = 20    5, r, 3 = 15
 
+>>> prn2d(a)  example for a =  np.arange(3*4*5).reshape(3, 4, 5)
+---------------------------------------------------
+Array...
+-shape (3, 4, 5), ndim 3
+  .  0  1  2  3  4    20 21 22 23 24    40 41 42 43 44
+  .  5  6  7  8  9    25 26 27 28 29    45 46 47 48 49
+  . 10 11 12 13 14    30 31 32 33 34    50 51 52 53 54
+  . 15 16 17 18 19    35 36 37 38 39    55 56 57 58 59
+  .   sub (0 )        : sub (1 )        : sub (2 )
 
-  frmt_(a)  example for a =  np.arange(3*4*5).reshape(3, 4, 5)::
-  ---------------------------------------------------
-  :Array...
-  :-shape (3, 4, 5), ndim 3
-  :  .  0  1  2  3  4    20 21 22 23 24    40 41 42 43 44
-  :  .  5  6  7  8  9    25 26 27 28 29    45 46 47 48 49
-  :  . 10 11 12 13 14    30 31 32 33 34    50 51 52 53 54
-  :  . 15 16 17 18 19    35 36 37 38 39    55 56 57 58 59
-  :  .   sub (0 )        : sub (1 )        : sub (2 )
+The middle part of the shape should also be reasonable should you want
+to print the results:
 
-  The middle part of the shape should also be reasonable should you want
-  to print the results:
+How it works
 
-  How it works
+>>> a[...,0,:].flatten()
+array([ 0,  1,  2,  3,  4, 20, 21, 22, 23, 24, 40, 41, 42, 43, 44])
 
-  >>> a[...,0,:].flatten()
-  array([ 0,  1,  2,  3,  4, 20, 21, 22, 23, 24, 40, 41, 42, 43, 44])
-
-  >>> a[...,0,(0, 1, -2, -1)].flatten()
-  array([ 0,  1,  3,  3, 20, 21, 23, 23, 40, 41, 43, 43])
+>>> a[...,0,(0, 1, -2, -1)].flatten()
+array([ 0,  1,  3,  3, 20, 21, 23, 23, 40, 41, 43, 43])
 
 
 Functions:
@@ -58,8 +71,8 @@ help(<function name>) for help
 
     public  -  private...
     deline  -  _pre
-    frmt_   - _check, _concat, _row_format
-    frmt_ma - _fix
+    prn2d   - _check, _concat, _row_format
+    prn_ma - _fix
     in_by   - _pre_num
 
  ... see __all__ for a complete listing
@@ -106,7 +119,7 @@ indent objects, added automatic support for arrays and optional line numbers
      05..  [16 17 18 19]
      06..  [20 21 22 23]]]
 
-(1d)redent(lines, spaces=4)
+(1d)  redent(lines, spaces=4)
 ::
      a = np.arange(3*5).reshape(3,5)
      >>> print(redent(a))
@@ -114,7 +127,7 @@ indent objects, added automatic support for arrays and optional line numbers
      |     [ 5  6  7  8  9]
      |     [10 11 12 13 14]]
 
-(2) frmt_(a)
+(2) prn2d(a)
 ::
    a = np.arange(2*3*3).reshape(2,3,3)
    array([[[ 0,  1,  2],
@@ -124,17 +137,15 @@ indent objects, added automatic support for arrays and optional line numbers
           [[ 9, 10, 11],
            [12, 13, 14],
            [15, 16, 17]]])
-   frmt_(a)
+   prn2d(a)
    Array... shape (2, 3, 3), ndim 3, not masked
     0,  1,  2     9, 10, 11
     3,  4,  5    12, 13, 14
     6,  7,  8    15, 16, 17
    sub (0)       sub (1)
 
-(3) frmt_ma
-
+(3) prn_ma
 ::
-
     :--------------------
     :Masked array........
     :  ndim: 2 size: 20
@@ -147,8 +158,27 @@ indent objects, added automatic support for arrays and optional line numbers
      12 13 14 15
      16 17 18  -
 
+(4) pd and quick_prn
+    see code
 
-(4) frmt_rec(in_array, deci=2, use_names=False, max_rows=-1)
+(5) prn_struct and prn_rec : main functions
+        _c_kind_width_, _col_format,subsample
+
+prn_struct(b, edges=3, max_lines=10, wdth=100, deci=2)
+::
+    OBJECTID   f0   County  Town  Facility  Time
+    ----------------------------------------------
+             1    0 B       A_    Hall          26
+             2    1 C       C_    Hall          60
+             3    2 D       A_    Hall          42
+           ...  ...     ...   ...       ...
+            18   17 A       C_    Hall          59
+            19   18 C       C_    Hosp          37
+            20   19 B       B_    Hall          52
+
+    Array... shape: (20,)
+
+prn_rec(a, edges=5, max_rows=25, deci=2)
 ::
     Format ... C:/Git_Dan/arraytools/Data/sample_20.npy
     record/structured array, with and without field names.
@@ -158,28 +188,30 @@ indent objects, added automatic support for arrays and optional line numbers
     001         2    1       C    C_      Hall    60
     002         3    2       D    A_      Hall    42
 
-    --n-- C00  C01  C02  C03  C04   C05
-    -----------------------------------
-    000    1    0    B   A_ Hall    26
-    001    2    1    C   C_ Hall    60
-    002    3    2    D   A_ Hall    42
 
-
-(4a) make_row_format
+(6) make_row_format
 ::
     make_row_format(dim=2, cols=3, a_kind='f', deci=1,
                     a_max=10, a_min=-10, prn=False)
     '{:6.1f}{:6.1f}{:6.1f}  {:6.1f}{:6.1f}{:6.1f}'
 
-(5) form_
+prn_
 ::
-  form_(a, deci=2, wdth=100, title="Array", prefix=". . ", prn=True)
+  prn_(a, deci=2, wdth=100, title="Array", prefix=". . ", prn=True)
 
   Array... ndim: 3  shape: (2, 3, 3)
   . .   0  1  2    9 10 11
   . .   3  4  5   12 13 14
   . .   6  7  8   15 16 17
 
+(7)  prn_3d4d(a, deci=2, edgeitems=3, wdth=100, prn=True)
+::
+    prn_3d4d(z)
+    Array... ndim 4  shape(1, 2, 3, 4)
+    |  0  1  2  3   12 13 14 15 |
+    |  4  5  6  7   16 17 18 19 |
+    |  8  9 10 11   20 21 22 23 |
+    |=> (0 2 3 4)
 
 Notes:
 =====
@@ -209,18 +241,15 @@ Notes:
 >>>  deci = 1
 >>>  a_kind = a.dtype.kind
 >>>  f = _format_row_test(d, r, c, a_kind, deci, a_max, a_min)
-
-
 ::
+Row format given
+d 3, r 2, c 3
+kind i decimals 1
+{:3.0f}{:3.0f}{:3.0f}  {:3.0f}{:3.0f}{:3.0f}  {:3.0f}{:3.0f}{:3.0f}
+0123456789012345678901234567890123456789012345678901234567890123456789
+0         1         2         3         4         5         6
 
-    Row format given
-    d 3, r 2, c 3
-    kind i decimals 1
-    {:3.0f}{:3.0f}{:3.0f}  {:3.0f}{:3.0f}{:3.0f}  {:3.0f}{:3.0f}{:3.0f}
-    0123456789012345678901234567890123456789012345678901234567890123456789
-    0         1         2         3         4         5         6
-
->>>  r = "\n".join([f.format(*i) for i in aa])
+>>>  r = `\\n`.join([f.format(*i) for i in aa])
 >>>  print(r)
   0  1  2    6  7  8   12 13 14
   3  4  5    9 10 11   15 16 17
@@ -235,7 +264,7 @@ Notes:
   3.00  4.00  5.00    9.00 10.00 11.00   15.00 16.00 17.00
 
 
-** all at once **
+**all at once**
 
 >>> a
 array([[[ 0,  1,  2,  3],
@@ -265,8 +294,8 @@ Masked array info:
       'S': b'N/A', 'u': 999999,'V': '???','U': sixu('N/A')}
 
 
-References:
------------
+Others:
+------
 
 >>> b.transpose(1, 2, 0)[:,:,::-1]
 >>> # ** tip *** reorder from after transpose or even a swapaxes
@@ -295,18 +324,28 @@ df_opt = ", ".join(["{}={}".format(i, pr_opt[i]) for i in pr_opt])
 
 script = sys.argv[0]
 
-__all__ = ['col_hdr', 'deline', 'frmt_', 'frmt_ma', 'frmt_rec', 'form_',
-           'in_by', 'make_row_format', 'redent', '_demo_frmt', '_demo_rec',
-           '_demo_ma']
+__all__ = ['col_hdr',
+           'deline',
+           'in_by',
+           'redent',
+           '_chunks',
+           'prn2d',
+           'prn_ma',
+           'prn_rec', 'pd_',
+           'prn_struct',
+           'make_row_format',
+           'prn_',
+           ]
 
 
 # ----------------------------------------------------------------------
 # (1) Short, or reused code section
 #
 # (1a) col_hdr ... code section .....
-def col_hdr():
-    """Print numbers from 1 to 70 to show column positions"""
-    args = [(('{:<10}')*7).format(*'0123456789'), '0123456789'*7, '-'*70]
+def col_hdr(num=8):
+    """Print numbers from 1 to 10*num to show column positions"""
+    args = [(('{:<10}')*num).format(*'0123456789'),
+            '0123456789'*num, '-'*10*num]
     s = "\n{}\n{}\n{}".format(args[0][1:], args[1][1:], args[2])  # *args)
     print(s)
 
@@ -363,7 +402,7 @@ def deline(a, header="", prefix="  .", prn=True):
 
 # ---------------------------------------------------------------------------
 # (1c) in_by .... code section
-def in_by(obj, hdr="", nums=False, prefix=" .", prn=True):
+def in_by(obj, hdr="", nums=False, prefix="   .", prn=True):
     """A `textwrap.indent` variant for python 2.7 or a substitute for
     any version of python.  The function stands for `indent by`.
 
@@ -387,11 +426,6 @@ def in_by(obj, hdr="", nums=False, prefix=" .", prn=True):
     -----
         Header and line numbers options added.
     """
-    if hdr != "":
-        hdr = "\n{}\n".format(hdr)
-    if isinstance(obj, (list, tuple, np.ndarray)):
-        obj = str(obj)
-
     def _pre_num():
         c = 0
         for line in obj.splitlines(True):
@@ -401,6 +435,11 @@ def in_by(obj, hdr="", nums=False, prefix=" .", prn=True):
                 frmt = "{}{}".format(prefix, line)
             yield frmt
             c += 1
+    #
+    if hdr != "":
+        hdr = "\n{}\n".format(hdr)
+    if isinstance(obj, (list, tuple, np.ndarray)):
+        obj = str(obj)
     out = hdr + "".join(_pre_num())
     if prn:
         print(out)
@@ -436,13 +475,23 @@ def _chunks(s, n):
         yield s[start:start+n]
 
 
+def head_tail(size=10, head=3, tail=None):
+    """slice `head` and `tail` elements of a 1D array of a given `size`.
+    """
+    if head is None:  head = 0
+    if tail is None:  tail = head
+    head, tail = [int(abs(i)) for i in [head, tail]]
+    r = np.arange(size).tolist()
+    return r[:head] + r[-tail:]
+
+
 # ----------------------------------------------------------------------
-# (2) frmt_ .... code section
-def frmt_(a, deci=2, wdth=100, title="Array", prefix="  .", prn=True):
+# (2) prn2d .... code section
+def prn2d(a, deci=2, wdth=100, title="Array", prefix="  .", prn=True):
     """Format number arrays by row, and print
 
-    Requires:
-    --------
+    Parameters:
+    -----------
     `a` : array
         An array of int or float dtypes, 1, 2, 3 and 4D arrays tested.
     `deci` - int
@@ -486,7 +535,7 @@ def frmt_(a, deci=2, wdth=100, title="Array", prefix="  .", prn=True):
             w_, m_ = [':{}.{}f', '{:0.{}f}']
         else:
             w_, m_ = [':{}.0f', '{:0.0f}']
-        m = max(len(m_.format(a_max, deci)), len(m_.format(a_min, deci))) + 1
+        m = max(len(m_.format(a_max, deci)), len(m_.format(a_min, deci))) + 2
         w_fmt = w_.format(m, deci)
         r_fmt = (('{' + w_fmt + '}') * c + '  ') * d
         return r_fmt
@@ -510,16 +559,15 @@ def frmt_(a, deci=2, wdth=100, title="Array", prefix="  .", prn=True):
     txt = ""
     a = np.asanyarray(a)
     # ---- run _check ----
-    a_shp, a_dim, a_kind, a_min, a_max = _check(a)
-    if a_dim < 3:
-        if a_dim == 2:
+    if a.ndim < 3:
+        if a.ndim == 2:
             a = a.reshape((1,) + a.shape)
-            a_dim = a.ndim
-            a_shp = a.shape
         else:
             return "Array is not >= 2D"
+    a_shp, a_dim, a_kind, a_min, a_max = _check(a)
     fv = ""
     if np.ma.isMaskedArray(a):
+        a.set_fill_value(np.nan)
         fv = ", masked array, fill value {}".format(a.get_fill_value())
         a = a.data
     #
@@ -546,18 +594,19 @@ def frmt_(a, deci=2, wdth=100, title="Array", prefix="  .", prn=True):
     else:
         txt = "Only integer and float arrays with ndim >= 2 supported"
     if prn:
-        print(txt)
+        with np.printoptions(precision=deci, linewidth=ln_wdth):
+            print(txt)
     else:
         return txt
 
 
 # ----------------------------------------------------------------------
-# (3) frmt_ma .... code section
-def frmt_ma(a, prn=True, prefix="  ."):
+# (3) prn_ma .... code section
+def prn_ma(a, prn=True, prefix="  ."):
     """Format a masked array to preserve columns widths and style.
 
-    Requires
-    --------
+    Parameters
+    ----------
     `a` : masked array
         A masked array
     `prn` : Boolean
@@ -567,16 +616,16 @@ def frmt_ma(a, prn=True, prefix="  ."):
 
     Returns
     -------
-        Returns a print version of a masked array formatted with masked
-        values and appropriate spacing.
-        b = a.reshape(2,4,5) for 3d
+    Returns a print version of a masked array formatted with masked
+    values and appropriate spacing.
+    b = a.reshape(2,4,5) for 3d
 
     Notes
     -----
-        Get a string representation of the array.  Determine the maximum value
-        length of a string of the values in the array  and format each column
-        using that value.  Pad the result with a leader or replace the prefix
-        with ''
+    Get a string representation of the array.  Determine the maximum value
+    length of a string of the values in the array  and format each column
+    using that value.  Pad the result with a leader or replace the prefix
+    with ''
     """
     def _fix(v, tmp, prefix):
         """ sub array adjust"""
@@ -612,111 +661,226 @@ def frmt_ma(a, prn=True, prefix="  ."):
     else:
         return v
 
+# ----------------------------------------------------------------------
+# (4) pd and quick_prn
+def pd_(a, deci=2, use_names=True, prn=True):
+    """see help for `prn_rec`..."""
+    ret = prn_rec(a, deci=deci, use_names=use_names, prn=prn)
+    return ret
+
+def quick_prn(a, edges=3, max_lines=25, wdth=100, decimals=2):
+    """Format a structured array by setting the width so it hopefully wraps.
+    """
+    wdth = min(len(str(a[0])), wdth)
+    with np.printoptions(edgeitems=edges, threshold=max_lines, linewidth=wdth,
+                         precision=decimals, suppress=True, nanstr='-n-'):
+        print("\nArray fields/values...:\n{}\n{}".format(a.dtype.names, a))
 
 # ----------------------------------------------------------------------
-# (4) frmt_rec .... code section
-#  frmt_rec requires _col_format
-def _col_format(a, c_name="c00", deci=0):
-    """Determine column format given a desired number of decimal places.
-    Used by frmt_struct.
+# (5) prn_rec and prn_struct .... code section
+#  both requires _c_kind_width, _col_format and subsample
+def _c_kind_width_(c, deci=0):
+    """Column properties for recarray/structured array types.
+    This is normally called when examining their properties.
 
-    `a` : column
+    You can check a whole array, `a`, using:
+
+    >>> [_c_kind_width_(col) for col in [a[name] for name in a.dtype.names]]
+    [('i', 5), ('U', 25), ('i', 5), ('i', 5)]
+    """
+    c_kind = c.dtype.kind
+    if (c_kind == 'f') and (deci != 0):  # float with decimals
+        c_max, c_min = np.round([c.min(), c.max()], deci)
+        c_width = len(max(str(c_min), str(c_max), key=len))
+    elif c_kind in ('i', 'f', 'u'):      # int, unsigned int, float wih no decimals
+        c_width = len(max(str(c.min()), str(c.max()), key=len))
+    elif c_kind in ('U', 'S', 's'):
+        c_width = len(max(c, key=len))
+    else:
+        c_width = len(str(c))
+    return c_kind, c_width
+
+
+def _col_format(c, c_name="c00", deci=0):
+    """Determine column format given a desired number of decimal places.
+    Used by prn_rec.
+
+    `c` : column
         A column in an array.
     `c_name` : text
         column name
     `deci` : int
         Desired number of decimal points if the data are numeric
 
+    Requires:
+    ---------
+    _c_kind_width_ : function
+        This function does the determination of column kind and width
+
     Notes:
     -----
-        The field is examined to determine whether it is a simple integer, a
-        float type or a list, array or string.  The maximum width is determined
-        based on this type.
+    To do all field `names`
 
-        Checks were also added for (N,) shaped structured arrays being
-        reformatted to (N, 1) shape which sometimes occurs to facilitate array
-        viewing.  A kludge at best, but it works for now.
+    >>> [_col_format(j) for j in [a[i] for i in names]]
+    [(':> 6.0f', 5), ('!s:<26', 25), (':> 6.0f', 5),
+     (':> 6.0f', 5), (':> 4.0f', 2)]
+    >>> # c_format, c_width
+
+    The field is examined to determine whether it is a simple integer, a
+    float type or a list, array or string.  The maximum width is determined
+    based on this type.
+
+    Checks were also added for (N,) shaped structured arrays being
+    reformatted to (N, 1) shape which sometimes occurs to facilitate array
+    viewing.  A kludge at best, but it works for now.
     """
-    a_kind = a.dtype.kind
-    if a_kind in ('i', 'u'):  # ---- integer type
-        w_, m_ = [':> {}.0f', '{:> 0.0f}']
-        col_wdth = len(m_.format(a.max())) + 1
-        col_wdth = max(len(c_name), col_wdth) + 1  # + deci
-        c_fmt = w_.format(col_wdth, 0)
-    elif a_kind == 'f' and np.isscalar(a[0]):  # ---- float type with rounding
-        w_, m_ = [':> {}.{}f', '{:> 0.{}f}']
-        a_max, a_min = np.round(np.sort(a[[0, -1]]), deci)
-        col_wdth = max(len(m_.format(a_max, deci)),
-                       len(m_.format(a_min, deci))) + 1
-        col_wdth = max(len(c_name), col_wdth) + 1
-        c_fmt = w_.format(col_wdth, deci)
-    else:  # ---- lists, arrays, strings. Check for (N,) vs (N,1)
-        if a.ndim == 1:  # ---- check for (N, 1) format of structured array
-            a = a[0]
-        col_wdth = max([len(str(i)) for i in a])
-        col_wdth = max(len(c_name), col_wdth) + 1  # + deci
-        c_fmt = "!s:>" + "{}".format(col_wdth)
-    return c_fmt, col_wdth
+    c_kind, c_width = _c_kind_width_(c, deci=deci)
+    if c_kind in ('i', 'u'):  # ---- integer type
+        w_ = ':> {}.0f'
+        c_width = max(len(c_name), c_width) + deci
+        c_format = w_.format(c_width, 0)
+    elif c_kind == 'f' and np.isscalar(c[0]):  # ---- float type with rounding
+        w_ = ':> {}.{}f'
+        c_width = max(len(c_name), c_width) + deci
+        c_format = w_.format(c_width, deci)
+    else:
+        if c.ndim == 2:  # ---- check for (N, 1) format of structured array
+            c = c[:, 0]
+        c_width = len(max(c, key=len))  # np.max([len(i) for i in c])
+        c_width = max(len(c_name), c_width) + 1
+        c_format = "!s:<{}".format(c_width)
+    return c_format, c_width
 
 
-def frmt_rec(a, deci=2, use_names=True, prn=True):
+def subsample(a, edge=3):
+    """Split an array based on edges.  Used by `prn_struct` and `prn_rec`.
+
+    Notes:
+    ------
+    This functions reconstructs a structured array from the left and right
+    `edge` columns from the input array `a`.  A middle text column is inserted
+    to facilitate fancy printing
+    """
+    dtn = list(a.dtype.names)
+    top, bott = a[:edge], a[-edge:]
+    a0 = np.hstack((top, bott))
+    left, right = a0[dtn[:edge]], a0[dtn[-edge:]]
+    dt_new = list(left.dtype.descr) + [('...', '3U')] + list(right.dtype.descr)
+    z = np.zeros((left.shape[0],), dtype= dt_new)
+    for i in left.dtype.names:
+        z[i] = left[i]
+    z['...'] = ['...'] * edge*2
+    for i in right.dtype.names:
+        z[i] = right[i]
+    del left, right, a0
+    return z
+
+
+def prn_struct(a, edges=5, max_lines=25, wdth=100, deci=2):
+    """Format a structured or recarray array.  See prn_rec for more details.
+    This variant adds row and column slicing with the `wdth` and
+    `max_lines` parameters.  Requires `subsample` and `_col_format`.
+    """
+    info = "Array... shape: {}".format(a.shape)
+    dtn = list(a.dtype.names)
+    z = np.array([_col_format(j[0], c_name=j[1], deci=deci)
+                  for j in [[a[i], i] for i in dtn]])
+    tot_width = sum([int(i) for i in z[:, 1]])
+    if tot_width > wdth:  # ---- split wide arrays
+        a = subsample(a, edges)
+        dtn = list(a.dtype.names)
+        z = np.array([_col_format(j[0], c_name=j[1], deci=deci)
+                     for j in [[a[i], i] for i in dtn]])
+        tot_width = wdth
+    mm = [int(i) for i in z[:, 1]]
+    header = " ".join(['{'+"!s:<{}".format(i)+'}' for i in mm])
+    h = header.format(*dtn)
+    print("\n{}\n{}".format(h, "-"*len(h)))
+    dtf = " ".join(['{' + i + '}' for i in z[:, 0]])
+    for i in a[:edges]:
+        print(dtf.format(*i))
+    print(header.format(*['...']*(edges*2 + 1)))
+    for i in a[-edges:]:
+        print(dtf.format(*i))
+    print("\n{}".format(info))
+    # ---- done ----
+
+#  *** put this in struct and rec ***
+# rowft = "".join(['{' +_col_format(j, deci=deci)[0] +'} '
+#                  for j in [a[i] for i in a.dtype.names]])
+# print(rowft.format(*a[0]))
+
+def prn_rec(a, edges=5, max_rows=25, deci=2):
     """Format a structured array with a mixed dtype.
+
+    NOTE : Can be called as `pd_(a, ... )` to emulate pandas dataframes
+        You should limit large arrays to a slice ie. a[:50]
 
     Requires:
     -------
     `a` : array
         A structured/recarray
+    `edges` : integer
+        Rows to keep from the start and end if max_rows is exceeded.
     `deci` : int
         To facilitate printing, this value is the number of decimal
         points to use for all floating point fields.
+    `max_rows : integer
+        The number of rows to print before truncating to the `edges` option.
+        Change this to a larger value should you need to print whole arrays.
+    `subsample` : function
+        Requires this fucntion for sampling an array that exceeds max_rows.
+
     Notes:
     -----
-        `_col_format` : does the actual work of obtaining a representation of
-        the column format.
+    `_col_format` : does the actual work of obtaining a representation of
+    the column format.
 
-        It is not really possible to deconstruct the exact number of decimals
-        to use for float values, so a decision had to be made to simplify.
+    It is not really possible to deconstruct the exact number of decimals
+    to use for float values, so a decision had to be made to simplify.
     """
-    dt_names = a.dtype.names
-    N = len(dt_names)
-    c_names = [["C{:02.0f}".format(i) for i in range(N)], dt_names][use_names]
+    if a.dtype.names is None:
+        msg = "Requires a structured/recarray. You provided... {}"
+        print(msg.format(type(a)))
+        return None
+    if a.shape[0] > max_rows:
+        a = subsample(a, edge=edges)
+    names = a.dtype.names
+    N = len(names)
     # ---- get the column formats from ... _col_format ----
     dts = []
     wdths = []
-    pair = list(zip(dt_names, c_names))
-    for i in range(len(pair)):
-        fld, nme = pair[i]
-        c_fmt, col_wdth = _col_format(a[fld], c_name=nme, deci=deci)
+    for name in names:
+        c_fmt, col_wdth = _col_format(a[name], c_name=name, deci=deci)
         dts.append(c_fmt)
         wdths.append(col_wdth)
     row_frmt = " ".join([('{' + i + '}') for i in dts])
-    hdr = ["!s:>" + "{}".format(wdths[i]) for i in range(N)]
+    hdr = ["!s:<" + "{}".format(wdths[i]) for i in range(N)]
     hdr2 = " ".join(["{" + hdr[i] + "}" for i in range(N)])
-    header = "--n--" + hdr2.format(*c_names)
+    header = " id  " + hdr2.format(*names)
     header = "\n{}\n{}".format(header, "-"*len(header))
     txt = [header]
     # ---- check for structured arrays reshaped to (N, 1) instead of (N,) ----
     len_shp = len(a.shape)
     idx = 0
-    for i in range(a.shape[0]):
+    N = min(a.shape[0], max_rows)
+    for i in range(N):
         if len_shp == 1:  # ---- conventional (N,) shaped array
-            row = " {:03.0f} ".format(idx) + row_frmt.format(*a[i])
+            row = " {:>03.0f} ".format(idx) + row_frmt.format(*a[i])
         else:             # ---- reformatted to (N, 1)
-            row = " {:03.0f} ".format(idx) + row_frmt.format(*a[i][0])
+            row = " {:>03.0f} ".format(idx) + row_frmt.format(*a[i][0])
         idx += 1
         txt.append(row)
     msg = "\n".join([i for i in txt])
-    if prn:
+    with np.printoptions(precision=deci):
         print(msg)
-    else:
-        return msg
-
+    return None
 
 # ----------------------------------------------------------------------
-# (5) form_ ... code section .....
-#  form_ requires make_row_format
-def make_row_format(dim=2, cols=3, a_kind='f', deci=1,
-                    a_max=10, a_min=-10, prnt=False):
+# (6) prn_ ... code section .....
+#  prn_ requires make_row_format
+def make_row_format(dim=3, cols=5, a_kind='f', deci=1,
+                    a_max=10, a_min=-10, wdth=100, prnt=False):
     """Format the row based on input parameters
 
     `dim` - int
@@ -732,18 +896,23 @@ def make_row_format(dim=2, cols=3, a_kind='f', deci=1,
     w_, m_ = [[':{}.0f', '{:0.0f}'], [':{}.{}f', '{:0.{}f}']][a_kind == 'f']
     m_fmt = max(len(m_.format(a_max, deci)), len(m_.format(a_min, deci))) + 1
     w_fmt = w_.format(m_fmt, deci)
-    row_frmt = ((('{' + w_fmt + '}')*cols + '  ')*dim).strip()
+    suffix = '  '
+    while m_fmt*cols*dim > wdth:
+        cols -= 1
+        suffix = '.. '
+    row_sub = (('{' + w_fmt + '}')*cols + suffix)
+    row_frmt = (row_sub*dim).strip()
     if prnt:
         frmt = "Row format: dim cols: ({}, {})  kind: {} decimals: {}\n\n{}"
         print(dedent(frmt).format(dim, cols, a_kind, deci, row_frmt))
         a = np.random.randint(a_min, a_max+1, dim*cols)
-        col_hdr()  # run col_hdr to produce the column headers
+        col_hdr(wdth//10)  # run col_hdr to produce the column headers
         print(row_frmt.format(*a))
     else:
         return row_frmt
 
 
-def form_(a, deci=2, wdth=100, title="Array", prefix=". . ", prn=True):
+def prn_(a, deci=2, wdth=100, title="Array", prefix=". . ", prn=True):
     """Alternate format to frmt_ function.
     Inputs are largely the same.
     """
@@ -773,7 +942,9 @@ def form_(a, deci=2, wdth=100, title="Array", prefix=". . ", prn=True):
                            a_kind=a.dtype.kind,
                            deci=deci,
                            a_max=a.max(),
-                           a_min=a.min(), prnt=False)
+                           a_min=a.min(),
+                           wdth=wdth,
+                           prnt=False)
     if a.ndim == 3:
         s0, s1, s2 = a.shape
         out += _piece(a, None, frmt, linewidth)  # ---- _piece ----
@@ -782,13 +953,99 @@ def form_(a, deci=2, wdth=100, title="Array", prefix=". . ", prn=True):
         for i in range(s0):
             out = out + "\n" + _piece(a[i], i, frmt, linewidth)  # ---- _piece
     if prn:
-        print(out)
+        with np.printoptions(precision=deci, linewidth=wdth):
+            print(out)
     else:
         return out
 
 
 # ----------------------------------------------------------------------
-# (6)  ---- demos ----
+# (7)  ---- form prn_3d4d ----
+def prn_3d4d(a, deci=2, edgeitems=3, wdth=100, prn=True):
+    """Another variant for formatting arrays geared towards 3d and 4d
+    numeric and text arrays.  For object, structured arrays, see prn_rec
+    in arraytools.frmts
+    """
+    def _row_format(d, r, c, k, deci, a_min, a_max):
+        """abbreviated row format, see frmts.py in arraytools
+        """
+        if k in ['f', 'i']:
+            w_, m_ = [[':{}.0f', '{:0.0f}'], [':{}.{}f', '{:0.{}f}']][k == 'f']
+        else:
+            w_, m_ = ['!s:>{}', '{}']
+            deci = 0
+        m = max(len(m_.format(a_max, deci)), len(m_.format(a_min, deci))) + 1
+        w_fmt = w_.format(m, deci)
+        r_fmt = (('{' + w_fmt + '}') * c + '') * 1  # d
+        return r_fmt
+    #
+    def head_tail(s, e):
+        """Keep head and tail of array row/column indices [:e], [-e:]
+        if s = 10 and e = 3, then
+        h_t => array([ 0,  1,  2, -1,  5,  6,  7]) where -1 is a marker
+        """
+        h_t = np.arange(s)
+        if s > e*2:
+            h_t = np.concatenate([h_t[:e], [-1], h_t[-e:]])
+        return h_t
+    # ---- main section
+    # bail?
+    if (a.ndim not in (3, 4)) or (a.dtype.kind not in ('i', 'u', 'f', 'U')):
+        msg = "Requires a 3D/4D numeric or text array. Kind in (i, f, U)))"
+        print(msg)
+        return msg
+    # (1) base information and reshape 3D to 4D array
+    if a.ndim == 3:
+        a = a.reshape((1,) + a.shape)
+    s4, s3, s2, s1 = a_shp = a.shape
+    # ---- start the format process ----
+    # (1) split the indices keeping the row, column edgeitems
+    e = edgeitems
+    s3_ = head_tail(s3, e)
+    s2_ = head_tail(s2, e)
+    # (2) assemble information for _row_format
+    d_, r_, c_ = a_shp[-3:]
+    if a.dtype.kind in ('U', 'S', 'b', 'O', 'V'):
+        n = int(a.dtype.str.lstrip('<^>|bOUSV')) #+ 1
+        a_min = a_max = int('1'*n)  # cheat to get a number len of string
+    elif a.dtype.kind in ('i', 'u', 'f'):
+         a_min = a.min()
+         a_max = a.max()
+    fm0 = _row_format(d_, r_, c_, a.dtype.kind, 2, a_min, a_max)  # d=1
+    split_0 = c_ > e*2  # boolean check
+    if split_0:  # e in place of c_
+        fm1 = _row_format(d_, r_, e, a.dtype.kind, 2, a_min, a_max)
+    # (3) process
+    t = "Array... ndim {}  shape{}".format(a.ndim, a.shape)
+    for k in range(s4):
+        for j in s2_:
+            row = []
+            for i in s3_:
+                r_ = a[k][i][j]
+                if split_0:
+                    sub = fm1.format(*r_[:e]) + " ..." + fm1.format(*r_[-e:])
+                else:
+                    sub = fm0.format(*r_)
+                if (j==-1):
+                    row.append("{!s:^{}}".format(" . .", len(sub)))
+                else:
+                    row.append(sub)
+            s = "  ".join(row)
+            if len(s) > wdth:
+                s = s[:wdth] + "..."
+            t += "\n|" + s + " |"
+        t += "\n|=> ({} {} {} {})\n".format(k, s3, s2, s1)
+    if prn:
+        with np.printoptions(precision=deci, edgeitems=edgeitems,
+                             linewidth=wdth):
+            print(t)
+        return None
+    else:
+        return t
+
+
+# ----------------------------------------------------------------------
+# (8)  ---- demos ----
 #
 def _demo_array():
     """ make an array for testing"""
@@ -805,19 +1062,19 @@ def _demo_deline():
 
 
 def _demo_form():
-    """demo form_"""
+    """demo prn_"""
     a = _demo_array()
-    form_(a, deci=2, wdth=100, title="form_ demo...", prefix=". . ", prn=True)
+    prn_(a, deci=2, wdth=100, title="prn_ demo...", prefix=". . ", prn=True)
 
 
-def _demo_frmt():
+def _demo_prn2d():
     """frmt_ demo"""
     a = _demo_array()
-    frmt_(a, deci=4, wdth=100, title="\nfrmt_demo ...", prn=True)
+    prn2d(a, deci=4, wdth=100, title="\nfrmt_demo ...", prn=True)
 
 
 def _demo_ma():
-    """Produce a simple masked array and format it using frmt_ma
+    """Produce a simple masked array and format it using prn_ma
     :  Change the values to suit
     """
     np.ma.masked_print_option.set_display('-')
@@ -830,17 +1087,19 @@ def _demo_ma():
     mask_val = -99
     a = np.ma.array(a, mask=m, fill_value=mask_val)
     # ---- test output ----
-    print("Sample run of frmt_ma...")
-    frmt_ma(a, prn=True)
+    print("Sample run of prn_ma...")
+    prn_ma(a, prn=True)
     print("\nArray reshaped to (2, 4, 5)")
     b = a.reshape(2, 4, 5)
-    frmt_ma(b, prn=True)
+    prn_ma(b, prn=True)
+    return b
 
 
 def _demo_rec():
     """load and print a structured array
     """
     pth = _demo_rec.__code__.co_filename  # script path
+#    pth = pth.replace("frmts.py", "Data/sample_1000.npy")
     pth = pth.replace("frmts.py", "Data/sample_20.npy")
 #    pth = pth.replace("frmts.py", "Data/sample_data.npy")
     aa = np.load(pth)
@@ -851,10 +1110,30 @@ def _demo_rec():
     Format ... {}
     record/structured array, with and without field names. """
     print(dedent(msg).format(pth))
-    frmt_rec(a[:3], deci=3, use_names=True, prn=True)
-    frmt_rec(a[:3], deci=2, use_names=False, prn=True)
-    # return a
+    prn_rec(a[:3], deci=3, use_names=True, prn=True)
+    prn_rec(a[:3], deci=2, use_names=False, prn=True)
+    return a
 
+
+def _sample_data():
+    """just return a recarray
+    """
+    pth = _sample_data.__code__.co_filename
+    # sample_20.npy sample_1000.npy sample_10k.npy sample_100k.npy
+    pth = pth.replace("frmts.py", "Data/sample_20.npy")
+    a = np.load(pth)
+    #
+    # gdb table
+#    pth = "C:\GIS\Joe_address\Joe_address\Joe_address.gdb\Streets"
+#    import arcpy.da as da
+#    a = arcpy.da.TableToNumPyArray(pth, "*")
+    return a
+
+def _data():
+    """base file"""
+    in_tbl = 'C:/Git_Dan/arraytools/Data/points_2000.npy'
+    a = np.load(in_tbl)
+    return a
 
 # -------------------------
 if __name__ == "__main__":
@@ -866,3 +1145,4 @@ if __name__ == "__main__":
 #    _demo_ma()
 #    _demo_rec()
 #    _demo_form()
+#    a = _sample_data()
