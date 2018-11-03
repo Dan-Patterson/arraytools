@@ -27,7 +27,7 @@ with np.printoptions(precision=deci, linewidth=ln_wdth):
 The prn2d function is used to provide a side-by-side view of 2, 3, and 4D arrays. Specifically, 3D and 4D arrays are useful and for testing purposes, seeing the dimensions in a different view can facilitate understanding. For the best effect, the array shapes should be carefully considered. Some guidelines follow. The middle 'r' part of the shape is not as affected as the combination of the 'd' and 'c' parts. The array is trimmed beyond the 'wdth' parameter in prn2d.
 
 Sample the 3D array shape so that the format (d, r, c) is within the 20-21 range for d*c ... for example:
-
+```
 integers          floats
 2, r, 10  = 20    2, r, 8 = 16
 3, r,  7  = 21    3, 4, 5 = 15
@@ -42,14 +42,17 @@ Array...
   . 10 11 12 13 14    30 31 32 33 34    50 51 52 53 54
   . 15 16 17 18 19    35 36 37 38 39    55 56 57 58 59
   .   sub (0 )        : sub (1 )        : sub (2 )
+```
 The middle part of the shape should also be reasonable should you want to print the results:
 
 How it works
 
+```
 >>> a[...,0,:].flatten()
 array([ 0,  1,  2,  3,  4, 20, 21, 22, 23, 24, 40, 41, 42, 43, 44])
 >>> a[...,0,(0, 1, -2, -1)].flatten()
 array([ 0,  1,  3,  3, 20, 21, 23, 23, 40, 41, 43, 43])
+```
 Functions:
 
 help(<function name>) for help
@@ -86,7 +89,7 @@ a[1]....
 (1c) in_by
 
 indent objects, added automatic support for arrays and optional line numbers
-
+```
 a = np.arange(2*3*4).reshape(2,3,4)
 print(art.in_by(a, hdr='---- header ----', nums=True, prefix =".."))
 ---- header ----
@@ -97,15 +100,18 @@ print(art.in_by(a, hdr='---- header ----', nums=True, prefix =".."))
 04.. [[12 13 14 15]
 05..  [16 17 18 19]
 06..  [20 21 22 23]]]
+```
 (1d) redent(lines, spaces=4)
-
+```
 a = np.arange(3*5).reshape(3,5)
 >>> print(redent(a))
 |    [[ 0  1  2  3  4]
 |     [ 5  6  7  8  9]
 |     [10 11 12 13 14]]
-(2) prn2d(a)
+```
 
+(2) prn2d(a)
+```
 a = np.arange(2*3*3).reshape(2,3,3)
 array([[[ 0,  1,  2],
         [ 3,  4,  5],
@@ -120,8 +126,10 @@ Array... shape (2, 3, 3), ndim 3, not masked
  3,  4,  5    12, 13, 14
  6,  7,  8    15, 16, 17
 sub (0)       sub (1)
-(3) prn_ma
+```
 
+(3) prn_ma
+```
 :--------------------
 :Masked array........
 :  ndim: 2 size: 20
@@ -133,9 +141,13 @@ sub (0)       sub (1)
   8  -  -  -
  12 13 14 15
  16 17 18  -
+```
+
 pd and quick_prn see code
 prn_struct and prn_rec : main functions
 _c_kind_width_, _col_format,subsample
+
+```
 prn_struct(b, edges=3, max_lines=10, wdth=100, deci=2)
 
 OBJECTID   f0   County  Town  Facility  Time
@@ -149,6 +161,8 @@ OBJECTID   f0   County  Town  Facility  Time
         20   19 B       B_    Hall          52
 
 Array... shape: (20,)
+```
+```
 prn_rec(a, edges=5, max_rows=25, deci=2)
 
 Format ... C:/Git_Dan/arraytools/Data/sample_20.npy
@@ -158,31 +172,40 @@ record/structured array, with and without field names.
 000         1    0       B    A_      Hall    26
 001         2    1       C    C_      Hall    60
 002         3    2       D    A_      Hall    42
-(6) make_row_format
+```
 
+(6) make_row_format
+```
 make_row_format(dim=2, cols=3, a_kind='f', deci=1,
                 a_max=10, a_min=-10, prn=False)
 '{:6.1f}{:6.1f}{:6.1f}  {:6.1f}{:6.1f}{:6.1f}'
-prn_
+```
 
+prn_
+```
 prn_(a, deci=2, wdth=100, title="Array", prefix=". . ", prn=True)
 
 Array... ndim: 3  shape: (2, 3, 3)
 . .   0  1  2    9 10 11
 . .   3  4  5   12 13 14
 . .   6  7  8   15 16 17
-(7) prn_3d4d(a, deci=2, edgeitems=3, wdth=100, prn=True)
+```
 
+(7) prn_3d4d(a, deci=2, edgeitems=3, wdth=100, prn=True)
+```
 prn_3d4d(z)
 Array... ndim 4  shape(1, 2, 3, 4)
 |  0  1  2  3   12 13 14 15 |
 |  4  5  6  7   16 17 18 19 |
 |  8  9 10 11   20 21 22 23 |
 |=> (0 2 3 4)
-Notes:
+```
+
+**Notes**:
 
 column numbering
 
+```
 >>> d = (('{:<10}')*7).format(*'0123456789'), '0123456789'*7, '-'*70
 >>> s = '
 {}
@@ -191,8 +214,11 @@ column numbering
 >>> print(s)
              1         2         3         4         5         6
     123456789012345678901234567890123456789012345678901234567890123456789
+```
+
 **Getting default print options, then setting them back **
 
+```
 >>> pr_opt = np.get_printoptions()
 >>> df_opt = ", ".join(["{}={}".format(i, pr_opt[i]) for i in pr_opt])
 ** Rearranging blocks into columns using np.c_[...] **
@@ -205,8 +231,10 @@ column numbering
 >>>  deci = 1
 >>>  a_kind = a.dtype.kind
 >>>  f = _format_row_test(d, r, c, a_kind, deci, a_max, a_min)
-::
+```
+
 Row format given
+```
 d 3, r 2, c 3
 kind i decimals 1
 {:3.0f}{:3.0f}{:3.0f}  {:3.0f}{:3.0f}{:3.0f}  {:3.0f}{:3.0f}{:3.0f}
@@ -224,8 +252,10 @@ kind i decimals 1
 >>>  print(r)
   0.00  1.00  2.00    6.00  7.00  8.00   12.00 13.00 14.00
   3.00  4.00  5.00    9.00 10.00 11.00   15.00 16.00 17.00
-all at once
+```
 
+all at once
+```
 >>> a
 array([[[ 0,  1,  2,  3],
         [ 4,  5,  6,  7],
@@ -239,8 +269,10 @@ array([[[ 0,  1,  2,  3],
   array([[ 0,  1,  2,  3, 12, 13, 14, 15],
          [ 4,  5,  6,  7, 16, 17, 18, 19],
          [ 8,  9, 10, 11, 20, 21, 22, 23]])
-Masked array info:
+```
 
+Masked array info:
+```
 >>>  a.get_fill_value() # see default_filler dictionary
 >>>  a.set_fill_value(np.NaN)
 >>>  np.ma.maximum_fill_value(a)   -inf
@@ -248,8 +280,10 @@ Masked array info:
 >>>  default_filler =
      {'b': True, 'c': 1.e20 + 0.0j, 'f': 1.e20, 'i': 999999,'O': '?',
       'S': b'N/A', 'u': 999999,'V': '???','U': sixu('N/A')}
+```
 Others:
-
+```
 >>> b.transpose(1, 2, 0)[:,:,::-1]
 >>> # ** tip *** reorder from after transpose or even a swapaxes
 >>> # the ::-1 does the reversing... same as [...,::-1]
+```
