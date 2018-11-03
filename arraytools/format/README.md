@@ -3,6 +3,7 @@
 plus some samples
 
 frmts
+
 Script: frmts.py
 
 Author: Dan_Patterson@carleton.ca
@@ -15,18 +16,21 @@ np.set_printoptions and np.printoptions
 
 https://github.com/numpy/numpy/blob/master/numpy/core/arrayprint.py.
 
+```
 set_printoptions(precision=3, threshold=100, edgeitems=3, linewidth=80,
                  suppress=True, nanstr='nan', infstr='inf',
                  formatter=None, sign=None, floatmode=None, `**kwarg)
 
 with np.printoptions(precision=deci, linewidth=ln_wdth):
     print(a)  # the original options will be reset after printing
+```
 
 **Purpose**:
 
 The prn2d function is used to provide a side-by-side view of 2, 3, and 4D arrays. Specifically, 3D and 4D arrays are useful and for testing purposes, seeing the dimensions in a different view can facilitate understanding. For the best effect, the array shapes should be carefully considered. Some guidelines follow. The middle 'r' part of the shape is not as affected as the combination of the 'd' and 'c' parts. The array is trimmed beyond the 'wdth' parameter in prn2d.
 
 Sample the 3D array shape so that the format (d, r, c) is within the 20-21 range for d*c ... for example:
+
 ```
 integers          floats
 2, r, 10  = 20    2, r, 8 = 16
@@ -43,9 +47,10 @@ Array...
   . 15 16 17 18 19    35 36 37 38 39    55 56 57 58 59
   .   sub (0 )        : sub (1 )        : sub (2 )
 ```
+
 The middle part of the shape should also be reasonable should you want to print the results:
 
-How it works
+**How it works**
 
 ```
 >>> a[...,0,:].flatten()
@@ -53,7 +58,7 @@ array([ 0,  1,  2,  3,  4, 20, 21, 22, 23, 24, 40, 41, 42, 43, 44])
 >>> a[...,0,(0, 1, -2, -1)].flatten()
 array([ 0,  1,  3,  3, 20, 21, 23, 23, 40, 41, 43, 43])
 ```
-Functions:
+**Functions:**
 
 help(<function name>) for help
 
@@ -64,14 +69,19 @@ help(<function name>) for help
    in_by   - _pre_num
 
 ... see __all__ for a complete listing
-1(a) col_hdr() :
+
+**1(a) col_hdr() :**
 
 produce column headers to align output for formatting purposes
 
-.........1.........2.........3.........4.........5.........6......... 123456789012345678901234567890123456789012345678901234567890123456789
+```
+.........1.........2.........3.........4.........5.........6......... 
+123456789012345678901234567890123456789012345678901234567890123456789
+```
 
-1(b) deline(a):
+**1(b) deline(a):**
 
+```
 shp = (2,3,4)
 a = np.arange(np.prod(shp)).reshape(shp)
 deline(a)
@@ -86,9 +96,12 @@ a[1]....
  [[12 13 14 15]
   [16 17 18 19]
   [20 21 22 23]]]
-(1c) in_by
+```
+
+**(1c) in_by**
 
 indent objects, added automatic support for arrays and optional line numbers
+
 ```
 a = np.arange(2*3*4).reshape(2,3,4)
 print(art.in_by(a, hdr='---- header ----', nums=True, prefix =".."))
@@ -101,7 +114,8 @@ print(art.in_by(a, hdr='---- header ----', nums=True, prefix =".."))
 05..  [16 17 18 19]
 06..  [20 21 22 23]]]
 ```
-(1d) redent(lines, spaces=4)
+**(1d) redent(lines, spaces=4)**
+
 ```
 a = np.arange(3*5).reshape(3,5)
 >>> print(redent(a))
@@ -110,7 +124,8 @@ a = np.arange(3*5).reshape(3,5)
 |     [10 11 12 13 14]]
 ```
 
-(2) prn2d(a)
+**(2) prn2d(a)**
+
 ```
 a = np.arange(2*3*3).reshape(2,3,3)
 array([[[ 0,  1,  2],
@@ -128,7 +143,8 @@ Array... shape (2, 3, 3), ndim 3, not masked
 sub (0)       sub (1)
 ```
 
-(3) prn_ma
+**(3) prn_ma**
+
 ```
 :--------------------
 :Masked array........
@@ -144,7 +160,9 @@ sub (0)       sub (1)
 ```
 
 pd and quick_prn see code
+
 prn_struct and prn_rec : main functions
+
 _c_kind_width_, _col_format,subsample
 
 ```
@@ -174,14 +192,14 @@ record/structured array, with and without field names.
 002         3    2       D    A_      Hall    42
 ```
 
-(6) make_row_format
+**(6) make_row_format**
 ```
 make_row_format(dim=2, cols=3, a_kind='f', deci=1,
                 a_max=10, a_min=-10, prn=False)
 '{:6.1f}{:6.1f}{:6.1f}  {:6.1f}{:6.1f}{:6.1f}'
 ```
 
-prn_
+**prn_**
 ```
 prn_(a, deci=2, wdth=100, title="Array", prefix=". . ", prn=True)
 
@@ -191,7 +209,8 @@ Array... ndim: 3  shape: (2, 3, 3)
 . .   6  7  8   15 16 17
 ```
 
-(7) prn_3d4d(a, deci=2, edgeitems=3, wdth=100, prn=True)
+**(7) prn_3d4d(a, deci=2, edgeitems=3, wdth=100, prn=True)**
+
 ```
 prn_3d4d(z)
 Array... ndim 4  shape(1, 2, 3, 4)
@@ -271,7 +290,7 @@ array([[[ 0,  1,  2,  3],
          [ 8,  9, 10, 11, 20, 21, 22, 23]])
 ```
 
-Masked array info:
+**Masked array info:**
 ```
 >>>  a.get_fill_value() # see default_filler dictionary
 >>>  a.set_fill_value(np.NaN)
