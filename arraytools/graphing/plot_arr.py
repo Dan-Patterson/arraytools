@@ -2,7 +2,7 @@
 """
 :Script:   plot_arr.py
 :Author:   Dan.Patterson@carleton.ca
-:Modified: 2017-12-31
+:Modified: 2018-08-18
 :Purpose:  To plot a 3D array as a graph with each dimension appearing
 :  row-wise, instead of down a column.  This produces a side-by-side
 :  comparison of the data.
@@ -85,7 +85,7 @@ def plot_grid(a):
         a_s = a[idx]
         col_lbl = "Cols: for " + str(idx)
         ax.set_aspect('equal')
-        ax.set_adjustable('box-forced')  # prevents spaces
+        ax.set_adjustable('box')  # box-forced')  # deprecated prevents spaces
         ax.set_xticks(xg, minor=True)
         ax.set_yticks(yg, minor=True)
         ax.set_xlabel(col_lbl, labelpad=12)
