@@ -1,25 +1,8 @@
 
-***Arraytools***
-================
-
-2018-09-16 - Beginning of the reorganization of arraytools to separate the purely array functionality from functionality that uses arcpy
-
-
-**Purpose**
-I have consolidate various array scripts into one location.
-
-Eventually it will become a package when I get done with it.
-
-Some information from __init__.py
----------------------------------
-
-Modified: 2017-11-04
-
 arraytools
 ==========
 
-Provides tools to facilitate working with numpy and geometry and attributes
-largely derived from ArcMap and ArcGIS Pro.
+Provides tools to facilitate working with numpy and the geometry and attributes of spatial data.  The focus is largely on rasters and featureclasses for use within ArcGIS Pro.
 
 Documentation notes
 -------------------
