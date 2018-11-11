@@ -19,13 +19,13 @@ print(", ".join([i.replace("'", "") for i in dir(art.tools)])  # art.(script/mod
     - [frmts.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/frmts.py)
       - \_check, \_chunks, \_col_format, \_col_kind_width, \_data, \_row_format, \_slice_cols, \_slice_head_tail, \_slice_rows, col_hdr, deline,  head_tail, in_by, make_row_format, pd_, prn, prn_, prn_3d4d, prn_ma, prn_nd, prn_q, prn_rec, prn_struct, quick_prn
     - [geom.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geom.py)
-      -  \_arrs_, \_center, \_centroid, \_convert, \_densify_2D, \_extent, \_flat_, \_max, \_min, \_new_view_, \_reshape_, \_unpack, _\view_, adjacency_edge, angle_2pnts, angle_between, angle_np, angle_seq, angles_poly, areas, as_strided, azim_np, centers, centroids, circle, densify, dist_bearing, dx_dy_np, e_area, e_dist, e_leng, ellipse, hex_flat, hex_pointy, intersect_pnt, lengths, pnt_, radial_sort, rectangle, repeat, rotate, seg_lengths, segment, simplify, stride, total_length, trans_rot
+      -  \_arrs_, \_center, \_centroid, \_convert, \_densify_2D, \_extent, \_flat_, \_max, \_min, \_new_view_, \_reshape_, \_unpack, \_view_, adjacency_edge, angle_2pnts, angle_between, angle_np, angle_seq, angles_poly, areas, as_strided, azim_np, centers, centroids, circle, densify, dist_bearing, dx_dy_np, e_area, e_dist, e_leng, ellipse, hex_flat, hex_pointy, intersect_pnt, lengths, pnt_, radial_sort, rectangle, repeat, rotate, seg_lengths, segment, simplify, stride, total_length, trans_rot
     - [grid.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/grid.py)
       - check_shapes, check_stack, combine_, expand_zone, fill_arr, mask_stack, nd2struct, reclass_ranges, reclass_vals, scale_up, stack_cumprod, stack_cumsum, stack_max, stack_mean, stack_median, stack_min, stack_percentile, stack_prod, stack_stats, stack_std, stack_sum, stack_var, stride
     - [gridstats.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/gridstats.py)
       - check_shapes, check_stack, mask_stack, stack_cumprod, stack_cumsum, stack_max, stack_mean, stack_median, stack_min, stack_percentile, stack_prod, stack_stats, stack_stats_tbl, stack_std, stack_sum, stack_var
     - [image.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/image.py)
-      -  \_even_odd, \pad_even_odd, \_pad_nan, \_pad_zero, a_filter, block, equalize, normalize, plot_img, rgb_gray, stride
+      -  \_even_odd, \_pad_even_odd, \_pad_nan, \_pad_zero, a_filter, block, equalize, normalize, plot_img, rgb_gray, stride
     - [py_tools.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/py_tools.py)
       -  \_flatten, combine_dicts, comp_info, dir_py, flatten_shape, folders, get_dir, pack, sub_folders, sys, unpack
     - [surface.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/surface.py)
@@ -41,11 +41,11 @@ print(", ".join([i.replace("'", "") for i in dir(art.tools)])  # art.(script/mod
     - [array_moving.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/analysis/arr_moving.py)
       - `more to come`
  
-  - **. . . \fc_tools**
+  - **. . . \fc_tools**  Many functions in this section require ArcGIS Pro be installed to access `arcpy`
     - [`_common.py`](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/fc_tools/_common.py)
-      -  \_describe, arcpy, arr_csv, de_punc, fc_info, fld_info, null_dict,tbl_arr, tweet'
+      -  \_describe, arr_csv, de_punc, fc_info, fld_info, null_dict, tbl_arr, tweet'
     - [apt.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/fc_tools/apt.py)
-      -  \_arr_common, \_id_geom_array, \_split_array, arc_np, arcpy, arr_pnts, arr_polygon_fc, arr_polyline_fc, array_fc, array_struct, change_fld, dedent, fc_array, fc_info, obj_polygon, obj_polyline, output_points, output_polygons, output_polylines, pnts_arr, polygons_arr, polylines_arr, shapes_fc, struct_polygon, struct_polyline,  tbl_arr, to_fc, tweet'
+      -  \_arr_common, \_id_geom_array, \_split_array, arc_np, arr_pnts, arr_polygon_fc, arr_polyline_fc, array_fc, array_struct, change_fld, dedent, fc_array, fc_info, obj_polygon, obj_polyline, output_points, output_polygons, output_polylines, pnts_arr, polygons_arr, polylines_arr, shapes_fc, struct_polygon, struct_polyline,  tbl_arr, to_fc, tweet'
     - [arc_io.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/fc_tools/arc_io.py)
       - array2raster, rasters2nparray,
       - `more to come`
@@ -69,13 +69,13 @@ print(", ".join([i.replace("'", "") for i in dir(art.tools)])  # art.(script/mod
   - **. . . \rasters**
   
   - **. . . \stats**
-  
-  
-##Documentation notes##
+
+
+Documentation notes
 -------------------
 It is assumed throughout that numpy has been imported as
 
-import numpy as np
+`import numpy as np`
 
 Available modules and subpackages
 ---------------------------------
