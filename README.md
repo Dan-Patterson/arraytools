@@ -14,37 +14,87 @@ Available modules and subpackages
 ---------------------------------
 
  
-**a_io.py**  (5)   io tools for numpy arrays
+**a_io.py**  (9)   io tools for numpy arrays
 
-:__all_aio__
+    1.  load_npy      - load numpy npy files
+    2.  save_npy      - save array to *.npy format
+    3.  read_txt      - read array created by save_txtt
+    4.  save_txt      - save array to npy format
+    5.  arr_json      - save to json format
+    6.  dict_arrays   - dictionary to arrays
+    7.  iterable_dict - iterable to dictionary
+    8.  dict_struct   - dictionary to structured array
+    9.  struct_dict   - structured array to dictionary
 
-    1.  load_npy    - load numpy npy files
-    2.  save_npy    - save array to *.npy format
-    3.  read_txt    - read array created by save_txtt
-    4.  save_txt    - save array to npy format
-    5.  arr_json    - save to json format
+**data_maker.py**
 
-**apt.py  (15)**    tools for arcpy tools
 
-:__all_apt__
 
-    '_arr_common', '_shapes_fc', 'arr_pnts', 'arr_polygon', 'arr_polyline',
-    'array_fc', 'array_struct', 'change_fld', 'fc_array', 'pnts_arr',
-    'polygons_arr', 'polylines_arr', 'tbl_arr', 'to_fc', 'tweet'
+**frmts.py**  (18)    Format options to facilitate viewing of numpy arrays in a variety of ways.
 
-**fc.py**  (11)     tools for working with featureclasses
- 
-:__all_fc__
+    1.  col_hdr           column headers
+    2.  deline            remove excessive blank lines
+    3.  in_by             an indent variant with options 
+    4.  redent            indent
+    5.  _chunks           take chunks of stuff
+    6.  head_tail         return the head/tail of a 1d array
+    7.  _check            helper functions
+    8.  _slice_rows
+    9.  _slice_cols
+    10. _slice_head_tail
+    11. _col_format        printing section
+    12. prn_nd             for ndarray
+    13. prn_ma             for masked arrays
+    14. prn_rec pd_        record/structured arrays
+    15. prn_struct
+    16. make_row_format    a big helper function
+    17. prn_               ndarray variant
+    18. prn         ---- this def is used to call all the others ----
 
-    '_get_shapes', '_ndarray', '_props', '_two_arrays', '_xy',
-    '_xyID', '_xy_idx', 'change_fld'
 
-**frmts.py**  (11)    Format options to facilitate viewing of numpy arrays in a variety of ways.
+**geom.py:**  (12)  Geometry related function
 
-:__all_frmt__
+    1. helpers
+       _flat_, _unpack, segment, stride, _new_view_, _view_, _reshape_,
+    2. boundary
+       _min, _max, _extent,
+    3. centrality
+       _center, _centroid, centers, centroids,
+    4. area, length, distance
+       e_area, e_dist, e_leng, areas, lengths, total_length, seg_lengths,
+    5. sorting
+       radial_sort
+    6. angles
+       dx_dy_np, angle_np, azim_np, angle_2pnts, angle_seq, angles_poly, dist_bearing,
+    7. densify, simplify
+       _densify_2D, _convert, densify, simplify,
+    8. property alteration
+       rotate,  trans_rot, repeat,
+    9. construction
+       circle, ellipse, rectangle, hex_flat, hex_pointy
 
-    'col_hdr', 'deline', 'frmt_', 'frmt_ma', 'frmt_rec', 'frmt_struct',
-    'in_by', 'make_row_format', 'redent', '_demo', '_ma_demo']
+**grid.py:**
+
+    1. 3D array functions
+         combine_, check_shapes, check_stack, mask_stack,
+    2. statistical functions
+       stack_percentile, stack_sum, stack_cumsum, stack_prod, stack_cumprod, stack_min, stack_mean,
+       stack_median, stack_max, stack_std, stack_var, stack_stats
+    3. other functions
+       expand_zone, fill_arr, reclass_vals, reclass_ranges, scale_up
+
+**graphing:**  Graphing capabilities using MatPlotLib as the basic graphing program
+     plot_pnts_
+
+**grid_stats.py:**
+
+**image.py:**
+
+**py_tools.py:**
+
+**surface.py:**
+
+**tbl.py:**
 
 **tools.py**  (30)    Main tool set containing the following functions...
 
@@ -62,20 +112,16 @@ Available modules and subpackages
 :__all__
   'compass', 'line_dir', 'not_closer', 'n_near', 'vincenty'
 
-**geom:**  (12)  Geometry related function
-  
-:__all_geo__
-    '_view_', '_reshape_', 'areas', 'center', 'centroid',  'e_area',
-    'obj_array', 'e_dist', 'e_leng', 'seg_lengths', 'total_length', 'lengths'
-
-**graphing:**  Graphing capabilities using MatPlotLib as the basic graphing program
-     plot_pnts_
-
 **stats:**   Statistics and related
     crosstab
 
 **other:**
     Placeholder
 
+**fc.py**  (11)     tools for working with featureclasses
+ :__all_fc__
+
+    '_get_shapes', '_ndarray', '_props', '_two_arrays', '_xy',
+    '_xyID', '_xy_idx', 'change_fld'
 examples:
     Documentation for *.py script, will have the same name but end with *.txt.
