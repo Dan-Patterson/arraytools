@@ -41,7 +41,7 @@ print(", ".join([i.replace("'", "") for i in dir(art.tools)])  # art.(script/mod
     - [array_moving.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/analysis/arr_moving.py)
       - `more to come`
  
-  - . . . \fc_tools
+  - **. . . \fc_tools**
     - [`_common.py`](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/fc_tools/_common.py)
       -  \_describe, arcpy, arr_csv, de_punc, fc_info, fld_info, null_dict,tbl_arr, tweet'
     - [apt.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/fc_tools/apt.py)
@@ -51,7 +51,8 @@ print(", ".join([i.replace("'", "") for i in dir(art.tools)])  # art.(script/mod
       - `more to come`
     - [fc.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/fc_tools/fc.py)
       -  \_cross_3pnts, \_cursor_array, \_geo_array, \_get_shapes, \_ndarray, \_props, \_two_arrays, \_xy, \_xyID, \_xy_idx, change_fld, fc_info, ft, indent, join_arr_fc,obj_array, orig_dest_pnts, tweet, warnings'
-  - . . . \geomtools
+
+- **. . . \geomtools**
     - [circular.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geomtools/circular.py)
       - plot_, rot_matrix, \_arc, \_circle, arc_sector buffer_ring
     - [hulls.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geomtools/hulls.py)
