@@ -12,7 +12,6 @@ import numpy as np
 
 Available modules and subpackages
 ---------------------------------
-
  
 **a_io.py**  (9)   io tools for numpy arrays
 
@@ -27,8 +26,8 @@ Available modules and subpackages
     9.  struct_dict   - structured array to dictionary
 
 **data_maker.py**
-
-
+    Various functions for creating data.  Functions for numeric and text data conforming to 
+    random sampling distributions. 
 
 **frmts.py**  (18)    Format options to facilitate viewing of numpy arrays in a variety of ways.
 
@@ -52,7 +51,7 @@ Available modules and subpackages
     18. prn         ---- this def is used to call all the others ----
 
 
-**geom.py:**  (12)  Geometry related function
+**geom.py**  (40)  Geometry related functions
 
     1. helpers
        _flat_, _unpack, segment, stride, _new_view_, _view_, _reshape_,
@@ -73,13 +72,12 @@ Available modules and subpackages
     9. construction
        circle, ellipse, rectangle, hex_flat, hex_pointy
 
-**grid.py:**
+**grid.py:**  ()
+    Reclassification, array restructuring
 
-    1. 3D array functions
+    1. 3D array helper functions
          combine_, check_shapes, check_stack, mask_stack,
-    2. statistical functions
-       stack_percentile, stack_sum, stack_cumsum, stack_prod, stack_cumprod, stack_min, stack_mean,
-       stack_median, stack_max, stack_std, stack_var, stack_stats
+    2. moving to grid_stats below!!!
     3. other functions
        expand_zone, fill_arr, reclass_vals, reclass_ranges, scale_up
 
@@ -87,10 +85,40 @@ Available modules and subpackages
      plot_pnts_
 
 **grid_stats.py:**
+    Statistical functions for 3D-stacks of array data, like annual temperature data etc.
+    Whatever can be stacked and is numeric.... you can get the stats for.  Moving window
+    functions are also contained for all stats.
+
+    1. 3D array helper functions
+       check_shapes, check_stack, mask_stack
+    2. statistical functions
+       stack_sum, stack_cumsum, stack_prod, stack_cumprod, stack_min, stack_mean,
+       stack_median, stack_max, stack_std, stack_var, stack_percentile, stack_stats,
+       stack_stats_tbl
 
 **image.py:**
 
+    1. helper functions
+       _even_odd, _pad_even_odd, _pad_nan, _pad_zero,
+    2. image processing filtering
+       a_filter
+    3. graphing
+       plot_img',
+    4. conversion/alteration
+       rgb_gray, normalize, equalize
+       
+
 **py_tools.py:**
+
+    1. computer information
+       comp_info
+    2. basic folder functions
+       get_dir, folders, sub_folders
+    3. object and directory functions
+       dir_py, _flatten, flatten_shape
+    4. iterables
+       pack, unpack, combine_dicts
+
 
 **surface.py:**
 
@@ -106,6 +134,8 @@ Available modules and subpackages
      'rolling_stats', 'uniq', 'is_in', 'n_largest', 'n_smallest', 'rc_vals', 'xy_vals',
      'sort_rows_by_col', 'sort_cols_by_row', '_help'
     
+## under construction below##
+----------------------------------------------------------------------------
 
 **analysis:**  (5)  Tools for calculating distance, proximity, angles.
     
