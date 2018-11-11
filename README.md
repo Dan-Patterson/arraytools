@@ -38,29 +38,29 @@ print(", ".join([i.replace("'", "") for i in dir(art.tools)])  # art.(script/mod
       - \_utils_help_, del_punc, dirr, doc_func, get_func, get_modu, keep_ascii, keep_nums, run_deco, time_deco, warnings, wrapper
   
   - . . . \analysis
-    - array_moving.py
+    - [array_moving.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/analysis/arr_moving.py)
       - `more to come`
  
   - . . . \fc_tools
-    - `_common.py`
+    - [`_common.py`](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/fc_tools/_common.py)
       -  \_describe, arcpy, arr_csv, de_punc, fc_info, fld_info, null_dict,tbl_arr, tweet'
-    - apt.py
+    - [apt.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/fc_tools/apt.py)
       -  \_arr_common, \_id_geom_array, \_split_array, arc_np, arcpy, arr_pnts, arr_polygon_fc, arr_polyline_fc, array_fc, array_struct, change_fld, dedent, fc_array, fc_info, obj_polygon, obj_polyline, output_points, output_polygons, output_polylines, pnts_arr, polygons_arr, polylines_arr, shapes_fc, struct_polygon, struct_polyline,  tbl_arr, to_fc, tweet'
-    - arc_io.py
+    - [arc_io.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/fc_tools/arc_io.py)
       - array2raster, rasters2nparray,
       - `more to come`
-    - fc.py
+    - [fc.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/fc_tools/fc.py)
       -  \_cross_3pnts, \_cursor_array, \_geo_array, \_get_shapes, \_ndarray, \_props, \_two_arrays, \_xy, \_xyID, \_xy_idx, change_fld, fc_info, ft, indent, join_arr_fc,obj_array, orig_dest_pnts, tweet, warnings'
   - . . . \geomtools
-    - circular.py
+    - [circular.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geomtools/circular.py)
       - plot_, rot_matrix, \_arc, \_circle, arc_sector buffer_ring
-    - hulls.py
+    - [hulls.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geomtools/hulls.py)
       - concave, convex
-    - mesh_pnts.py
-    - mst.py
-    - n_spaced.py
-    - pip.py
-    - split_polys.py
+    - [mesh_pnts.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geomtools/mesh_pnts.py)
+    - [mst.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geomtools/mst.py)
+    - [n_spaced.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geomtools/n_spaced.py)
+    - [pip.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geomtools/pip.py)
+    - [split_polys.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geomtools/split_polys.py)
       - `more to come`
     
   - . . . \graphing
