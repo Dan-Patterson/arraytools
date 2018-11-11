@@ -13,7 +13,7 @@ print(", ".join([i.replace("'", "") for i in dir(art.tools)])  # art.(script/mod
 ```
 
 ----
-  - ##arraytools##  **...Tools for working with numpy arrays**
+- **arraytools**  **...Tools for working with numpy arrays**
     - [`_base_functions.py`](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/_base_functions.py)
       - arr_info, even_odd, n_largest, n_smallest, np, num_to_mask, num_to_nan, pad_even_odd, pad_nan, pad_zero, reshape_options, shape_to2D, type_keys, type_vals
     - [aio.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/aio.py)
@@ -39,11 +39,12 @@ print(", ".join([i.replace("'", "") for i in dir(art.tools)])  # art.(script/mod
     - [utils.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/utils.py)
       - \_utils_help_, del_punc, dirr, doc_func, get_func, get_modu, keep_ascii, keep_nums, run_deco, time_deco, warnings, wrapper
   
-  - **. . . \analysis**
+----
+- **. . . \analysis**
     - [array_moving.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/analysis/arr_moving.py)
       - `more to come`
- 
-  - **. . . \fc_tools**  Many functions in this section require ArcGIS Pro be installed to access `arcpy`
+----
+- **. . . \fc_tools**  Many functions in this section require ArcGIS Pro be installed to access `arcpy`
     - [`_common.py`](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/fc_tools/_common.py)
       -  \_describe, arr_csv, de_punc, fc_info, fld_info, null_dict, tbl_arr, tweet'
     - [apt.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/fc_tools/apt.py)
@@ -54,6 +55,7 @@ print(", ".join([i.replace("'", "") for i in dir(art.tools)])  # art.(script/mod
     - [fc.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/fc_tools/fc.py)
       -  \_cross_3pnts, \_cursor_array, \_geo_array, \_get_shapes, \_ndarray, \_props, \_two_arrays, \_xy, \_xyID, \_xy_idx, change_fld, fc_info, ft, indent, join_arr_fc,obj_array, orig_dest_pnts, tweet, warnings'
 
+----
 - **. . . \geomtools**
     - [circular.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geomtools/circular.py)
       - plot_, rot_matrix, \_arc, \_circle, arc_sector buffer_ring
@@ -65,12 +67,15 @@ print(", ".join([i.replace("'", "") for i in dir(art.tools)])  # art.(script/mod
     - [pip.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geomtools/pip.py)
     - [split_polys.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geomtools/split_polys.py)
       - `more to come`
-    
-  - **. . . \graphing**
+ 
+----
+- **. . . \graphing**
   
-  - **. . . \rasters**
-  
-  - **. . . \stats**
+----
+- **. . . \rasters**
+ 
+----
+- **. . . \stats**
 
 
 Documentation notes
