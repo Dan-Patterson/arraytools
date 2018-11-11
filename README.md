@@ -14,27 +14,27 @@ print(", ".join([i.replace("'", "") for i in dir(art.tools)])  # art.(script/mod
   - arraytools
     - [`_base_functions.py`](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/_base_functions.py)
       - arr_info, even_odd, n_largest, n_smallest, np, num_to_mask, num_to_nan, pad_even_odd, pad_nan, pad_zero, reshape_options, shape_to2D, type_keys, type_vals
-    - aio.py
+    - [aio.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/aio.py)
       - arr_info, even_odd, n_largest, n_smallest, num_to_mask, num_to_nan, pad_even_odd, pad_nan, pad_zero, reshape_options, shape_to2D
-    - frmts.py
+    - [frmts.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/frmts.py)
       - \_check, \_chunks, \_col_format, \_col_kind_width, \_data, \_row_format, \_slice_cols, \_slice_head_tail, \_slice_rows, col_hdr, deline,  head_tail, in_by, make_row_format, pd_, prn, prn_, prn_3d4d, prn_ma, prn_nd, prn_q, prn_rec, prn_struct, quick_prn
-    - geom.py
+    - [geom.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geom.py)
       -  \_arrs_, \_center, \_centroid, \_convert, \_densify_2D, \_extent, \_flat_, \_max, \_min, \_new_view_, \_reshape_, \_unpack, _\view_, adjacency_edge, angle_2pnts, angle_between, angle_np, angle_seq, angles_poly, areas, as_strided, azim_np, centers, centroids, circle, densify, dist_bearing, dx_dy_np, e_area, e_dist, e_leng, ellipse, hex_flat, hex_pointy, intersect_pnt, lengths, pnt_, radial_sort, rectangle, repeat, rotate, seg_lengths, segment, simplify, stride, total_length, trans_rot
-    - grid.py
+    - [grid.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/grid.py)
       - check_shapes, check_stack, combine_, expand_zone, fill_arr, mask_stack, nd2struct, reclass_ranges, reclass_vals, scale_up, stack_cumprod, stack_cumsum, stack_max, stack_mean, stack_median, stack_min, stack_percentile, stack_prod, stack_stats, stack_std, stack_sum, stack_var, stride
-    - gridstats.py
+    - [gridstats.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/gridstats.py)
       - check_shapes, check_stack, mask_stack, stack_cumprod, stack_cumsum, stack_max, stack_mean, stack_median, stack_min, stack_percentile, stack_prod, stack_stats, stack_stats_tbl, stack_std, stack_sum, stack_var
-    - image.py
+    - [image.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/image.py)
       -  \_even_odd, \pad_even_odd, \_pad_nan, \_pad_zero, a_filter, block, equalize, normalize, plot_img, rgb_gray, stride
-    - py_tools.py
+    - [py_tools.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/py_tools.py)
       -  \_flatten, combine_dicts, comp_info, dir_py, flatten_shape, folders, get_dir, pack, sub_folders, sys, unpack
-    - surface.py
+    - [surface.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/surface.py)
       - a2z, all_f, angle2azim, aspect_a, aspect_dem, circ_demo, circle_a, cross_f, dedent, filter_a, hillshade_a, kernels, no_cnt, pad_a, plot_, plt, plus_f, pyramid, slope_a, stride, surface_kernel
-    - tbl.py
+    - [tbl.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/tbl.py)
       - find_text, prn_struct, replace_, struct_deco, tab_count, tab_sum
-    - tools.py
+    - [tools.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/tools.py)
       -  _func, \_tools_help_, arr2xyz, arrays_struct, as_strided, block, block_arr, change_arr, concat_arrs, find, group_pnts, group_vals, is_in, make_blocks, make_flds, nd2rec, nd2struct, nd_rec, nd_struct, pack_last_axis, pad_, pyramid, radial_sort, rc_vals, reclass, rolling_stats, running_count, scale, sequences, sliding_window_view, sort_cols_by_row, sort_rows_by_col, split_array, stride, uniq,  xy_vals
-    - utils.py
+    - [utils.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/utils.py)
       - \_utils_help_, del_punc, dirr, doc_func, get_func, get_modu, keep_ascii, keep_nums, run_deco, time_deco, warnings, wrapper
   
   - . . . \analysis
