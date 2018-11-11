@@ -11,7 +11,7 @@ A useful ditty to get a string representation of functions in a module.
 import arraytools as art
 print(", ".join([i.replace("'", "") for i in dir(art.tools)])  # art.(script/module to import)
 ```
-  - arraytools
+  - **arraytools**
     - [`_base_functions.py`](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/_base_functions.py)
       - arr_info, even_odd, n_largest, n_smallest, np, num_to_mask, num_to_nan, pad_even_odd, pad_nan, pad_zero, reshape_options, shape_to2D, type_keys, type_vals
     - [aio.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/aio.py)
@@ -37,7 +37,7 @@ print(", ".join([i.replace("'", "") for i in dir(art.tools)])  # art.(script/mod
     - [utils.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/utils.py)
       - \_utils_help_, del_punc, dirr, doc_func, get_func, get_modu, keep_ascii, keep_nums, run_deco, time_deco, warnings, wrapper
   
-  - . . . \analysis
+  - **. . . \analysis**
     - [array_moving.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/analysis/arr_moving.py)
       - `more to come`
  
@@ -63,12 +63,14 @@ print(", ".join([i.replace("'", "") for i in dir(art.tools)])  # art.(script/mod
     - [split_polys.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geomtools/split_polys.py)
       - `more to come`
     
-  - . . . \graphing
+  - **. . . \graphing**
   
-  - . . . \rasters
+  - **. . . \rasters**
   
-  - . . . \stats
-Documentation notes
+  - **. . . \stats**
+  
+  
+##Documentation notes##
 -------------------
 It is assumed throughout that numpy has been imported as
 
