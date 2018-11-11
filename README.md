@@ -12,7 +12,7 @@ import arraytools as art
 print(", ".join([i.replace("'", "") for i in dir(art.tools)])  # art.(script/module to import)
 ```
   - arraytools
-    - `_base_functions.py`
+    - `[_base_functions.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/_base_functions.py)`
       - arr_info, even_odd, n_largest, n_smallest, np, num_to_mask, num_to_nan, pad_even_odd, pad_nan, pad_zero, reshape_options, shape_to2D, type_keys, type_vals
     - aio.py
       - arr_info, even_odd, n_largest, n_smallest, num_to_mask, num_to_nan, pad_even_odd, pad_nan, pad_zero, reshape_options, shape_to2D
