@@ -17,7 +17,7 @@ print(", ".join([i.replace("'", "") for i in dir(art.tools)])  # art.(script/mod
     - [`_base_functions.py`](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/_base_functions.py)
       - arr_info, even_odd, n_largest, n_smallest, np, num_to_mask, num_to_nan, pad_even_odd, pad_nan, pad_zero, reshape_options, shape_to2D, type_keys, type_vals
     - [aio.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/aio.py)
-      - arr_info, even_odd, n_largest, n_smallest, num_to_mask, num_to_nan, pad_even_odd, pad_nan, pad_zero, reshape_options, shape_to2D
+      - arr_info, even_odd, n_largest, n_smallest, num_to_mask, num_to_nan, pad_even_odd, pad_nan, pad_zero, reshape_options, shape_to2D, excel_np
     - [frmts.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/frmts.py)
       - \_check, \_chunks, \_col_format, \_col_kind_width, \_data, \_row_format, \_slice_cols, \_slice_head_tail, \_slice_rows, col_hdr, deline,  head_tail, in_by, make_row_format, pd_, prn, prn_, prn_3d4d, prn_ma, prn_nd, prn_q, prn_rec, prn_struct, quick_prn
     - [geom.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geom.py)
@@ -37,7 +37,7 @@ print(", ".join([i.replace("'", "") for i in dir(art.tools)])  # art.(script/mod
     - [tools.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/tools.py)
       -  _func, \_tools_help_, arr2xyz, arrays_struct, as_strided, block, block_arr, change_arr, concat_arrs, find, group_pnts, group_vals, is_in, make_blocks, make_flds, nd2rec, nd2struct, nd_rec, nd_struct, pack_last_axis, pad_, pyramid, radial_sort, rc_vals, reclass, rolling_stats, running_count, scale, sequences, sliding_window_view, sort_cols_by_row, sort_rows_by_col, split_array, stride, uniq,  xy_vals
     - [utils.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/utils.py)
-      - \_utils_help_, del_punc, dirr, doc_func, get_func, get_modu, keep_ascii, keep_nums, run_deco, time_deco, warnings, wrapper
+      - \_utils_help_, is_ascii, is_float, keep_nums, del_punc, del_punc_space, dirr, doc_func, get_func, get_modu, run_deco, time_deco, warnings, wrapper
   
 ----
 - **. . . \analysis**
