@@ -110,6 +110,14 @@ def keep_ascii(s):
         return u
     return s
 
+def is_float(a):
+    """float check"""
+    try:
+        np.asarray(a, np.float_)
+        return True
+    except ValueError:
+        return False
+
 def keep_nums(s):
     """Remove all non-numbers and return an integer.
     """
@@ -133,6 +141,12 @@ def del_punc(s, keep_under=False, keep_space=False):
         repl = ''
     s = "".join([[i, repl][i in punc] for i in s])
     return s
+
+
+def del_punc_space(name, repl_with='_'):
+    """delete punctuation and spaces and replace with '_'"""
+    punc = list('!"#$%&\'()*+,-./:;<=>?@[\\]^`{|}~ ')
+    return "".join([[i, repl_with][i in punc] for i in name])
 
 
 def time_deco(func):  # timing originally

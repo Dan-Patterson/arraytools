@@ -7,7 +7,7 @@ Script :   tools.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2018-10-15
+Modified : 2018-11-02
 
 Purpose :  tools for working with numpy arrays
 
@@ -27,7 +27,22 @@ Useage:
 ---------
 **Basic array information**
 
-*np.typecodes*
+*np.typecodes* and
+*np.sctypeDict*
+    np.sctypeDict.keys()
+*np.sctypes*
+>>> for i in np.sctypes:
+    print("{!s:<8} : {}".format(i, np.sctypes[i]))
+
+int      : [<class 'numpy.int8'>, <class 'numpy.int16'>, <class 'numpy.int32'>,
+            <class 'numpy.int64'>]
+uint     : [<class 'numpy.uint8'>, <class 'numpy.uint16'>,
+            <class 'numpy.uint32'>, <class 'numpy.uint64'>]
+float    : [<class 'numpy.float16'>, <class 'numpy.float32'>,
+            <class 'numpy.float64'>]
+complex  : [<class 'numpy.complex64'>, <class 'numpy.complex128'>]
+others   : [<class 'bool'>, <class 'object'>, <class 'bytes'>,
+            <class 'str'>, <class 'numpy.void'>]
 
 *np.typecodes.items()*  ... *np.typecodes['AllInteger']*
 ::
@@ -40,6 +55,7 @@ Useage:
     |  |__Integer: 'bhilqp'
     |__Datetime': 'Mm'
     |__Character': 'c'
+    |__Other:  'U', '?', 'S', 'O', 'V'  Determined from the above
 
 *np.sctypes.keys* and *np.sctypes.values*
 ::
@@ -49,13 +65,14 @@ Useage:
     |__int      int8, int16, int32, int64
     |__uint     uint8, uint16, uint32, uint63
     |__others   bool, object, str, void
+                   ?,   O,    S U,  V
 
 **Numbers**
 ::
    np.inf, -np.inf
    np.iinfo(np.int8).min  or .max = -128, 128
    np.iinfo(np.int16).min or .max = -32768, 32768
-   np.iinfo(np.int32) - iinfo(min=-2147483648, max=2147483647, dtype=int32)
+   np.iinfo(np.int32).min or .max = -2147483648, max=2147483647
    np.finfo(np.float64)
    np.finfo(resolution=1e-15, min=-1.7976931348623157e+308,
             max=1.7976931348623157e+308, dtype=float64)
@@ -1593,16 +1610,15 @@ def radial_sort(pnts, cent=None):
 
     Requires:
     ---------
-
-    pnts :
+    pnts : floats
         an array of points (x,y) as array or list
-    cent :
+    cent : floats
         list, tuple, array of the center's x,y coordinates
         cent = [0, 0] or np.array([0, 0])
 
     Returns:
     --------
-        The angles in the range -180, 180 x-axis oriented
+    The angles in the range -180, 180 x-axis oriented, and the sort order.
     """
     pnts = np.asarray(pnts, dtype='float64')
     if cent is None:
