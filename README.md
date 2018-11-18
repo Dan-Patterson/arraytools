@@ -98,6 +98,7 @@ Available modules and subpackages
     7.  iterable_dict - iterable to dictionary
     8.  dict_struct   - dictionary to structured array
     9.  struct_dict   - structured array to dictionary
+    10. excel_np      - excel xls/xlsx to numpy structured array using xlrd
 
 **data_maker.py**
     Various functions for creating data.  Functions for numeric and text data conforming to 
