@@ -39,6 +39,11 @@ __all__ = ['load_npy',
            'load_txt',
            'save_txt',
            'arr_json',
+           'dict_arrays',
+           'iterable_dict',
+           'dict_struct',
+           'struct_dict',
+           'excel_np'
            ]
 
 
@@ -257,16 +262,130 @@ def struct_dict(a):
         return {i: a[i].tolist() for i in names}
 
 
-def _demo():
+def excel_np(path, sheet_num=0):
+    """Read excel files to numpy structured/record arrays.  Your spreadsheet
+    must adhere to simple rules::
+      - first row must contain the field names for the output array
+      - no blank rows or columns, basically, no fluff or formatting
+      - if you have nodata values, put them in, since blank cells will be
+        'corrected' as best as possible.
+      - text and numbers in a column, results in a text column
+
+    Parameters:
+    -----------
+    path : text
+        Full path to the xls, xlsx file
+    sheet_num : integer
+        Sheets are numbered from 0.
+
+    Returns:
+    --------
+    A numpy structured array is returned.  Excel only uses float or string
+    data, so attempts are made to coerse integer columns by comparing the
+    float vs int versions of the arrays.  A tad of a kludge, but it works.
+
+    The first row's data type is compared to its matching column data type.
+    If they match, then it is used as the dtype.  If there is a mismatch an
+    attempt is made to recover numeric data by assigning blanks etc in numeric
+    columns a value of np.nan.
+
+    String/text columns are check for empty cells, '', "" and that ever so
+    ugly invisible space.
+
+    Notes:
+    ------
+    >>> aString = open('c:/temp/test.xlsx','rb').read()
+    >>> book_ = open_workbook(file_contents=aString)
+    >>> dir(book_):
+        get_sheet, nsheets, sheet_by_index, sheet_by_name etc....
+
+    Now you can read a sheet
+    >>> sheet = book_.sheet_by_index(0)  # first sheet
+    >>> sheet.col_types(0)
+    References:
+    ----------
+    `<https://media.readthedocs.org/pdf/xlrd/latest/xlrd.pdf>'_.
     """
-    : -
+    def _values(sheet, rows, cols):
+        """return cell types for the above.  Skip the first row
+        Not use.... just kept for future reference
+        """
+        ar = []
+        for i in range(1, rows):
+            c = []
+            for j in range(cols):
+                c.append(sheet.cell_values(i, j))  # sheet.cell_types also
+            ar.append(c)
+        return ar
+
+    def isfloat(a):
+        """float check"""
+        try:
+            i = float(a)
+            return i
+        except ValueError:
+            return np.nan
+
+    def punc_space(name):
+        """delete punctuation and spaces and replace with '_'"""
+        punc = list('!"#$%&\'()*+,-./:;<=>?@[\\]^`{|}~ ')
+        return "".join([[i, '_'][i in punc] for i in name])
+
+    import xlrd
+    w = xlrd.open_workbook(path)        # xlrd.book.Book class
+    sheet = w.sheet_by_index(sheet_num) # sheet by number
+    # sheet = w.sheet_by_name('test')   # case sensitive, not implemented
+    names = sheet.row_values(0)         # clean these up later
+    cols = sheet.ncols
+    rows = sheet.nrows
+    col_data = [sheet.col_values(i, 1, rows) for i in range(cols)]
+    row_guess = sheet.row_values(1)
+    row_dts = [np.asarray(i).dtype.kind for i in row_guess]
+    col_dts = [np.asarray(col_data[i]).dtype.kind
+               for i in range(cols)]
+    clean = []
+    for i in range(len(row_dts)):
+        c = col_data[i]
+        if row_dts[i] == col_dts[i]:    # same dtype... send to array
+            ar = np.asarray(c)
+        if row_dts[i] == 'f':           # float? if so, substitute np.nan
+            ar = np.array([isfloat(i) for i in c])
+            if np.all(np.equal(ar, ar.astype('int'))):  # integer check
+                ar = ar.astype('int')
+        elif row_dts[i] in ('U', 'S'):  # unicode/string... send to array
+            ar = np.char.strip(ar)
+            ar = np.where(np.char.str_len(ar) == 0, 'None', ar)
+        else:
+            ar = np.asarray(c)
+        clean.append(ar)
+    # ---- assemble the columns for the array ----
+    dt_str = [i.dtype.str for i in clean]
+    names = [i.strip() for i in names]      # clean up leading/trailing spaces
+    names = [punc_space(i) for i in names]  # replace punctuation and spaces
+    dts_name = list(zip(names, dt_str))
+    arr = np.empty((rows-1,), dtype= dts_name)
+    cnt = 0
+    for i in names:
+        arr[i] = clean[cnt]
+        cnt +=1
+    return arr
+
+
+def _demo_npy():
+    """
     """
     _npy = "/Data/sample_10K.npy"  # change to one in the Data folder
-
     _npy = "{}".format(script.replace("a_io.py", _npy))
     return _npy
 
-
+def _demo_xlsx():
+    """
+    """
+    _xlsx = "/Data/test.xlsx"
+#    _xlsx = "/Data/Test_10K.xlsx"
+    _xlsx = "{}".format(script.replace("a_io.py", _xlsx))
+    arr = excel_np(_xlsx)
+    return arr
 # ----------------------------------------------------------------------
 # __main__ .... code section
 if __name__ == "__main__":
