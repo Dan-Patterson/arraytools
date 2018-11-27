@@ -7,11 +7,12 @@ Script :   tblstats.py
 
 Author :   Dan.Patterson@carleton.ca
 
-Modified : 2018-11-13
+Modified : 2018-11-23
 
 Purpose :  Descriptive statistics for tables using numpy.
 
 References:
+-----------
 
 `<https://github.com/numpy/numpy/blob/master/numpy/lib/nanfunctions.py>`_.
 
@@ -36,19 +37,19 @@ np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
 
-__all__ = ['group_stats',       # interdependent function in decending order
-           'col_stats',         # called by group_stats
-           '_numeric_fields_',  # called by col_stats
-           '_calc_stats',       # called by col_stats
+__all__ = ['freq',
+           'summ',
            'skew_kurt',         # called by _calc_stats
-           'freq',
-           'summ'
+           '_calc_stats',       # called by col_stats
+           '_numeric_fields_',  # called by col_stats
+           'col_stats',         # called by col_stats
+           'group_stats',       # called by col_stats
            ]
 
 if 'prn' not in locals().keys():
     try:
         from arraytools.frmts import prn
-        print("`prn` imported from arraytools")
+        # print("`prn` imported from arraytools")
     except:
         prn = print
 
@@ -322,8 +323,3 @@ if __name__ == "__main__":
     : - run the _demo
     """
 #    print("Script... {}".format(script))
-
-codeblock = '''
-def dosomething(a):
-    print(a)
-    return a'''

@@ -7,15 +7,16 @@ Script :   utils.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2018-10-25
+Modified : 2018-11-22
 
 Purpose:  tools for working with numpy arrays
 
-Useage :
+Useage:
+-------
 
-**1.  doc_func(func=None)** : see get_func and get_modu
+**doc_func(func=None)** : see get_func and get_modu
 
-**2.  get_func** : retrieve function information
+**get_func** : retrieve function information
 ::
     get_func(func, line_nums=True, verbose=True)
     print(art.get_func(art.main))
@@ -32,11 +33,11 @@ Useage :
        1   '''Do nothing'''
        2      pass
 
-**3.  get_modu** : retrieve module info
+**get_modu** : retrieve module info
 
     get_modu(obj, code=False, verbose=True)
 
-**4.  info(a, prn=True)** : retrieve array information
+**info(a, prn=True)** : retrieve array information
 ::
     - array([(0, 1, 2, 3, 4), (5, 6, 7, 8, 9),
              (10, 11, 12, 13, 14), (15, 16, 17, 18, 19)],
@@ -62,10 +63,13 @@ Useage :
          |__['C', '<i8']
          |__['D', '<i8']
          |__['E', '<i8']
+
 References
 ----------
 `<http://pro.arcgis.com/en/pro-app/arcpy/data-access/numpyarraytotable.htm>`_.
+
 `<http://pro.arcgis.com/en/pro-app/arcpy/data-access/tabletonumpyarray.htm>`_.
+
 ---------------------------------------------------------------------
 """
 
@@ -88,65 +92,19 @@ np.ma.masked_print_option.set_display('-')  # change to a single -
 script = sys.argv[0]  # print this should you need to locate the script
 
 
-__all__ = ['keep_ascii',
-           'keep_nums',
-           'del_punc',
-           'time_deco',
+__all__ = ['time_deco',
            'run_deco',
            'doc_func',
            'get_func',
            'get_modu',
            'dirr',
-           'wrapper']
+           'wrapper',
+           '_utils_help_'
+           ]
 
 # ---- decorators and helpers ------------------------------------------------
 #
-def keep_ascii(s):
-    """Remove non-ascii characters which may be bytes or unicode characters
-    """
-    if isinstance(s, bytes):
-        u = s.decode("utf-8")
-        u = "".join([['_', i][ord(i) <128] for i in u])
-        return u
-    return s
 
-def is_float(a):
-    """float check"""
-    try:
-        np.asarray(a, np.float_)
-        return True
-    except ValueError:
-        return False
-
-def keep_nums(s):
-    """Remove all non-numbers and return an integer.
-    """
-    s = keep_ascii(s)
-    s ="".join([i for i in s if i.isdigit() or i == " "]).strip()
-    return int(s)
-
-
-def del_punc(s, keep_under=False, keep_space=False):
-    """Remove punctuation with options to keep the underscore and spaces.
-    If keep_space is True, then they will not be replaced with an underscore.
-    False, will replace them.  Check for bytes as well.
-    """
-    s = keep_ascii(s)
-    repl = ' '
-    punc = list('!"#$%&\'()*+,-./:;<=>?@[\\]^`{|}~')
-    if keep_under:
-        punc.append('_')
-    if not keep_space:
-        punc.append(' ')
-        repl = ''
-    s = "".join([[i, repl][i in punc] for i in s])
-    return s
-
-
-def del_punc_space(name, repl_with='_'):
-    """delete punctuation and spaces and replace with '_'"""
-    punc = list('!"#$%&\'()*+,-./:;<=>?@[\\]^`{|}~ ')
-    return "".join([[i, repl_with][i in punc] for i in name])
 
 
 def time_deco(func):  # timing originally
@@ -445,10 +403,7 @@ def dirr(obj, colwise=False, cols=4, sub=None, prn=True):
 
     Source : arraytools.py_tools has a pure python equivalent
 
-    Return a directory listing of a module's namespace or a part of it if the
-    `sub` option is specified.
-
-    Use `prn=True`, to print. `prn=False`, returns a string.
+    Other : arraytools `__init__._info()` has an abbreviated version
 
     Parameters
     ----------
@@ -465,10 +420,15 @@ def dirr(obj, colwise=False, cols=4, sub=None, prn=True):
     prn : boolean
       `True` for print or `False` to return output as string
 
+    Return:
+    -------
+    A directory listing of a module's namespace or a part of it if the
+    `sub` option is specified.
+
     Notes
     -----
     See the `inspect` module for possible additions like `isfunction`,
-    'ismethod`, `ismodule`
+    `ismethod`, `ismodule`
 
     **Examples**::
 
@@ -590,6 +550,7 @@ def _utils_help_():
     :-------------------------------------------------------------------:
     """
     print(dedent(_hf))
+
 # ----------------------------------------------------------------------
 # .... final code section producing the featureclass and extendtable
 

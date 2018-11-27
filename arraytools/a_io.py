@@ -7,7 +7,7 @@ Script :   a_io.py
 
 Author :   Dan.Patterson@carleton.ca
 
-Modified : 2018-10-22
+Modified : 2018-11-17
 
 Purpose : Basic io tools for numpy arrays and arcpy
 
@@ -18,6 +18,8 @@ Notes :
     3.  read_txt    - read array created by save_txtt
     4.  save_txt    - save array to npy format
     5.  arr_json    - save to json format
+    6-9 dict<->array conversions
+    10. excel_np    - convert xls/xlsx files to numpy structured/recarray
 
 ---------------------------------------------------------------------
 """
@@ -140,7 +142,7 @@ def arr_json(file_out, arr=None):
 
 
 # ----------------------------------------------------------------------
-# (6) Dictionary - array section
+# (6 - 9) Dictionary - array section
 # dict_arrays, iterable_dict, struct_dict
 def dict_arrays(d):
     """Dictionary to arrays
@@ -262,7 +264,9 @@ def struct_dict(a):
         return {i: a[i].tolist() for i in names}
 
 
-def excel_np(path, sheet_num=0):
+# ----------------------------------------------------------------------
+# (10) excel_np
+def excel_np(path, sheet_num=0, int_null=-999):
     """Read excel files to numpy structured/record arrays.  Your spreadsheet
     must adhere to simple rules::
       - first row must contain the field names for the output array
@@ -277,6 +281,12 @@ def excel_np(path, sheet_num=0):
         Full path to the xls, xlsx file
     sheet_num : integer
         Sheets are numbered from 0.
+
+    int_null : integer
+        Integer value to use for nulls. Strings have `None`, floats `np.nan`
+        but integers have no equivalent so you have to provide one.
+        you could use np.iinfo(np.intXX).min where XX is 8, 16, 32 to reflect
+        the appropriate integer minimums
 
     Returns:
     --------
@@ -300,15 +310,17 @@ def excel_np(path, sheet_num=0):
         get_sheet, nsheets, sheet_by_index, sheet_by_name etc....
 
     Now you can read a sheet
+
     >>> sheet = book_.sheet_by_index(0)  # first sheet
     >>> sheet.col_types(0)
+
     References:
     ----------
-    `<https://media.readthedocs.org/pdf/xlrd/latest/xlrd.pdf>'_.
+    `<https://media.readthedocs.org/pdf/xlrd/latest/xlrd.pdf>`_.
     """
     def _values(sheet, rows, cols):
         """return cell types for the above.  Skip the first row
-        Not use.... just kept for future reference
+        Not used .... just kept for future reference
         """
         ar = []
         for i in range(1, rows):
@@ -350,7 +362,10 @@ def excel_np(path, sheet_num=0):
             ar = np.asarray(c)
         if row_dts[i] == 'f':           # float? if so, substitute np.nan
             ar = np.array([isfloat(i) for i in c])
-            if np.all(np.equal(ar, ar.astype('int'))):  # integer check
+            is_nan = np.isnan(ar)       # find the nan values, then check
+            not_nan = ar[~is_nan]       # are the floats == ints?
+            if np.all(np.equal(not_nan, not_nan.astype('int'))):  # integer?
+                ar[is_nan] = int_null   # assign the integer null
                 ar = ar.astype('int')
         elif row_dts[i] in ('U', 'S'):  # unicode/string... send to array
             ar = np.char.strip(ar)
@@ -371,6 +386,25 @@ def excel_np(path, sheet_num=0):
     return arr
 
 
+def openxl_np(path):
+    """read excel using openpyxl
+    A = np.array([[i.value for i in j] for j in ws['C1':'E38']])
+
+    `<https://stackoverflow.com/questions/35823835/reading-excel-file-is-
+    magnitudes-slower-using-openpyxl-compared-to-xlrd>`_.
+
+    cols = sheet.max_column  # sheet.min_column  1 to max
+    rows = sheet.max_row  # sheet.min_row
+    """
+    import openpyxl as op
+    wb =op.load_workbook(path, data_only=True, guess_types=True,
+                        keep_links=False)
+    sheets = wb.sheetnames
+    sheet = wb[sheets[0]]
+    data = list(sheet.values)
+    #header = data[0]
+    return data
+
 def _demo_npy():
     """
     """
@@ -381,10 +415,10 @@ def _demo_npy():
 def _demo_xlsx():
     """
     """
-    _xlsx = "/Data/test.xlsx"
-#    _xlsx = "/Data/Test_10K.xlsx"
-    _xlsx = "{}".format(script.replace("a_io.py", _xlsx))
-    arr = excel_np(_xlsx)
+#    _xlsx = "/Data/test2.xlsx"  # page 0 or page 1
+    _xlsx = "/Data/Test_10K.xlsx"
+    path = script.rpartition("/")[0] + _xlsx
+    arr = excel_np(path, 0)
     return arr
 # ----------------------------------------------------------------------
 # __main__ .... code section

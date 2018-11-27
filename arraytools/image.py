@@ -74,7 +74,7 @@ def _pad_nan(a, nan_edge=True):
 def _pad_zero(a, n=1):
     """To use when padding a strided array for window construction. n = number
     : of zeros to pad arround the array
-    : see also: nan_to_num (1.13)
+    : see also: nun_to_nan (1.13)
     """
     ap = np.pad(a, pad_width=(n, n), mode="constant", constant_values=(0, 0))
     return ap

@@ -7,22 +7,20 @@ Script :   grid.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2018-09-21
+Modified : 2018-11-23
 
 Purpose :  tools for working with numpy arrays
 
 Requires:
 ---------
-    arraytools.tools - nd2struct, stride
+arraytools.tools - nd2struct, stride
 
 Functions:
 ----------
 >>> art.grid.__all__
-['combine_', 'check_shapes', 'check_stack', 'mask_stack', 'combine_',
- 'stack_percentile', 'stack_sum', 'stack_cumsum', 'stack_prod',
- 'stack_cumprod', 'stack_min', 'stack_mean', 'stack_median', 'stack_max',
- 'stack_std', 'stack_var', 'stack_stats', 'expand_zone', 'fill_arr',
- 'reclass_vals', 'reclass_ranges', 'scale_up']
+['check_shapes', 'combine_', 'expand_zone', 'euc_dist', 'euc_alloc', 'expand_',
+ 'shrink_', 'regions_', 'expand_zone', 'fill_arr', 'reclass_vals',
+ 'reclass_ranges', 'scale_up']
 
 References:
 -----------
@@ -37,33 +35,30 @@ intersect-multiple-2d-np-arrays-for-determining-zones>`_
 ---------------------------------------------------------------------:"""
 # ---- imports, formats, constants ----
 import sys
-from textwrap import dedent, indent
+#from textwrap import dedent, indent
 import numpy as np
-from arraytools.tools import nd2struct, stride
+from arraytools.tools import nd_rec, stride
 
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
-      'float_kind': '{: 0.3f}'.format}
+      'float_kind': '{: 0.2f}'.format}
 np.set_printoptions(edgeitems=5, linewidth=80, precision=2, suppress=True,
-                    threshold=100, formatter=ft)
+                    threshold=500, formatter=ft)
 np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
 
-__all__ = ['combine_',      # 3D array functions
-           'check_shapes',
-           'check_stack',
-           'mask_stack',
+__all__ = ['check_shapes',
            'combine_',
-           'stack_percentile',    # statistical functions
-           'stack_sum', 'stack_cumsum',
-           'stack_prod', 'stack_cumprod', 'stack_min', 'stack_mean',
-           'stack_median', 'stack_max', 'stack_std', 'stack_var',
-           'stack_stats',
-           'expand_zone',  # other functions
-           'fill_arr',
-           'reclass_vals',
-           'reclass_ranges',
-           'scale_up'
+           'euc_dist',
+           'euc_alloc',
+           'expand_',
+           'shrink_',
+           'regions_',
+          'expand_zone',  # other functions
+          'fill_arr',
+          'reclass_vals',
+          'reclass_ranges',
+          'scale_up'
            ]
 
 
@@ -80,36 +75,9 @@ def check_shapes(arrs):
         raise ValueError("{}\n{}".format(err, shps))
 
 
-def check_stack(arrs):
-    """Do the basic checking of the stack to ensure that a 3D array is
-    :  generated
-    """
-    err1 = "Object, structured arrays not supported, current type..."
-    err2 = "3D arrays supported current ndim..."
-    if isinstance(arrs, (list, tuple)):
-        arrs = np.array(arrs)
-    if arrs.dtype.kind in ('O', 'V'):
-        raise ValueError("{} {}".format(err1, arrs.dtype.kind))
-    if arrs.ndim != 3:
-        raise ValueError("{} {}".format(err2, arrs.ndim))
-    return arrs
-
-
-def mask_stack(arr, nodata=None):
-    """Produce masks for a 3d array"""
-    if (nodata is None) or (arr.ndim < 2) or (arr.ndim > 3):
-        print("\n...mask_stack requires a 3d array and a nodata value\n")
-        return arr
-    m = (arr[:, ...] == nodata).any(0)
-    msk = [m for i in range(arr.shape[0])]
-    msk = np.array(msk)
-    a_m = np.ma.MaskedArray(arr, mask=msk)
-    return a_m
-
-
-# ---- 3D array functions ----------------------------------------------------
+# ---- array functions ----------------------------------------------------
 # (1) combine ----
-def combine_(*arrs, ret_classes=False):
+def combine_(arrs, ret_classes=False):
     """Combine arrays to produce a unique classification scheme
 
     `arrs` : iterable
@@ -129,8 +97,7 @@ def combine_(*arrs, ret_classes=False):
     check_shapes(arrs)
     seq = [isinstance(i, (list, tuple)) for i in arrs]
     is_seq = np.array(seq).all()
-    is_nd = [isinstance(i, np.ndarray) for i in arrs]
-    is_nd.all()
+    is_nd = np.array([isinstance(i, np.ndarray) for i in arrs]).all()
     if is_seq:
         indices = [np.unique(arr, return_inverse=True)[1] for arr in arrs]
     elif is_nd:
@@ -154,139 +121,154 @@ def combine_(*arrs, ret_classes=False):
     if ret_classes:
         classes = np.array([np.ravel(i) for i in arrs]).T
         classes = np.c_[classes, cls_new]
-        classes = nd2struct(classes)
+        classes = nd_rec(classes)    # call nd_rec
         classes = np.unique(classes)
-        classes = classes[np.argsort(classes, order=classes.dtype.names[-1])]
+        classes = classes[np.argsort(classes, order=classes.dtype.names)]
         return combo, classes
     else:
         return combo
 
 
-# ---- Statistics for stacked arrays (3D) ------------------------------------
+def euc_dist(a, origins=0, cell_size=1):
+    """Calculate the euclidean distance and/or allocation
+
+    Parameters:
+    -----------
+    a : array
+        numpy float or integer array
+    origins : number, list or tuple
+        The locations to calculate distance for.  Anything that is not a mask
+        is an origin. If a single number is provided, a `mask` will be created
+        using it.  A list/tuple of values can be used for multiple value
+        masking.
+    cell_size : float, int
+        The cell size of the raster.  What does each cell represent on the
+        ground.  1.0 is assumed
+    """
+    from scipy import ndimage as nd
+    #
+    cell_size = abs(cell_size)
+    if cell_size == 0:
+        cell_size = 1
+    msk = (~np.isin(a, origins)).astype('int')
+    dist = nd.distance_transform_edt(msk,
+                                     sampling=cell_size,
+                                     return_distances=True)
+    return dist
+
+
+def euc_alloc(a, fill_zones=0):
+    """Calculate the euclidean distance and/or allocation
+
+    Parameters:
+    a : array
+        numpy float or integer array
+    fill_zones : number, list or tuple
+        These are the cells/zones to fill with the values of the closest cell.
+        If a single number is provided, a `mask` will be created using it.  A
+        list or tuple of values can be used to provide multiple value masking.
+    dist : boolean
+        True, the distance of the closest non-masked value to the masked cell
+    alloc : boolean
+        True, the value of the closest non-masked value to the masked cell
+    """
+    from scipy import ndimage as nd
+    #
+    msk = (np.isin(a, fill_zones)).astype('int')
+    idx = nd.distance_transform_edt(msk,
+                                    return_distances=False,
+                                    return_indices=True)
+    alloc = a[tuple(idx)]
+    return alloc
+
+
+def expand_(a, val=1, mask_vals=0, buff_dist=1):
+    """Expand/buffer a raster by cells (a distance)
+    """
+    from scipy import ndimage as nd
+    if isinstance(val, (list, tuple)):
+        m = np.isin(a, val, invert=True).astype('int')
+    else:
+        m = np.where(a==val, 0, 1)
+    dist, idx = nd.distance_transform_edt(m, return_distances=True,
+                                          return_indices=True)
+    alloc = a[tuple(idx)]
+    a0 = np.where(dist<=buff_dist, alloc, a)  #0)
+    return a0
+
+
+def shrink_(a, val=1, mask_vals=0, buff_dist=1):
+    """Expand/buffer a raster by a distance
+    """
+    from scipy import ndimage as nd
+    if isinstance(val, (list, tuple)):
+        m = np.isin(a, val, invert=False).astype('int')
+    else:
+        m = np.where(a==val, 1, 0)
+    dist, idx = nd.distance_transform_edt(m, return_distances=True,
+                                          return_indices=True)
+    alloc = a[tuple(idx)]
+    m = np.logical_and(dist>0, dist<=buff_dist)
+    a0 = np.where(m, alloc, a)  #0)
+    return a0
+
+def regions_(a, cross=True):
+    """Delineate `regions` or `zones` in a raster.  This is analogous to
+    `regiongroup` in gis software.  In scipy.ndimage, a `label` is ascribed
+    to these groupings.  Any nonzero value will be considered a zone.
+    A `structure` is used to filter the raster to describe cell connectivity.
+
+    Parameters:
+    -----------
+    a : ndarray
+        pre-processing may be needed to assign values to `0` which will be
+        considered background/offsite
+    cross : boolean
+       - True, [[0,1,0], [1,1,1], [0,1,0]], diagonal cells not included
+       - False, [[1,1,1], [1,1,1], [1,1,1]], diagonals included
+
+    Notes:
+    ------
+    The use of `np.unique` will ensure that array values are queried and
+    returned in ascending order.
+
+    big sample 2000x2000  about 1 sec with 16 classes
+        aa = np.repeat(np.repeat(a, 500, axis=1), 500, axis=0)
+    """
+    from scipy import ndimage as nd
+    #
+    if (a.ndim != 2) or (a.dtype.kind != 'i'):
+        msg = "\nA 2D array of integers is required, you provided\n{}"
+        print(msg.format(a))
+        return a
+    if cross:
+        struct = np.array([[0,1,0], [1,1,1], [0,1,0]])
+    else:
+        struct = np.array([[1,1,1], [1,1,1], [1,1,1]])
+    #
+    u = np.unique(a)
+    out = np.zeros_like(a, dtype=a.dtype)
+    details = []
+    is_first = True
+    for i in u:
+        z = np.where(a==i, 1, 0)
+        s, n = nd.label(z, structure=struct)
+        details.append([i, n])
+        m = np.logical_and(out==0, s!=0)
+        if is_first:
+            out = np.where(m, s, out)
+            is_first = False
+            n_ = n
+        else:
+            out = np.where(m, s+n_, out)
+            n_ += n
+    details = np.array(details)
+    details = np.c_[(details, np.cumsum(details[:,1]))]
+    return out, details
+
+
+# ---- Raster functions ------------------------------------
 #
-def stack_percentile(arrs, q=50, nodata=None):
-    """nanpercentile for an array stack with optional nodata masked
-
-    `arrs` : iterable
-        Either a list, tuple of arrays or an array with ndim=3
-    `q` : number
-        The percentile
-    `nodata` : number
-        nodata value, numeric or np.nan (will upscale integers)
-    """
-    a = check_stack(arrs)
-    if nodata is not None:
-        a = mask_stack(a, nodata=nodata)
-    nan_per = np.nanpercentile(a, q=q, axis=0)
-    return nan_per
-
-
-def stack_sum(arrs, nodata=None):
-    """see stack_stats"""
-    a = check_stack(arrs)
-    if nodata is not None:
-        a = mask_stack(a, nodata=nodata)
-    return np.nansum(a, axis=0)
-
-
-def stack_cumsum(arrs, nodata=None):
-    """see stack_stats"""
-    a = check_stack(arrs)
-    if nodata is not None:
-        a = mask_stack(a, nodata=nodata)
-    return np.nancumsum(a, axis=0)
-
-
-def stack_prod(arrs, nodata=None):
-    """see stack_stats"""
-    a = check_stack(arrs)
-    if nodata is not None:
-        a = mask_stack(a, nodata=nodata)
-    return np.nanprod(a, axis=0)
-
-
-def stack_cumprod(arrs, nodata=None):
-    """see stack_stats"""
-    a = check_stack(arrs)
-    if nodata is not None:
-        a = mask_stack(a, nodata=nodata)
-    return np.nancumprod(a, axis=0)
-
-
-def stack_min(arrs, nodata=None):
-    """see stack_stats"""
-    a = check_stack(arrs)
-    if nodata is not None:
-        a = mask_stack(a, nodata=nodata)
-    return np.nanmin(a, axis=0)
-
-
-def stack_mean(arrs, nodata=None):
-    """see stack_stats"""
-    a = check_stack(arrs)
-    if nodata is not None:
-        a = mask_stack(a, nodata=nodata)
-    return np.nanmean(a, axis=0)
-
-
-def stack_median(arrs, nodata=None):
-    """see stack_stats"""
-    a = check_stack(arrs)
-    if nodata is not None:
-        a = mask_stack(a, nodata=nodata)
-    return np.nanmedian(a, axis=0)
-
-
-def stack_max(arrs, nodata=None):
-    """see stack_stats"""
-    a = check_stack(arrs)
-    if nodata is not None:
-        a = mask_stack(a, nodata=nodata)
-    return np.nanmax(a, axis=0)
-
-
-def stack_std(arrs, nodata=None):
-    """see stack_stats"""
-    a = check_stack(arrs)
-    if nodata is not None:
-        a = mask_stack(a, nodata=nodata)
-    return np.nanstd(a, axis=0)
-
-
-def stack_var(arrs, nodata=None):
-    """see stack_stats"""
-    a = check_stack(arrs)
-    if nodata is not None:
-        a = mask_stack(a, nodata=nodata)
-    return np.nanvar(a, axis=0)
-
-
-def stack_stats(arrs, ax=0, nodata=None):
-    """All statistics for arrs
-
-    `arrs` : iterable
-         Either a list, tuple of arrays or an array with ndim=3
-    `ax` : number
-        axis, either 0 (by band) or (1, 2) to get a single value for each band
-    `nodata` : number
-        nodata value, numeric or np.nan (will upscale integers)
-    """
-    arrs = check_stack(arrs)
-    a_m = mask_stack(arrs, nodata=nodata)
-    nan_sum = np.nansum(a_m, axis=ax)
-    nan_min = np.nanmin(a_m, axis=ax)
-    nan_mean = np.nanmean(a_m, axis=ax)
-    nan_median = np.nanmean(a_m, axis=ax)
-    nan_max = np.nanmax(a_m, axis=ax)
-    nan_std = np.nanstd(a_m, axis=ax)
-    nan_var = np.nanvar(a_m, axis=ax)
-    stats = [nan_sum, nan_min, nan_mean, nan_median, nan_max, nan_std, nan_var]
-    if len(ax) == 1:
-        nan_cumsum = np.nancumsum(a_m, axis=ax)
-        stats.append(nan_cumsum)
-    return stats
-
-
 def expand_zone(a, zone=None, win=2):
     """Expand a value (zone) in a 2D array, normally assumed to represent a
     raster surface.
@@ -333,7 +315,9 @@ def expand_zone(a, zone=None, win=2):
 
 
 def fill_arr(a, win=(3, 3)):
-    """try filling an array"""
+    """try filling an array
+    as in fill, sinks
+    """
     fd = np.array([[32, 64, 128], [16, 0, 1], [8, 4, 2]])  # flow direction
 #    if (zone < a.min()) or (zone > a.max()) or (zone is None):
 #        print("\nYou need a zone that is within the range of values.")
@@ -359,7 +343,7 @@ def fill_arr(a, win=(3, 3)):
             # do stuff
             sub = a_s[i, j].ravel()
             edges = np.asarray([sub[:4], sub[5:]]).ravel()
-            e_min = edges[np.argmin(edges)]
+            e_min = edges[np.argmax(edges)]  # argmax or argmin???
             if sub[4] < e_min:
                 out.append(e_min)
             else:
@@ -575,6 +559,22 @@ def _demo():
                         mask_val=None)
     return a_rc
 
+def _demo_euclid():
+    """ euclid functions"""
+    a = np.array([[0,1,0,0,2,0,0,0],   # note the block of 0's in the
+                  [1,0,0,1,1,0,0,0],   # top right corner
+                  [0,1,0,1,1,0,0,0],
+                  [0,2,0,3,0,0,0,3],
+                  [0,1,2,0,0,4,2,0],
+                  [4,0,0,3,2,5,1,0],
+                  [1,1,0,0,0,5,0,0],   # and the bottom right
+                  [0,5,0,4,0,3,0,0]])
+    b = np.array(([0,1,1,1,1],  # from scipy help
+                  [0,0,1,1,1],
+                  [0,1,1,1,1],
+                  [0,1,1,1,0],
+                  [0,1,1,0,0]))
+    return a, b
 
 # ----------------------------------------------------------------------
 # __main__ .... code section

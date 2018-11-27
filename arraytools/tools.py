@@ -7,7 +7,7 @@ Script :   tools.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2018-11-02
+Modified : 2018-11-23
 
 Purpose :  tools for working with numpy arrays
 
@@ -27,10 +27,11 @@ Useage:
 ---------
 **Basic array information**
 
-*np.typecodes* and
-*np.sctypeDict*
+`np.typecodes` and `np.sctypeDict`
     np.sctypeDict.keys()
-*np.sctypes*
+
+`np.sctypes`
+
 >>> for i in np.sctypes:
     print("{!s:<8} : {}".format(i, np.sctypes[i]))
 
@@ -41,10 +42,11 @@ uint     : [<class 'numpy.uint8'>, <class 'numpy.uint16'>,
 float    : [<class 'numpy.float16'>, <class 'numpy.float32'>,
             <class 'numpy.float64'>]
 complex  : [<class 'numpy.complex64'>, <class 'numpy.complex128'>]
+
 others   : [<class 'bool'>, <class 'object'>, <class 'bytes'>,
             <class 'str'>, <class 'numpy.void'>]
 
-*np.typecodes.items()*  ... *np.typecodes['AllInteger']*
+`np.typecodes.items()`  ... `np.typecodes['AllInteger']`
 ::
     All: '?bhilqpBHILQPefdgFDGSUVOMm'
     |__AllFloat: 'efdgFDG'
@@ -57,7 +59,7 @@ others   : [<class 'bool'>, <class 'object'>, <class 'bytes'>,
     |__Character': 'c'
     |__Other:  'U', '?', 'S', 'O', 'V'  Determined from the above
 
-*np.sctypes.keys* and *np.sctypes.values*
+`np.sctypes.keys` and `np.sctypes.values`
 ::
     numpy classes
     |__complex  complex64, complex128, complex256
@@ -80,32 +82,9 @@ others   : [<class 'bool'>, <class 'object'>, <class 'bytes'>,
 
 **Functions**
 -------------
-    Tool function examples follow...
+Tool function examples follow...
 
-**1.  n largest, n_smallest**
-
->>> a = np.arange(0, 9)  # array([0, 1, 2, 3, 4, 5, 6, 7, 8])
->>> n_largest(a, num=2, by_row=True)
-array([[ 2,  3],
-       [ 6,  7],
-       [10, 11]])
->>> n_largest(a, num=2, by_row=False)
-array([[ 4,  8],
-       [ 5,  9],
-       [ 6, 10],
-       [ 7, 11]])
-
-**2.  num_to_nan, num_to_mask** : nan stuff
-
->>> a = np.arange(6)  # array([0, 1, 2, 3, 4, 5])
->>> num_to_nan(a, nums=[2, 3])
-array([ 0.,  1., nan, nan,  4.,  5.])
->>> num_to_mask(a, nums=[2, 3]) ...
-masked_array(data = [0 1 - - 4 5],
-             mask = [False False  True  True False False],
-       fill_value = 999999)
-
-**3. arr2xyz** : convert 2/3D arrays into xyz values (ie 2D)
+**1. arr2xyz** : convert 2/3D arrays into xyz values (ie 2D)
 
 arr2xyz(a, verbose=False)** : convert an array to x,y,z values, using
 row/column values for x and y
@@ -119,7 +98,7 @@ row/column values for x and y
            [1, 1, 4],
            [2, 1, 5]])
 
-**4. make_blocks** : create array blocks
+**2. make_blocks** : create array blocks
 
 >>> make_blocks(rows=2, cols=4, r=2, c=2, dt='int')
 array([[0, 0, 1, 1, 2, 2, 3, 3],
@@ -127,13 +106,13 @@ array([[0, 0, 1, 1, 2, 2, 3, 3],
        [4, 4, 5, 5, 6, 6, 7, 7],
        [4, 4, 5, 5, 6, 6, 7, 7]])
 
-**5. group_vals(seq, stepsize=1)**
+**3. group_vals(seq, stepsize=1)**
 ::
     seq = [1, 2, 4, 5, 8, 9, 10]
     stepsize = 1
     [array([1, 2]), array([4, 5]), array([ 8,  9, 10])]
 
-**6. reclass(z, bins, new_bins, mask=False, mask_val=None)**
+**4. reclass(z, bins, new_bins, mask=False, mask_val=None)**
 
 Reclass an array using existing class breaks (bins) and new bins both must be
 in ascending order.
@@ -147,7 +126,7 @@ in ascending order.
              [ 5,  6,  7,  8,  9],          [2, 2, 2, 2, 2],
              [10, 11, 12, 13, 14]])         [3, 3, 3, 3, 3]])
 
-**7. scale(a, x=2, y=2)** : scale an array by x, y factors
+**5. scale(a, x=2, y=2)** : scale an array by x, y factors
 ::
       a = np.array([[0, 1, 2], [3, 4, 5]]
       b = scale(a, x=2, y=2)
@@ -168,7 +147,7 @@ using scale with np.tile
                                        [2, 2, 3, 3, 2, 2, 3, 3],
                                        [2, 2, 3, 3, 2, 2, 3, 3]])
 
-**8. split_array(a, fld='Id')**
+**6. split_array(a, fld='Id')**
 ::
      array 'b'
      array([(0, 1, 2, 3), (4, 5, 6, 7), (8, 9, 10, 11)],
@@ -181,7 +160,7 @@ using scale with np.tile
      array([(8, 9, 10, 11)],
           dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')])]
 
-**9.  make_flds(n=1, as_type=names=None, default="col")** : example
+**7.  make_flds(n=1, as_type=names=None, default="col")** : example
 
 >>> from numpy.lib._iotools import easy_dtype as easy
 >>> make_flds(n=1, as_type='float', names=None, def_name="col")
@@ -190,11 +169,11 @@ dtype([('col_00', '<f8')])
 >>> make_flds(n=2, as_type='int', names=['f01', 'f02'], def_name="col")
 dtype([('f01', '<i8'), ('f02', '<i8')])
 
-**10.  nd_rec** : ndarray to structured array or recarray
+**8.  nd_rec** : ndarray to structured array or recarray
 
-**11.  nd_struct** :
+**9.  nd_struct** :
 
-**12. nd2struct(a)**
+**10. nd2struct(a)**
 
 Keep the dtype the same
 ::
@@ -213,15 +192,15 @@ Upcast the dtype
            (15.0, 16.0, 17.0, 18.0, 19.0)],
           dtype=[('A', '<f8'), ... snip ... , ('E', '<f8')])
 
-**13. np2rec** : shell around above
+**11. np2rec** : shell around above
 
-**14. rc_vals(a)**
+**12. rc_vals(a)**
 
-**15. xy_vals(a) ... array to x, y, values**
+**13. xy_vals(a) ... array to x, y, values**
 
-**16. array_cols**
+**14. array_cols**
 
-**17. change_arr(a, order=[], prn=False)** : merely a convenience function
+**15. change_arr(a, order=[], prn=False)** : merely a convenience function
 ::
     a = np.arange(4*5).reshape((4, 5))
     change(a, [2, 1, 0, 3, 4])
@@ -238,11 +217,11 @@ Upcast the dtype
     e = a[[0, 1, 3], [1, 2, 3]]  # keep [0, 1], [1, 2], [3, 3]
                                    => ([ 1, 7, 18])
 
-**18. concat_arrs**
+**16. concat_arrs**
 
-**19. pad__(a, pad_with=None, size=(1, 1))**
+**17. pad__(a, pad_with=None, size=(1, 1))**
 
-**20. stride(a, r_c=(3, 3))**
+**18. stride(a, r_c=(3, 3))**
 
 Produce a strided array using a window of r_c shape.
 
@@ -259,11 +238,11 @@ Calls _check(a, r_c, subok=False) to check for array compliance
 `block`  calls stride with non-overlapping blocks with no padding
 
 
-**21. block(a, win=(3, 3))**
+**19. block(a, win=(3, 3))**
 
-**22. sliding_window_view**
+**20. sliding_window_view**
 
-**23.  block_arr(a, win=[3, 3], nodata=-1)**
+**21.  block_arr(a, win=[3, 3], nodata=-1)**
 
 Block an array given an input array, a window and a nodata value.
 ::
@@ -285,16 +264,16 @@ Block an array given an input array, a window and a nodata value.
           [15 -- --]]],
     mask .... snipped ....
 
-**24. rolling_stats() : stats for a strided array**
+**22. rolling_stats() : stats for a strided array**
 
     min, max, mean, sum, std, var, ptp
 
-**25. find(a, func, this=None, count=0, keep=[], prn=False, r_lim=2)**
+**23. find(a, func, this=None, count=0, keep=[], prn=False, r_lim=2)**
 
     func - (cumsum, eq, neq, ls, lseq, gt, gteq, btwn, btwni, byond)
            (        ==,  !=,  <,   <=,  >,   >=,  >a<, =>a<=,  <a> )
 
-**25a. _func(fn, a, this)**
+**23a. _func(fn, a, this)**
 
     called by 'find' see details there
     (cumsum, eq, neq, ls, lseq, gt, gteq, btwn, btwni, byond)
@@ -302,18 +281,18 @@ Block an array given an input array, a window and a nodata value.
 Note  see ``find1d_demo.py`` for examples
 
 
-**26. group_pnts(a, key_fld='ID', keep_flds=['X', 'Y', 'Z'])**
+**24. group_pnts(a, key_fld='ID', keep_flds=['X', 'Y', 'Z'])**
 
-**27. uniq(ar, return_index=False, return_inverse=False, return_counts=False,
+**25. uniq(ar, return_index=False, return_inverse=False, return_counts=False,
           axis=0)**
 
-**28. is_in(find_in, using, not_in=False)**
+**26. is_in(find_in, using, not_in=False)**
 
-**29. running_count**
+**27. running_count**
 
-**30. sequences(data, stepsize)**
+**28. sequences(data, stepsize)**
 
-**31. sort_rows_by_col(a, col=0, descending=False)**
+**29. sort_rows_by_col(a, col=0, descending=False)**
 
 Sort 2d ndarray by column
 ::
@@ -322,14 +301,15 @@ Sort 2d ndarray by column
              [1, 4, 1, 3],               [2, 3, 2, 2],
              [2, 1, 2, 4]])              [1, 4, 1, 3]])
 
-**32. sort_cols_by_row**
+**30. sort_cols_by_row**
 
-**33. radial_sort(pnts, cent=None)**
+**31. radial_sort(pnts, cent=None)**
+
+**32. pack_last_axis**
 
 
 References:
 ----------
-
 general
 
 `<https://github.com/numpy/numpy>`_.
@@ -355,6 +335,20 @@ numpy  # stride for convolve 4d
 `<https://stackoverflow.com/questions/2828059/sorting-arrays-in-numpy-by-
 column>`_.
 
+Functions
+---------
+Alphabetical listing
+
+:Members: .....
+   ['_func', '_tools_help_', 'arr2xyz', 'arrays_cols', 'block', 'block_arr',
+   'change_arr', 'concat_arrs', 'find', 'group_pnts', 'group_vals', 'is_in',
+   'make_blocks', 'make_flds', 'n_largest', 'n_smallest', 'nd2rec',
+   'nd2struct', 'nd_rec', 'nd_struct', 'num_to_mask', 'num_to_nan',
+   'pack_last_axis', 'pad_', 'radial_sort', 'rc_vals', 'reclass',
+   'rolling_stats', 'running_count', 'scale', 'sequences',
+   'sliding_window_view', 'sort_cols_by_row', 'sort_rows_by_col',
+   'split_array', 'stride', 'uniq', 'xy_vals']
+
 ---------------------------------------------------------------------
 """
 # ---- imports, formats, constants -------------------------------------------
@@ -367,45 +361,33 @@ from numpy.lib.stride_tricks import as_strided
 warnings.simplefilter('ignore', FutureWarning)
 
 __all__ = ['_tools_help_',
-           'arr2xyz', 'make_blocks',     # (3-8) ndarrays ... make arrays,
+           'arr2xyz', 'make_blocks',     # (1-6) ndarrays ... make arrays,
            'group_vals', 'reclass',      #     change shape, arangement
            'scale', 'split_array',
-           'make_flds', 'nd_rec',        # (9-16) structured/recdarray
+           'make_flds', 'nd_rec',        # (7-14) structured/recdarray
            'nd_struct', 'nd2struct',
            'nd2rec', 'rc_vals', 'xy_vals',
            'arrays_struct',
-           'change_arr', 'concat_arrs',  # (17-18) change/modify arrays
-           'pad_', 'stride', 'block',    # (19-24) stride, block and pad
+           'change_arr', 'concat_arrs',  # (15-16) change/modify arrays
+           'pad_', 'stride', 'block',    # (17-22) stride, block and pad
            'sliding_window_view',
            'block_arr', 'rolling_stats',
-           '_func', 'find', 'group_pnts', # (25-30) querying, analysis
+           '_func', 'find', 'group_pnts', # (23-28) querying, analysis
            'uniq','is_in',
            'running_count', 'sequences',
-           'sort_cols_by_row',            # (31-33) column and row sorting
+           'sort_cols_by_row',            # (29-31) column and row sorting
            'sort_rows_by_col',
            'radial_sort',
            'pack_last_axis'  # extras -------
             ]
 
 
-"""  Alphabetical listing
-:Members: .....
-   ['_func', '_tools_help_', 'arr2xyz', 'arrays_cols', 'block', 'block_arr',
-   'change_arr', 'concat_arrs', 'find', 'group_pnts', 'group_vals', 'is_in',
-   'make_blocks', 'make_flds', 'n_largest', 'n_smallest', 'nd2rec',
-   'nd2struct', 'nd_rec', 'nd_struct', 'num_to_mask', 'num_to_nan',
-   'pack_last_axis', 'pad_', 'radial_sort', 'rc_vals', 'reclass',
-   'rolling_stats', 'running_count', 'scale', 'sequences',
-   'sliding_window_view', 'sort_cols_by_row', 'sort_rows_by_col',
-   'split_array', 'stride', 'uniq', 'xy_vals']
-"""
-
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
       'float_kind': '{: 8.2f}'.format}
 
 np.set_printoptions(
         edgeitems=3,
-        threshold=60,
+        threshold=120,
         floatmode='maxprec',
         precision=2, suppress=True, linewidth=100,
         nanstr='nan', infstr='inf', sign='-',
@@ -416,7 +398,7 @@ script = sys.argv[0]  # print this should you need to locate the script
 
 
 
-# ---- (3) ndarrays ... code section .... ----
+# ---- (1) ndarrays ... code section .... ----
 # ---- make arrays, change shape, arrangement
 # ---- arr2xyz, makeblocks, rc_vals, xy_vals ----
 #
@@ -544,12 +526,12 @@ def make_blocks(rows=3, cols=3, r=2, c=2, dt='int'):
     return a
 
 
-def group_vals(seq, delta=1, oper='!='):
+def group_vals(seq, delta=0, oper='!='):
     """Group consecutive values separated by no more than delta
 
     Parameters
     ----------
-    `seq` :
+    `seq` : array, list tuple
         sequence of values
     `delta` :
         difference between consecutive values
@@ -558,12 +540,18 @@ def group_vals(seq, delta=1, oper='!='):
 
     Reference
     ---------
-        `https://stackoverflow.com/questions/7352684/
-         how-to-find-the-groups-of-consecutive-elements-from-an-array-in-numpy`
+    `https://stackoverflow.com/questions/7352684/
+    how-to-find-the-groups-of-consecutive-elements-from-an-array-in-numpy`
 
     Notes
     -----
-        return np.split(data, np.where(np.diff(data) != stepsize)[0]+1)
+    >>> a = [1, 1, 1, 2, 2, 3, 1, 1, 1]
+    >>> group_vals(a, delta=0, oper='!=')  # sequential difference !=0
+    [array([1, 1, 1]), array([2, 2]), array([3]), array([1, 1, 1])]
+
+    See also
+    --------
+    split_array : form structured or recarrays
     """
     valid = ('eq', '==', 'ne', '!=', 'gt', '>', 'lt', '<')
     if oper not in valid:
@@ -716,7 +704,7 @@ def split_array(a, fld='ID'):
 
 
 # ----------------------------------------------------------------------
-# ---- (4) structured/recdarray section, change format or arrangement ----
+# ---- (2) structured/recdarray section, change format or arrangement ----
 # ----------------------------------------------------------------------
 # ---- make_flds, nd_rec, nd_struct, nd_struct, np2rec, rc_vals, xy_vals
 #
@@ -733,7 +721,6 @@ def make_flds(n=2, as_type='float', names=None, def_name="col"):
 
     Returns
     -------
-
     a dtype : which contains the necessary fields to contain the values.
 
     >>> from numpy.lib._iotools import easy_dtype as easy
@@ -963,7 +950,7 @@ def arrays_struct(arrs):
 
 
 # ----------------------------------------------------------------------------
-# ---- (5) change/modify arrays ... code section ----
+# ---- (3) change/modify arrays ... code section ----
 # ---- change_arr, scale, split_array, concat_arrs
 #
 def change_arr(a, order=None, prn=False):
@@ -1053,7 +1040,7 @@ def concat_arrs(arrs, sep=" ", name=None, with_ids=True):
 
 
 # ----------------------------------------------------------------------
-# ---- (6) stride, block and pad .... code section
+# ---- (4) stride, block and pad .... code section
 # ----  pad_, stride, sliding_window_view, block
 #
 def pad_(a, pad_with=None, size=(1, 1)):
@@ -1271,7 +1258,7 @@ def rolling_stats(a, no_null=True, prn=True):
 
 
 # ----------------------------------------------------------------------
-# ---- (7) querying, working with arrays ----
+# ---- (5) querying, working with arrays ----
 # ----------------------------------------------------------------------
 # ---- _func, find, group_pnts, group_vals, reclass
 #
@@ -1391,6 +1378,45 @@ def find(a, func, this=None, count=0, prn=False, r_lim=2):
     return final
 
 
+def find_closest(a, close_to=1):
+    """Change values in an ndarray to match the closest in `close_to`.  This
+    may be a scalar, or array-like for multiple cases.
+
+    a : array
+        an ndarray of integer or floating point values
+    close_to : number or array-like
+        If a number, it will return a close_to or 0.  If array-like, then the
+        closest value in close_to will be returned
+
+    >>> a = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    >>> find_closest(a, close_to=[3, 6, 9])
+    array([3, 3, 3, 3, 3, 6, 6, 6, 9, 9])
+    This behaviour differs from np.digitize
+
+    >>> np.digitize(a, bins=[3, 6, 9])
+    array([0, 0, 0, 1, 1, 1, 2, 2, 2, 3], dtype=int64)
+
+    >>> a = np.array([[3, 2, 4, 3, 3],
+                      [1, 2, 3, 4, 1],
+                      [2, 4, 4, 1, 1]])
+    >>> find_closest(a, close_to=[0, 4])
+    array([[4, 0, 4, 4, 4],
+           [0, 0, 4, 4, 0],
+           [0, 4, 4, 0, 0]])
+
+    """
+    shp = a.shape
+    if np.isscalar(close_to):
+        z = a.ravel()
+        val = z[np.abs(z - close_to).argmin()]
+        r =  np.where(a == val, a, 0)
+    else:
+        close_to = np.atleast_1d(close_to)
+        r = close_to[np.argmin(np.abs(a.ravel()[:, np.newaxis] - close_to), axis=1)]
+        r = r.reshape(shp)
+    return r
+
+
 def group_pnts(a, key_fld='IDs', shp_flds=['Xs', 'Ys']):
     """Group points for a feature that has been exploded to points by
     `arcpy.da.FeatureClassToNumPyArray`.
@@ -1432,7 +1458,7 @@ def group_pnts(a, key_fld='IDs', shp_flds=['Xs', 'Ys']):
     return groups
 
 
-# ---- (8) analysis .... code section ----
+# ---- (6) analysis .... code section ----
 # ---- uniq, is_in
 #
 def uniq(ar, return_index=False, return_inverse=False,
@@ -1580,7 +1606,7 @@ def sequences(data, stepsize=0):
     return out
 
 
-# ---- (9) sorting,  column and row sorting .... code section ---------------
+# ---- (7) sorting,  column and row sorting .... code section ---------------
 # ---- sort_rows_by_col, sort_cols_by_row, radial_sort ----
 def sort_rows_by_col(a, col=0, descending=False):
     """Sort a 2D array by column.
@@ -1655,54 +1681,52 @@ def _tools_help_():
     :-------------------------------------------------------------------:
     : ---- arrtools functions  (loaded as 'art') ----
     : ---- from tools.py
-    (1)  n_largest, n_smallest,
-    (2)  num_to_nan, num_to_mask
-    (3)  arr2xyz(a, verbose=False)
+    (1)  arr2xyz(a, verbose=False)
          array (col, rows) to (x, y) and array values for z.
-    (4)  make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
+    (2)  make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
          make arrays consisting of blocks
-    (5)  group_vals(seq, delta=1, oper='!=')
-    (6)  reclass(a, bins=[], new_bins=[], mask=False, mask_val=None)
+    (3)  group_vals(seq, delta=1, oper='!=')
+    (4)  reclass(a, bins=[], new_bins=[], mask=False, mask_val=None)
          reclass an array
-    (7)  scale(a, x=2, y=2, num_z=None)
+    (5)  scale(a, x=2, y=2, num_z=None)
          scale an array up in size by repeating values
-    (8)  split_array(a, fld='ID')
+    (6)  split_array(a, fld='ID')
          split an array using an index field
-    (9)  make_flds(n=1, as_type='float', names=None, def_name='col')
+    (7)  make_flds(n=1, as_type='float', names=None, def_name='col')
          make structured/recarray fields
-    (10) nd_rec
-    (11) nd_struct
-    (12) nd2struct(a)
+    (8) nd_rec
+    (9) nd_struct
+    (10) nd2struct(a)
          convert an ndarray to a structured array with fields
-    (13) nd2rec
-    (14) rc_vals
-    (15) xy_vals
-    (16) array_cols
-    (17) change_arr(a, order=[], prn=False)
+    (11) nd2rec
+    (12) rc_vals
+    (13) xy_vals
+    (14) array_cols
+    (15) change_arr(a, order=[], prn=False)
          reorder and/or drop columns
-    (18) concat_arrs
-    (19) pad__
-    (20) stride(a, r_c=(3, 3))
+    (16) concat_arrs
+    (17) pad__
+    (18) stride(a, r_c=(3, 3))
          stride an array for moving window functions
-    (21) block
-    (22) sliding_window_view
-    (23) block_arr(a, win=[3, 3], nodata=-1)
+    (19) block
+    (20) sliding_window_view
+    (21) block_arr(a, win=[3, 3], nodata=-1)
          break an array up into blocks
-    (24) rolling_stats((a0, no_null=True, prn=True))
-    (25) _func, find(a, func, this=None, count=0, keep=[], prn=False, r_lim=2)
+    (22) rolling_stats((a0, no_null=True, prn=True))
+    (23) _func, find(a, func, this=None, count=0, keep=[], prn=False, r_lim=2)
          find elements in an array using...
          func - (cumsum, eq, neq, ls, lseq, gt, gteq, btwn, btwni, byond)
                (      , ==,  !=,  <,   <=,  >,   >=,  >a<, =>a<=,  <a> )
-    (26)  group_pnts(a, key_fld='ID', keep_flds=['X', 'Y', 'Z'])
-    (27) uniq(ar, return_index=False, return_inverse=False,
+    (24)  group_pnts(a, key_fld='ID', keep_flds=['X', 'Y', 'Z'])
+    (25) uniq(ar, return_index=False, return_inverse=False,
               return_counts=False, axis=0)
-    (28) is_in
-    (29) running_count
-    (30) sequences(data, stepsize)
-    (31) sort_rows_by_col
-    (32) sort_cols_by_row
-    (33) radial_sort
-    (34) pack_last_axis
+    (26) is_in
+    (27) running_count
+    (28) sequences(data, stepsize)
+    (29) sort_rows_by_col
+    (30) sort_cols_by_row
+    (31) radial_sort
+    (32) pack_last_axis
     ---  _tools_help_  this function
     :-------------------------------------------------------------------:
     """

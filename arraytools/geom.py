@@ -359,11 +359,12 @@ def e_area(a, b=None):
         See ein_geom.py for examples
 
     """
-    a = np.asanyarray(a)
+    a = np.asarray(a)
     if b is None:
         xs = a[..., 0]
         ys = a[..., 1]
     else:
+        b = np.asarray(b)
         xs, ys = a, b
     x0 = np.atleast_2d(xs[..., 1:])
     y0 = np.atleast_2d(ys[..., :-1])
@@ -544,7 +545,7 @@ def seg_lengths(a):
 
 # ---- sorting based on geometry --------------------------------------------
 #
-def radial_sort(pnts, cent=None):
+def radial_sort(pnts, cent=None, as_azimuth=False):
     """Sort about the point cloud center or from a given point
 
     `pnts` : points
@@ -565,6 +566,8 @@ def radial_sort(pnts, cent=None):
     ang_ab = np.arctan2(ba[:, 1], ba[:, 0])
     ang_ab = np.degrees(ang_ab)
     sort_order = np.argsort(ang_ab)
+    if as_azimuth:
+        ang_ab = np.where(ang_ab > 90, 450.0 - ang_ab, 90.0 - ang_ab)
     return ang_ab, sort_order
 
 

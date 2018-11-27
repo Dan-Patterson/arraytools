@@ -183,7 +183,7 @@ def _flatten(a_list, flat_list=None):
     if flat_list is None:
         flat_list = []
     for item in a_list:
-        if isinstance(item, (list, tuple, np.ndarray, np.void)):
+        if hasattr(item, '__iter__'):
             _flatten(item, flat_list)
         else:
             flat_list.append(item)
@@ -191,20 +191,25 @@ def _flatten(a_list, flat_list=None):
 
 
 def flatten_shape(shp, completely=False):
-    """Flatten a shape using itertools.
+    """Flatten a array or geometry shape object using itertools.
 
     Parameters:
     -----------
 
     shp :
-       either a polygon, polyline, point shape
+       an array or an array representing polygon, polyline, or point shapes
     completely :
        True returns points for all objects
        False, returns Array for polygon or polyline objects
+
     Notes:
     ------
-        __iter__ - Polygon, Polyline, Array all have this property...
-        Points do not.
+    - for conventional array-like objects use `completely = False` to flatten
+      the object completely.
+    - for geometry objects, use `True` for polygon and polylines to retain their
+      parts, but for points, use `False` since you need to retain the x,y pair
+    - `__iter__` property: Polygon, Polyline, Array all have this property...
+      Points do not.
     """
     import itertools
     if completely:
