@@ -6,38 +6,44 @@ Provides tools to facilitate working with numpy and the geometry and attributes 
 
 Structure
 ----------
-A useful ditty to get a string representation of functions in a module.  
+A couple of useful ditties to get a string representation of functions in a module. The first uses a simple `dir`, the second is for modules that have `__all__` defined  
 ```
 import arraytools as art
+
 print(", ".join([i.replace("'", "") for i in dir(art.tools)])  # art.(script/module to import)
+
+print(", ".join([i.replace("'", "") for i in art.--module--.__all__]))
 ```
+
 
 ----
 - **arraytools**  **...Tools for working with numpy arrays**
     - [`_base_functions.py`](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/_base_functions.py)
-      - arr_info, dedent, del_punc, del_punc_space, even_odd, is_float, keep_ascii, keep_nums, n_largest, n_smallest, num_to_mask, num_to_nan, pad_even_odd, pad_nan, pad_zero, reshape_options, shape_to2D, strip_whitespace, type_keys, type_vals
+      - arr_info, keep_ascii, is_float, keep_nums, del_punc, n_largest, n_smallest, num_to_nan, num_to_mask, even_odd, pad_even_odd, pad_nan, pad_zero, shape_to2D, reshape_options
     - [aio.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/aio.py)
-      - arr_info, even_odd, n_largest, n_smallest, num_to_mask, num_to_nan, pad_even_odd, pad_nan, pad_zero, reshape_options, shape_to2D, excel_np
+      - load_npy, save_npy, load_txt, save_txt, arr_json, dict_arrays, iterable_dict, dict_struct, struct_dict, excel_np
     - [frmts.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/frmts.py)
-      - \_check, \_chunks, \_col_format, \_col_kind_width, \_data, \_row_format, \_slice_cols, \_slice_head_tail, \_slice_rows, col_hdr, deline,  head_tail, in_by, make_row_format, pd_, prn, prn_, prn_3d4d, prn_ma, prn_nd, prn_q, prn_rec, prn_struct, quick_prn
+      - col_hdr, deline, in_by, redent, \_chunks, head_tail, \_check, \_slice_rows, \_slice_cols, \_slice_head_tail, \_col_format, prn_nd, prn_ma, prn_rec, pd_, prn_struct, make_row_format, prn_, prn
     - [geom.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geom.py)
-      -  \_arrs_, \_center, \_centroid, \_convert, \_densify_2D, \_extent, \_flat_, \_max, \_min, \_new_view_, \_reshape_, \_unpack, \_view_, adjacency_edge, angle_2pnts, angle_between, angle_np, angle_seq, angles_poly, areas, as_strided, azim_np, centers, centroids, circle, densify, dist_bearing, dx_dy_np, e_area, e_dist, e_leng, ellipse, hex_flat, hex_pointy, intersect_pnt, lengths, pnt_, radial_sort, rectangle, repeat, rotate, seg_lengths, segment, simplify, stride, total_length, trans_rot
+      -  \_flat_, \_unpack, segment, stride, \_new_view_, \_view_, \_reshape_, \_min, \_max, \_extent, \_center, \_centroid, centers, centroids, e_area, e_dist, e_leng, areas, lengths, total_length, seg_lengths, radial_sort, dx_dy_np, angle_np, azim_np, angle_2pnts, angle_seq, angles_poly, dist_bearing, \_densify_2D, \_convert, densify, simplify, rotate, trans_rot, repeat, circle, ellipse, rectangle, hex_flat, hex_pointy
     - [grid.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/grid.py)
-      - check_shapes, check_stack, combine_, expand_zone, fill_arr, mask_stack, nd2struct, reclass_ranges, reclass_vals, scale_up, stack_cumprod, stack_cumsum, stack_max, stack_mean, stack_median, stack_min, stack_percentile, stack_prod, stack_stats, stack_std, stack_sum, stack_var, stride
-    - [gridstats.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/gridstats.py)
-      - check_shapes, check_stack, mask_stack, stack_cumprod, stack_cumsum, stack_max, stack_mean, stack_median, stack_min, stack_percentile, stack_prod, stack_stats, stack_stats_tbl, stack_std, stack_sum, stack_var
+      - check_shapes, combine_, euc_dist, euc_alloc, expand_, shrink_, regions_, expand_zone, fill_arr, reclass_vals, reclass_ranges, scale_up
     - [image.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/image.py)
       -  \_even_odd, \_pad_even_odd, \_pad_nan, \_pad_zero, a_filter, block, equalize, normalize, plot_img, rgb_gray, stride
     - [py_tools.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/py_tools.py)
-      -  \_flatten, combine_dicts, comp_info, dir_py, flatten_shape, folders, get_dir, pack, sub_folders, sys, unpack
+      -  comp_info, get_dir, folders, sub_folders, dir_py, \_flatten, flatten_shape, pack, unpack, combine_dicts
+    - [stackstats.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/gridstats.py)
+      - check_shapes, check_stack, mask_stack, stack_sum, stack_cumsum, stack_prod, stack_cumprod, stack_min, stack_mean, stack_median, stack_max, stack_std, stack_var, stack_percentile, stack_stats, stack_stats_tbl
     - [surface.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/surface.py)
       - a2z, all_f, angle2azim, aspect_a, aspect_dem, circ_demo, circle_a, cross_f, dedent, filter_a, hillshade_a, kernels, no_cnt, pad_a, plot_, plt, plus_f, pyramid, slope_a, stride, surface_kernel
     - [tbl.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/tbl.py)
-      - find_text, prn_struct, replace_, struct_deco, tab_count, tab_sum
+      - find_in, tbl_replace, tbl_count, tbl_sum
+    - [tblstats.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/tblstats.py)
+      - freq, summ, skew_kurt, \_calc_stats, \_numeric_fields_, col_stats, group_stats
     - [tools.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/tools.py)
-      -  _func, \_tools_help_, arr2xyz, arrays_struct, as_strided, block, block_arr, change_arr, concat_arrs, find, group_pnts, group_vals, is_in, make_blocks, make_flds, nd2rec, nd2struct, nd_rec, nd_struct, pack_last_axis, pad_, pyramid, radial_sort, rc_vals, reclass, rolling_stats, running_count, scale, sequences, sliding_window_view, sort_cols_by_row, sort_rows_by_col, split_array, stride, uniq,  xy_vals
+      -  \_tools_help_, arr2xyz, make_blocks, group_vals, reclass, scale, split_array, make_flds, nd_rec, nd_struct, nd2struct, nd2rec, rc_vals, xy_vals, arrays_struct, change_arr, concat_arrs, pad_, stride, block, sliding_window_view, block_arr, rolling_stats, \_func, find, group_pnts, uniq, is_in, running_count, sequences, sort_cols_by_row, sort_rows_by_col, radial_sort, pack_last_axis
     - [utils.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/utils.py)
-      - \_utils_help_, is_ascii, is_float, keep_nums, del_punc, del_punc_space, dirr, doc_func, get_func, get_modu, run_deco, time_deco, warnings, wrapper
+      - time_deco, run_deco, doc_func, get_func, get_modu, dirr, wrapper, \_utils_help_
   
 ----
 - **. . . \analysis**
