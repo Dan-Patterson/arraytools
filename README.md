@@ -90,6 +90,10 @@ It is assumed throughout that numpy has been imported as
 
 `import numpy as np`
 
+    
+## under construction below##
+----------------------------------------------------------------------------
+
 Available modules and subpackages
 ---------------------------------
  
@@ -214,9 +218,7 @@ Available modules and subpackages
      '_pad_', 'block', 'block_arr', 'find', '_func', 'group_pnts', 'group_vals', 'reclass',
      'rolling_stats', 'uniq', 'is_in', 'n_largest', 'n_smallest', 'rc_vals', 'xy_vals',
      'sort_rows_by_col', 'sort_cols_by_row', '_help'
-    
-## under construction below##
-----------------------------------------------------------------------------
+
 
 **analysis:**  (5)  Tools for calculating distance, proximity, angles.
     
