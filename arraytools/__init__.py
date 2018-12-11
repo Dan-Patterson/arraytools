@@ -60,6 +60,10 @@ image::
 - _even_odd, _pad_even_odd, _pad_nan, _pad_zero, a_filter, equalize,
 - normalize, plot_img, rgb_gray
 
+ndset::
+
+- _view_as_, is_in, nd_diff, nd_diffxor, nd_intersect, nd_union, nd_uniq
+
 py_tools::
 
 - _flatten, combine_dicts, comp_info, dir_py, flatten_shape, folders,
@@ -95,27 +99,32 @@ utils::
 
 ================
 
-arraytools.analysis :
-  Tools for calculating distance, proximity, angles
-      compass, line_dir, not_closer, n_near, vincenty
+**arraytools.analysis**
 
-arraytools.geomtools :  from arraytools.geomtools import *** either name or *
-  Special computational geometry tools, including:
-      circular, mesh_pnts, mst, n_spaced, pip
+Tools for calculating distance, proximity, angles
+- compass, line_dir, not_closer, n_near, vincenty
 
-arraytools.graphing :
-  Graphing capabilities using MatPlotLib as the basic graphing program
-    `plot_pnts_`
+**arraytools.geomtools**
 
-arraytools.stats :
+>>> from arraytools.geomtools import  `(either name or *)`
+
+Special computational geometry tools, including
+- circular, mesh_pnts, mst, n_spaced, pip
+
+arraytools.graphing
+
+Graphing capabilities using MatPlotLib as the basic graphing program
+- `plot_pnts_`
+
+**arraytools.stats**
   Statistics and related
-    crosstab
+- crosstab
 
-arraytools.other :
+**arraytools.other**
   Placeholder
 
 
-examples :
+examples:
   Documentation for *.py script, will have the same name but end with *.txt.
 
 
@@ -134,6 +143,7 @@ from .a_io import load_npy, save_npy, load_txt, save_txt
 from .frmts import prn
 from .geom import *
 from .grid import *
+from .ndset import *
 from .stackstats import *
 from .tbl import find_in, tbl_count, tbl_sum
 from .tools import *
@@ -148,6 +158,7 @@ __art_modules__ = {
         'geom': geom.__all__,
         'grid': grid.__all__,
         'image': image.__all__,
+        'ndset': ndset.__all__,
         'py_tools': py_tools.__all__,
         'stackstats': stackstats.__all__,
         'tbl': tbl.__all__,
