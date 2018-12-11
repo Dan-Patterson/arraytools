@@ -17,17 +17,15 @@ Purpose:
 References:
 ----------
 
-[1]
-https://stackoverflow.com/questions/33051244/numpy-filter-points-within-
-bounding-box/33051576#33051576
+`<https://stackoverflow.com/questions/33051244/numpy-filter-points-within-
+bounding-box/33051576#33051576>`_.
 
-[2]
-https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html  ** good
+`<https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html>`_.  ** good
 
 Notes:
 ------
-  Remove points that are outside of the polygon extent, then filter those
-  using the crossing number approach to test whether a point is within.
+Remove points that are outside of the polygon extent, then filter those 
+using the crossing number approach to test whether a point is within.
 
 **Sample run**
 
@@ -141,7 +139,7 @@ def crossing_num(pnts, poly):
     ys = poly[:, 1]
     dx = np.diff(xs)
     dy = np.diff(ys)
-    ext = np.array([[xs.min(), ys.min()], [xs.max(), ys.max()]])
+    ext = np.array([poly.min(axis=0), poly.max(axis=0)])
     inside, outside = pnts_in_extent(pnts, ext, in_out=False)
     is_in = []
     for pnt in inside:
@@ -196,4 +194,4 @@ if __name__ == "__main__":
     : %load_ext line_profiler
     : %lprun -f pnts_in_extent pnts_in_extent(pnts, ext)  # -f means function
     """
-    pnts, ext, poly, p0, p1 = _demo1()
+#    pnts, ext, poly, p0, p1 = _demo1()
