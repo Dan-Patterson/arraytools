@@ -30,7 +30,7 @@ print(", ".join([i.replace("'", "") for i in art.--module--.__all__]))
       - check_shapes, combine_, euc_dist, euc_alloc, expand_, shrink_, regions_, expand_zone, fill_arr, reclass_vals, reclass_ranges, scale_up
     - [image.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/image.py)
       -  \_even_odd, \_pad_even_odd, \_pad_nan, \_pad_zero, a_filter, block, equalize, normalize, plot_img, rgb_gray, stride
-    - [ndset.py]((https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/ndset.py)
+    - [ndset.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/ndset.py)
       - _view_as_, _check_dtype_, nd_diff, nd_diffxor, nd_intersect, nd_isin, nd_merge, nd_union, nd_uniq
     - [py_tools.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/py_tools.py)
       -  comp_info, get_dir, folders, sub_folders, dir_py, \_flatten, flatten_shape, pack, unpack, combine_dicts
