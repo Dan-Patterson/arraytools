@@ -20,8 +20,11 @@ Useage :
 
 References
 ----------
-`<https://docs.python.org/3/library/itertools.html#itertools-recipes>`
+
+`<https://docs.python.org/3/library/itertools.html#itertools-recipes>`_.
+
 `< >`_.
+
 `< >`_.
 
 Functions
@@ -51,12 +54,18 @@ masked_array(data = [0 1 - - 4 5],
 
 ---------------------------------------------------------------------
 """
+# pylint: disable=C0103
+# pylint: disable=R1710
+# pylint: disable=R0914
 
 import sys
-from textwrap import dedent, indent, wrap
+from textwrap import dedent, indent
 import numpy as np
 #from arcpytools import fc_info, tweet  #, prn_rec, _col_format
 #import arcpy
+
+epsilon = sys.float_info.epsilon  # note! for checking
+
 
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
       'float_kind': '{: 0.3f}'.format}
@@ -145,8 +154,8 @@ def arr_info(a=None, prn=True):
     :flags....
     {}
     :array
-    :  |__shape {}\n    :  |__ndim  {}\n    :  |__size  {}
-    :  |__bytes {}\n    :  |__type  {}\n    :  |__strides  {}
+    :  |__shape {}\n    :  |__ndim  {}\n    :  |__size  {:,}
+    :  |__bytes {:,}\n    :  |__type  {}\n    :  |__strides  {}
     :dtype      {}
     :  |__kind  {}\n    :  |__char  {}\n    :  |__num   {}
     :  |__type  {}\n    :  |__name  {}\n    :  |__shape {}
@@ -176,7 +185,7 @@ def keep_ascii(s):
     """
     if isinstance(s, bytes):
         u = s.decode("utf-8")
-        u = "".join([['_', i][ord(i) <128] for i in u])
+        u = "".join([['_', i][ord(i) < 128] for i in u])
         return u
     return s
 
@@ -194,7 +203,7 @@ def keep_nums(s):
     """Remove all non-numbers and return an integer.
     """
     s = keep_ascii(s)
-    s ="".join([i for i in s if i.isdigit() or i == " "]).strip()
+    s = "".join([i for i in s if i.isdigit() or i == " "]).strip()
     return int(s)
 
 
@@ -303,12 +312,12 @@ def num_to_mask(a, nums=None, hardmask=True):
                         False False False False], fill_value = 999999)
     """
     if nums is None:
-        return a
+        ret = a
     else:
         m = np.isin(a, nums, assume_unique=False, invert=False)
         nums = np.array(nums)
-        b = np.ma.MaskedArray(a, mask=m, hard_mask=hardmask)
-    return b
+        ret = np.ma.MaskedArray(a, mask=m, hard_mask=hardmask)
+    return ret
 
 
 # ---- (5) padding arrays  ... even_odd, pad_even_odd, pad_nan, pad_zero
@@ -458,7 +467,7 @@ def reshape_options(a):
     ------
     >>> s = list(a.shape)
     >>> case = np.array(list(chain.from_iterable(permutations(s, r)
-                        for r in range(len(s)+1))))[1:]
+                        for r in range(len(s)+1)))[1:])
     >>> prod = [np.prod(i) for i in case]
     >>> match = np.where(prod == size)[0]
 
@@ -468,8 +477,9 @@ def reshape_options(a):
     """
     from itertools import permutations, chain
     s = list(a.shape)
-    case0 = np.array(list(chain.from_iterable(permutations(s, r)
-                    for r in range(len(s)+1)))[1:])
+    n = len(s) + 1
+    ch = list(chain.from_iterable(permutations(s, r) for r in range(n)))
+    case0 = np.array(ch[1:])
     case1 = [i + (-1,) for i in case0]
     new_shps = [a.reshape(i).shape for i in case1]
     z = [i[::-1] for i in new_shps]
@@ -477,7 +487,6 @@ def reshape_options(a):
     new_shps = [i for i in np.unique(new_shps) if 1 not in i]
     new_shps = np.array(sorted(new_shps, key=len, reverse=False))
     return new_shps
-
 
 
 # ----------------------------------------------------------------------
@@ -509,4 +518,3 @@ if __name__ == "__main__":
     : - print the script source name.
     : - run the _demo
     """
-

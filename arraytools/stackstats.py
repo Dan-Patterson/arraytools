@@ -22,6 +22,10 @@ References:
 statistics-made-easy-raster-data-over-time>`_.
 
 """
+# pylint: disable=C0103
+# pylint: disable=R1710
+# pylint: disable=R0914
+
 # ---- imports, formats, constants ----
 import sys
 import numpy as np

@@ -23,6 +23,10 @@ _replace_nan(a, val) -  mask = np.isnan(a) - to get the mask
 >>> mask = array([False, False,  True, False,  True, False], dtype=bool)
 
 """
+# pylint: disable=C0103
+# pylint: disable=R1710
+# pylint: disable=R0914
+
 # ---- imports, formats, constants ----
 
 import sys
@@ -72,7 +76,7 @@ def freq(a, flds=None, to_array=True):
     """
     if flds is None:
         return None
-    elif isinstance(flds, (str)):
+    if isinstance(flds, (str)):
         flds = [flds]
     a = a[flds]  # (1) slice
     idx = np.argsort(a, axis=0, order=flds)  # (2) sort
@@ -83,7 +87,7 @@ def freq(a, flds=None, to_array=True):
     names = fr.dtype.names
     vals = list(zip(*uniq)) + [counts.tolist()]  # (4) reassemble
     for i in range(len(names)):
-        fr[names[i]] =  vals[i]
+        fr[names[i]] = vals[i]
     if to_array:
         return fr
     else:
@@ -151,9 +155,9 @@ def skew_kurt(a, avg, var_x, std_x, col=True, mom='both'):
     # skew_u = skew_m*((cnt**2)/((cnt-1)*(cnt-2)))  # could add if needed
     if mom == 'skew':
         return skew_m
-    elif mom == 'kurt':
+    if mom == 'kurt':
         return kurt_m
-    elif mom == 'both':
+    if mom == 'both':
         return skew_m, kurt_m
 
 # ---- calculate field statistics section -----------------------------------
@@ -213,11 +217,11 @@ def _numeric_fields_(a, fields):
     num_flds = []
     dt_names = a.dtype.names
     dt_kind = a.dtype.kind
-    if (fields is None):
-        if (dt_names is None):
-            if (dt_kind not in ('i', 'f')):
+    if fields is None:
+        if dt_names is None:
+            if dt_kind not in ('i', 'f'):
                 return None
-        elif (dt_kind in ('V')):
+        elif dt_kind in ['V']:
             num_flds = [i for i in dt_names if a[i].dtype.kind in ('i', 'f')]
         else:
             a = a.ravel()
@@ -304,10 +308,10 @@ def group_stats(a, case_fld=None, num_flds=None, deci=2):
     uniq, counts = np.unique(a[case_fld], return_counts=True)
     n = len(uniq)
     for i in range(n):
-        if counts[i] >=3:
+        if counts[i] >= 3:
             u = uniq[i]
             sub = a[a[case_fld] == u]
-            z = col_stats(sub, fields=num_flds, deci=2)
+            z = col_stats(sub, fields=num_flds, deci=deci)
             prn(z, title='a[{}] stats...'.format(u))
             results.append(z)
         else:

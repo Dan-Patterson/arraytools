@@ -7,7 +7,7 @@ Script : __init__.py
 
 Author :   Dan.Patterson@carleton.ca
 
-Modified : 2018-11-23
+Modified : 2018-12-16
 
 **Purpose:**
 
@@ -23,7 +23,7 @@ It is assumed throughout that numpy has been imported as
 
 **Available modules and subpackages**
 
-Produced using _base_functions.art_info()
+Produced using **_base_functions.art_info()**
 
 _base_functions::
 
@@ -62,7 +62,8 @@ image::
 
 ndset::
 
-- _view_as_, is_in, nd_diff, nd_diffxor, nd_intersect, nd_union, nd_uniq
+- _view_as_, _check_dtype_, nd_diff, nd_diffxor, nd_intersect, nd_isin,
+  nd_union, nd_uniq
 
 py_tools::
 
@@ -89,8 +90,8 @@ tools::
 - concat_arrs, find, group_pnts, group_vals, is_in, make_blocks, make_flds,
 - nd2rec, nd2struct, nd_rec, nd_struct, pack_last_axis, pad_, radial_sort,
 - rc_vals, reclass, rolling_stats, running_count, scale, sequences,
-- sliding_window_view, sort_cols_by_row, sort_rows_by_col, split_array,
-- stride, uniq, xy_vals
+- sliding_window_view, sort_cols_by_row, sort_rows_by_col, view_sort,
+- split_array, stride, uniq, xy_vals
 
 utils::
 
@@ -111,13 +112,14 @@ Tools for calculating distance, proximity, angles
 Special computational geometry tools, including
 - circular, mesh_pnts, mst, n_spaced, pip
 
-arraytools.graphing
+**arraytools.graphing**
 
 Graphing capabilities using MatPlotLib as the basic graphing program
 - `plot_pnts_`
 
 **arraytools.stats**
-  Statistics and related
+
+Statistics and related
 - crosstab
 
 **arraytools.other**
@@ -131,8 +133,8 @@ examples:
 """
 
 print("arraytools imported")
-from . import (_base_functions, a_io, frmts, geom, grid, image, py_tools,
-               stackstats, surface, tbl, tblstats, tools, utils)
+from . import (_base_functions, a_io, frmts, geom, grid, image, ndset,
+               py_tools, stackstats, surface, tbl, tblstats, tools, utils)
 
 from ._base_functions import (arr_info, even_odd, n_largest,
                               n_smallest, num_to_mask, num_to_nan,
@@ -170,7 +172,7 @@ __art_all__.extend(__art_modules__)
 __all__ = [__art_modules__]
 
 
-def _info():
+def __info__():
     """information on the package.
     To use... art._info()
     """
@@ -186,80 +188,5 @@ def _info():
         for i in range(len(vl)):
             print("{}".format(vl[i]))
     #return vl
-# =============================================================================
-# import numpy as np
-# #
-# # ---- import *.py scripts and functions ----
-# #
-# from .frmts import prn as prn
-# from .utils import dirr as dirr
-# print(locals().keys())
-# from ._base_functions import (arr_info, n_largest, n_smallest,
-#                               num_to_nan, num_to_mask)
-# from . import a_io
-# from .a_io import load_npy, save_npy, load_txt, save_txt
-# from . import frmts
-# from .frmts import *
-# from . import geom
-# from .geom import *
-# from . import image
-# from . import grid
-# #from .grid import *
-# from . import gridstats
-# #from .gridstats import *
-# #from .image import *
-# from . import py_tools
-# #from .py_tools import *
-# from . import stats
-# from .stats import cross_tab  #, field_stats, frequency
-# from . import surface
-# ##from .surface import *
-# from .tools import *
-# from . import tbl
-# #from .tbl import (find_text, tbl_count, tbl_sum)
-# from . import tblstats
-# from . import utils
-# from .utils import (doc_func, get_func, get_modu, dirr)
-# from . import tools
-#
-# # ---- imports from subfolders/packages
-# from . import analysis
-# #from .analysis import *
-# from . import fc_tools
-# from . import geomtools
-# #from .geomtools import circular, mesh_pnts, mst, n_spaced, pip
-# from . import graphing
-# #from .graphing import plot_pnts_
-# from . import rasters
-# #from .rasters import (conversion, tifffile, ascii_to_raster, raster_functions,
-# #                      rasters, rasterstats)
-#
-# #from . import stats
-# #from .stats.cross_tab import crosstab
-# #
-# ##
-# _art_version__ = "Arraytools version 1.0"
-# __art_all__ = ['__art_version__']
-# __art_module_dict__ = {'_base_functions': _base_functions.__all__,
-#             'a_io': a_io.__all__,
-#             'frmts': frmts.__all__,
-#             'geom': geom.__all__,
-#             'grid': grid.__all__,
-#             'gridstats': gridstats.__all__,
-#             'image': image.__all__,
-#             'py_tools': py_tools.__all__,
-#             'tbl': tbl.__all__,
-#             'tblstats': tblstats.__all__,
-#             'tools': tools.__all__,
-#             'utils': utils.__all__
-#             }
-# __art_packages__ = ['analysis', 'fc_tools', 'form', 'geomtools', 'graphing',
-#                     'rasters']
-# __art_all__.extend(__art_module_dict__)
-# #
-# __art_all__.sort()
-# __art_all__.extend(__art_packages__)
-# #del _arg
-# #del __args
 #
 # =============================================================================

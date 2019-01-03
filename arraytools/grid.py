@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-ct
+# -*- coding: UTF-8 -*-
 """
 grid
 ====
@@ -32,7 +32,12 @@ combine-data-classification-from-raster-combinations>`_
 intersect-multiple-2d-np-arrays-for-determining-zones>`_
 
 
----------------------------------------------------------------------:"""
+---------------------------------------------------------------------
+"""
+# pylint: disable=C0103
+# pylint: disable=R1710
+# pylint: disable=R0914
+
 # ---- imports, formats, constants ----
 import sys
 #from textwrap import dedent, indent
@@ -54,11 +59,11 @@ __all__ = ['check_shapes',
            'expand_',
            'shrink_',
            'regions_',
-          'expand_zone',  # other functions
-          'fill_arr',
-          'reclass_vals',
-          'reclass_ranges',
-          'scale_up'
+           'expand_zone',  # other functions
+           'fill_arr',
+           'reclass_vals',
+           'reclass_ranges',
+           'scale_up'
            ]
 
 
@@ -70,7 +75,7 @@ def check_shapes(arrs):
     """
     shps = [i.shape for i in arrs]
     eq = np.all(np.array([shps[0] == i for i in shps[1:]]))
-    err = "Arrays arr not of the same shape..."
+    err = "Arrays `arrs` need to have the same shape..."
     if not eq:
         raise ValueError("{}\n{}".format(err, shps))
 
@@ -88,7 +93,6 @@ def combine_(arrs, ret_classes=False):
 
     Notes:
     ------
-
     You should mask any values prior to running this if you want to account
     for nodata values.
 
@@ -125,8 +129,7 @@ def combine_(arrs, ret_classes=False):
         classes = np.unique(classes)
         classes = classes[np.argsort(classes, order=classes.dtype.names)]
         return combo, classes
-    else:
-        return combo
+    return combo
 
 
 def euc_dist(a, origins=0, cell_size=1):
@@ -161,6 +164,7 @@ def euc_alloc(a, fill_zones=0):
     """Calculate the euclidean distance and/or allocation
 
     Parameters:
+    -----------
     a : array
         numpy float or integer array
     fill_zones : number, list or tuple
@@ -189,11 +193,11 @@ def expand_(a, val=1, mask_vals=0, buff_dist=1):
     if isinstance(val, (list, tuple)):
         m = np.isin(a, val, invert=True).astype('int')
     else:
-        m = np.where(a==val, 0, 1)
+        m = np.where(a == val, 0, 1)
     dist, idx = nd.distance_transform_edt(m, return_distances=True,
                                           return_indices=True)
     alloc = a[tuple(idx)]
-    a0 = np.where(dist<=buff_dist, alloc, a)  #0)
+    a0 = np.where(dist <= buff_dist, alloc, a)  #0)
     return a0
 
 
@@ -204,13 +208,14 @@ def shrink_(a, val=1, mask_vals=0, buff_dist=1):
     if isinstance(val, (list, tuple)):
         m = np.isin(a, val, invert=False).astype('int')
     else:
-        m = np.where(a==val, 1, 0)
+        m = np.where(a == val, 1, 0)
     dist, idx = nd.distance_transform_edt(m, return_distances=True,
                                           return_indices=True)
     alloc = a[tuple(idx)]
-    m = np.logical_and(dist>0, dist<=buff_dist)
+    m = np.logical_and(dist > 0, dist <= buff_dist)
     a0 = np.where(m, alloc, a)  #0)
     return a0
+
 
 def regions_(a, cross=True):
     """Delineate `regions` or `zones` in a raster.  This is analogous to
@@ -242,19 +247,19 @@ def regions_(a, cross=True):
         print(msg.format(a))
         return a
     if cross:
-        struct = np.array([[0,1,0], [1,1,1], [0,1,0]])
+        struct = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
     else:
-        struct = np.array([[1,1,1], [1,1,1], [1,1,1]])
+        struct = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]])
     #
     u = np.unique(a)
     out = np.zeros_like(a, dtype=a.dtype)
     details = []
     is_first = True
     for i in u:
-        z = np.where(a==i, 1, 0)
+        z = np.where(a == i, 1, 0)
         s, n = nd.label(z, structure=struct)
         details.append([i, n])
-        m = np.logical_and(out==0, s!=0)
+        m = np.logical_and(out == 0, s != 0)
         if is_first:
             out = np.where(m, s, out)
             is_first = False
@@ -263,7 +268,7 @@ def regions_(a, cross=True):
             out = np.where(m, s+n_, out)
             n_ += n
     details = np.array(details)
-    details = np.c_[(details, np.cumsum(details[:,1]))]
+    details = np.c_[(details, np.cumsum(details[:, 1]))]
     return out, details
 
 
@@ -273,23 +278,23 @@ def expand_zone(a, zone=None, win=2):
     """Expand a value (zone) in a 2D array, normally assumed to represent a
     raster surface.
 
-    `zone` : number
+    zone : number
         The value/class to expand into the surrounding cells
-    `win` : list/tuple
+    win : list/tuple
         select a (2, 2) or (3, 3) moving window
     """
     msg = "\nYou need a zone that is within the range of values."
-    if (zone is None):
+    if zone is None:
         print(msg)
         return a, None
-    elif (zone < a.min()) or (zone > a.max()):
+    if (zone < a.min()) or (zone > a.max()):
         print(msg)
         return a, None
     if win not in (2, 3):
         win = 2
     p = [1, 0][win == 2]  # check for 2 or 3 in win
     ap = np.pad(a, pad_width=(1, p), mode="constant", constant_values=(0, 0))
-    n, m = ap.shape
+    # n, m = ap.shape
     if win == 2:
         a_c = ap[1:, 1:]  # for 2x2 even
     elif win == 3:
@@ -318,7 +323,7 @@ def fill_arr(a, win=(3, 3)):
     """try filling an array
     as in fill, sinks
     """
-    fd = np.array([[32, 64, 128], [16, 0, 1], [8, 4, 2]])  # flow direction
+    #fd = np.array([[32, 64, 128], [16, 0, 1], [8, 4, 2]])  # flow direction
 #    if (zone < a.min()) or (zone > a.max()) or (zone is None):
 #        print("\nYou need a zone that is within the range of values.")
 #        return a, None
@@ -329,9 +334,7 @@ def fill_arr(a, win=(3, 3)):
     ap = np.pad(a, pad_width=(1, pr), mode="constant", constant_values=(0, 0))
     if win == (2, 2):
         a_c = ap[1:, 1:]  # for 2x2 even
-        w, h = win
     elif win == (3, 3):
-        w, h = win
         a_c = ap[1:-1, 1:-1]   # for 3x3 odd
     a_s = stride(a_c, win=win)  # stride the array
     r, c = a_s.shape[:2]
@@ -358,22 +361,22 @@ def reclass_vals(a, old_vals=[], new_vals=[], mask=False, mask_val=None):
 
     Requires:
     --------
-
-    `old_vals` : number(s)
+    old_vals : number(s)
         list/array of values to reclassify
-    `new_bins` : number(s)
+    new_bins : number(s)
         new class values for old value
-    `mask` : boolean
+    mask : boolean
         Does the raster contains nodata values or values to be masked
-    `mask_val` : number(s)
+    mask_val : number(s)
         Values to use as the mask
 
     Array dimensions will be squeezed.
-    Example::
 
-      array([[ 0,  1,  2,  3,  4],   array([[1, 1, 1, 1, 1],
-             [ 5,  6,  7,  8,  9],          [2, 2, 2, 2, 2],
-             [10, 11, 12, 13, 14]])         [3, 3, 3, 3, 3]])
+     >>> a = np.arange(10).reshape(2,5)
+     >>> a0 = np.arange(5)
+     >>> art.reclass_vals(a, a0, np.ones_like(a0))
+     # array([[0, 1, 2, 3, 4]   ==> array([[1, 1, 1, 1, 1],
+     #        [5, 6, 7, 8, 9]])           [5, 6, 7, 8, 9]])
     """
     a_rc = np.copy(a)
     args = [old_vals, new_vals]
@@ -397,30 +400,29 @@ def reclass_ranges(a, bins=[], new_bins=[], mask=False, mask_val=None):
     Requires:
     --------
 
-    `bins` : list/array
+    bins : list/array
         Sequential list/array of the lower limits of each class include one
         value higher to cover the upper range.
-    `new_bins` : number(s)
+    new_bins : number(s)
         New class values for each bin
-    `mask` : boolean
+    mask : boolean
         Does the raster contains nodata values or values to be masked
-    `mask_val` : number(s)
+    mask_val : number(s)
         Values to use as the mask
 
     Array dimensions will be squeezed.
-    Example::
 
-       z = np.arange(3*5).reshape(3,5)
-       bins = [0, 5, 10, 15]
-       new_bins = [1, 2, 3, 4]
-       z_recl = reclass(z, bins, new_bins, mask=False, mask_val=None)
+    >>> z = np.arange(3*5).reshape(3,5)
+    >>> bins = [0, 5, 10, 15]
+    >>> new_bins = [1, 2, 3, 4]
+    >>> z_recl = reclass(z, bins, new_bins, mask=False, mask_val=None)
        # ==> .... z                     ==> .... z_recl
        array([[ 0,  1,  2,  3,  4],   array([[1, 1, 1, 1, 1],
               [ 5,  6,  7,  8,  9],          [2, 2, 2, 2, 2],
               [10, 11, 12, 13, 14]])         [3, 3, 3, 3, 3]])
     """
     a_rc = np.zeros_like(a)
-    if (len(bins) < 2):  # or (len(new_bins <2)):
+    if len(bins) < 2:  # or (len(new_bins <2)):
         print("Bins = {} new = {} won't work".format(bins, new_bins))
         return a
     if len(new_bins) < 2:
@@ -440,14 +442,13 @@ def scale_up(a, x=2, y=2, num_z=None):
 
     Requires:
     --------
-
-    `a` : array
-        an ndarray, 1D arrays will be upcast to 2D
-    `x, y` : numbers
+    a : array
+        An ndarray, 1D arrays will be upcast to 2D
+    x, y : numbers
         Factors to scale the array in x (col) and y (row).  Scale factors
         must be greater than 2
-    `num_z` : number
-        for 3D, produces the 3rd dimension, ie. if num_z = 3 with the
+    num_z : number
+        For 3D, produces the 3rd dimension, ie. if num_z = 3 with the
         defaults, you will get an array with shape=(3, 6, 6).  If
         num_z != None or 0, then the options are 'repeat', 'random'.
         With 'repeat' the extras are kept the same and you can add random
@@ -455,7 +456,6 @@ def scale_up(a, x=2, y=2, num_z=None):
 
     Returns:
     -------
-
     >>> a = np.array([[0, 1, 2], [3, 4, 5]]
     >>> b = scale(a, x=2, y=2)
     array([[0, 0, 1, 1, 2, 2],
@@ -465,7 +465,6 @@ def scale_up(a, x=2, y=2, num_z=None):
 
     Notes:
     -----
-
     >>> a = np.arange(2*2).reshape(2,2)
     array([[0, 1],
            [2, 3]])
@@ -479,7 +478,7 @@ def scale_up(a, x=2, y=2, num_z=None):
 
     """
     if (x < 1) or (y < 1):
-        print("x or y scale < 1... read the docs".format(scale_up.__doc__))
+        print("x or y scale < 1... \n{}".format(scale_up.__doc__))
         return None
     a = np.atleast_2d(a)
     z0 = np.tile(a.repeat(x), y)  # repeat for x, then tile
@@ -499,6 +498,8 @@ def scale_up(a, x=2, y=2, num_z=None):
     return z3
 
 
+# ---- demo functions -------------------------------------------------------
+#
 def _demo_combine():
     """demo combine
     dt = [('a', '<i8'), ('b', '<i8'), ('c', '<i8'), ('vals', '<i8')]
@@ -536,7 +537,7 @@ def _demo_combine():
     return a, b, c  #, ret
 
 
-def _demo():
+def _demo_reclass():
     """
     : -
     """
@@ -561,19 +562,19 @@ def _demo():
 
 def _demo_euclid():
     """ euclid functions"""
-    a = np.array([[0,1,0,0,2,0,0,0],   # note the block of 0's in the
-                  [1,0,0,1,1,0,0,0],   # top right corner
-                  [0,1,0,1,1,0,0,0],
-                  [0,2,0,3,0,0,0,3],
-                  [0,1,2,0,0,4,2,0],
-                  [4,0,0,3,2,5,1,0],
-                  [1,1,0,0,0,5,0,0],   # and the bottom right
-                  [0,5,0,4,0,3,0,0]])
-    b = np.array(([0,1,1,1,1],  # from scipy help
-                  [0,0,1,1,1],
-                  [0,1,1,1,1],
-                  [0,1,1,1,0],
-                  [0,1,1,0,0]))
+    a = np.array([[0, 1, 0, 0, 2, 0, 0, 0],   # note the block of 0's in the
+                  [1, 0, 0, 1, 1, 0, 0, 0],   # top right corner
+                  [0, 1, 0, 1, 1, 0, 0, 0],
+                  [0, 2, 0, 3, 0, 0, 0, 3],
+                  [0, 1, 2, 0, 0, 4, 2, 0],
+                  [4, 0, 0, 3, 2, 5, 1, 0],
+                  [1, 1, 0, 0, 0, 5, 0, 0],   # and the bottom right
+                  [0, 5, 0, 4, 0, 3, 0, 0]])
+    b = np.array(([0, 1, 1, 1, 1],  # from scipy help
+                  [0, 0, 1, 1, 1],
+                  [0, 1, 1, 1, 1],
+                  [0, 1, 1, 1, 0],
+                  [0, 1, 1, 0, 0]))
     return a, b
 
 # ----------------------------------------------------------------------
@@ -585,9 +586,3 @@ if __name__ == "__main__":
     """
 #    print("Script... {}".format(script))
 # https://stackoverflow.com/questions/47861214/
-# using-numpy-as-strided-to-retrieve-subarrays-centered-on-main-diagonal
-"""
-theta = inclination of sun from 90 in radians
-theta2 = slope angle
-phi = ((450 - sun orientation from north in degrees) mod 360) * 180/pi
-"""

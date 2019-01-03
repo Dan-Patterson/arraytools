@@ -7,7 +7,7 @@ Script :   a_io.py
 
 Author :   Dan.Patterson@carleton.ca
 
-Modified : 2018-11-17
+Modified : 2018-12-30
 
 Purpose : Basic io tools for numpy arrays and arcpy
 
@@ -15,7 +15,7 @@ Notes :
 ::
     1.  load_npy    - load numpy npy files
     2.  save_npy    - save array to *.npy format
-    3.  read_txt    - read array created by save_txtt
+    3.  load_txt    - read array created by save_txtt
     4.  save_txt    - save array to npy format
     5.  arr_json    - save to json format
     6-9 dict<->array conversions
@@ -23,6 +23,10 @@ Notes :
 
 ---------------------------------------------------------------------
 """
+# pylint: disable=C0103
+# pylint: disable=R1710
+# pylint: disable=R0914
+
 # ---- imports, formats, constants ----
 import sys
 import numpy as np
@@ -36,7 +40,8 @@ np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
 
-__all__ = ['load_npy',
+__all__ = ['dtype_info',
+           'load_npy',
            'save_npy',
            'load_txt',
            'save_txt',
@@ -47,6 +52,18 @@ __all__ = ['load_npy',
            'struct_dict',
            'excel_np'
            ]
+
+
+def dtype_info(a=None, as_string=False):
+    """Return dtype information for a structured/recarray
+    """
+    dt = a.dtype.descr
+    names = [i[0] for i in dt]
+    formats = [i[1] for i in a.dtype.descr]
+    if as_string:
+        names = ", ".join([i[1] for i in names])
+        formats = ", ".join([i[1] for i in formats])
+    return names, formats
 
 
 # ----------------------------------------------------------------------
@@ -64,8 +81,8 @@ def load_npy(f_name, all_info=False):
         nms = a.dtype.names
         sze = [i[1] for i in a.dtype.descr]
         return a, desc, nms, sze
-    else:
-        return a
+    #
+    return a
 
 
 # ----------------------------------------------------------------------
@@ -232,24 +249,24 @@ def iterable_dict(a, use_numbers=True):
 
 
 def dict_struct(d):
-    """Dictionary to simple tructured/recarray
+    """Dictionary to simple structured/recarray
     """
     if not isinstance(d, dict):
         return d
     lens = [len(i) for i in d.values()]
     if max(lens) != min(lens):
         return d
-    else:
-        names = [k for k in d.keys()]
-        data = list(d.values())
-        dt_str = [i.dtype.str for i in data]
-        dt = list(zip(names, dt_str))
-        N = lens[0]
-        n = len(dt_str)
-        arr = np.zeros((N,), dtype=dt)
-        for i in range(n):
-            arr[names[i]] = data[i]
-        return arr
+    #
+    names = [k for k in d.keys()]
+    data = list(d.values())
+    dt_str = [i.dtype.str for i in data]
+    dt = list(zip(names, dt_str))
+    N = lens[0]
+    n = len(dt_str)
+    arr = np.zeros((N,), dtype=dt)
+    for i in range(n):
+        arr[names[i]] = data[i]
+    return arr
 
 
 def struct_dict(a):
@@ -259,9 +276,8 @@ def struct_dict(a):
         return a
     if a.dtype.names is None:
         return a
-    else:
-        names = a.dtype.names
-        return {i: a[i].tolist() for i in names}
+    names = a.dtype.names
+    return {i: a[i].tolist() for i in names}
 
 
 # ----------------------------------------------------------------------
@@ -378,11 +394,11 @@ def excel_np(path, sheet_num=0, int_null=-999):
     names = [i.strip() for i in names]      # clean up leading/trailing spaces
     names = [punc_space(i) for i in names]  # replace punctuation and spaces
     dts_name = list(zip(names, dt_str))
-    arr = np.empty((rows-1,), dtype= dts_name)
+    arr = np.empty((rows-1,), dtype=dts_name)
     cnt = 0
     for i in names:
         arr[i] = clean[cnt]
-        cnt +=1
+        cnt += 1
     return arr
 
 
@@ -397,8 +413,8 @@ def openxl_np(path):
     rows = sheet.max_row  # sheet.min_row
     """
     import openpyxl as op
-    wb =op.load_workbook(path, data_only=True, guess_types=True,
-                        keep_links=False)
+    wb = op.load_workbook(path, data_only=True, guess_types=True,
+                          keep_links=False)
     sheets = wb.sheetnames
     sheet = wb[sheets[0]]
     data = list(sheet.values)

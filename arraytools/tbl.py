@@ -88,11 +88,15 @@ in-numpy-array>`_.
 python-for-large-dataset>`_.
 
 np.unique - in the newer version, they use flags to get the sums
-:
+
 """
+# pylint: disable=C0103
+# pylint: disable=R1710
+# pylint: disable=R0914
+
 import sys
-import numpy as np
 from textwrap import dedent
+import numpy as np
 
 # ---- others from above , de_punc, _describe, fc_info, fld_info, null_dict,
 
@@ -111,19 +115,17 @@ if 'prn' not in locals().keys():
         prn = print
 
 __all__ = ['find_in',
-           'tbl_replace',
            'tbl_count',
            'tbl_sum']
 
 # ---- text columns... via char arrays
 #
-def tbl_replace(a, col=None, from_=None, to_=None):
-    """
-
-    """
-    #np.char.replace(
-    pass
-    return None
+#def tbl_replace(a, col=None, from_=None, to_=None):
+#    """table replace
+#    """
+#    #np.char.replace(
+#    pass
+#    return None
 
 def find_in(a, col=None, what=None, where='in', any_case=True, pull='all'):
     """Query a recarray/structured array for values
@@ -159,8 +161,8 @@ def find_in(a, col=None, what=None, where='in', any_case=True, pull='all'):
               where.lower()[:2] not in ('en', 'eq', 'in', 'st'),
               col not in a.dtype.names]
     if sum(errors) > 0:
-        print(dedent(e0).format(a.dtype.kind, col, what, where, any_case,
-              pull, find_in.__doc__))
+        arg = [a.dtype.kind, col, what, where, any_case, pull, find_in.__doc__]
+        print(dedent(e0).format(*arg))
         return None
     if isinstance(pull, (list, tuple)):
         names = a.dtype.names
@@ -191,9 +193,8 @@ def find_in(a, col=None, what=None, where='in', any_case=True, pull='all'):
         return None
     if pull == 'all':
         return a[q]
-    else:
-        pull = np.unique([col] + list(pull))
-        return a[q][pull]
+    pull = np.unique([col] + list(pull))
+    return a[q][pull]
 
 
 def tbl_count(a, row=None, col=None, verbose=False):
@@ -264,7 +265,7 @@ def tbl_sum(a, row=None, col=None, val_fld=None):
     if val_kind not in ('i', 'f'):
         print("\nThe value field must be numeric")
         return None
-    elif val_kind == 'f':
+    if val_kind == 'f':
         val_type = '<f8'
     elif val_kind == 'i':
         val_type = '<i4'
@@ -277,7 +278,7 @@ def tbl_sum(a, row=None, col=None, val_fld=None):
     out_ = []
     for u in uniq:
         c0, c1 = u
-        idx = np.logical_and(a[row]==c0, a[col]==c1)
+        idx = np.logical_and(a[row] == c0, a[col] == c1)
         val = np.nansum(a[val_fld][idx])
         out_.append([c0, c1, val])
     out_ = np.array(out_)
@@ -306,6 +307,6 @@ def _data():
 
 if __name__ == "__main__":
     """run crosstabulation with data"""
-#    ctab, counts, out_tbl = tab_count(a['County'], a['Town'], r_fld='County', c_fld='Town', verbose=False)
+#    ctab, counts, out_tbl = tab_count(a['County'], a['Town'],
+#    r_fld='County', c_fld='Town', verbose=False)
 #    ctab, a, result, r, c = _demo()
-

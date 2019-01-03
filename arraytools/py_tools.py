@@ -23,6 +23,10 @@ References:
 
 ------------------------------------------------------------------------------
 """
+# pylint: disable=C0103
+# pylint: disable=R1710
+# pylint: disable=R0914
+
 # ---- imports, formats, constants ---------------------------------------
 import sys
 import os
@@ -72,7 +76,7 @@ def comp_info():
     node:            {}
     user/machine:    {}\n
     Alternate form...."""
-    args = [winv, py_ver,plat, proc, p_node, u_name]
+    args = [winv, py_ver, plat, proc, p_node, u_name]
     print(dedent(frmt).format(*args))
     print("\n".join(["{:<10}: {}".format(*i) for i in udl]))
 
@@ -84,13 +88,13 @@ def get_dir(path):
     Used by.. folders
 
     >>> get_dir('C:/Git_Dan/arraytools')
-    ['C:\\Git_Dan\\arraytools\\.spyproject',
-     'C:\\Git_Dan\\arraytools\\analysis',
+    ['C:/Git_Dan/arraytools/.spyproject',
+     'C:/Git_Dan/arraytools/analysis',
      ... snip ...
-     'C:\\Git_Dan\\arraytools\\__pycache__']
+     'C:/Git_Dan/arraytools/__pycache__']
     >>> # ---- common path prefix
     >>> os.path.commonprefix(get_dir('C:/Git_Dan/arraytools'))
-    'C:\\Git_Dan\\arraytools\\'
+    'C:/Git_Dan/arraytools/'
     """
     if os.path.isfile(path):
         path = os.path.dirname(path)
@@ -126,15 +130,36 @@ def folders(path, first=True, prefix=""):
     # ----
 
 
-def sub_folders(path):
-    """Print the folders in a path
+def sub_folders(path, combine=False):
+    """Print the folders in a path, excluding '.' folders
+    This is the best one.
     """
     import pathlib
     print("Path...\n{}".format(path))
-    r = " "*len(path)
+    if combine:
+        r = " "*len(path)
+    else:
+        r = ""
     f = "\n".join([(p._str).replace(path, r)
-                   for p in pathlib.Path(path).iterdir() if p.is_dir()])
+                   for p in pathlib.Path(path).iterdir()
+                   if p.is_dir() and "." not in p._str])
     print("{}".format(f))
+
+
+def env_list(pth, ordered=False):
+    """List folders and files in a path
+    """
+    import os
+    d = []
+    for item in os.listdir(pth):
+        check = os.path.join(pth, item)
+        check = check.replace("\\", "/")
+        if os.path.isdir(check) and ("." not in check):
+            d.append(check)
+    d = np.array(d)
+    if ordered:
+        d = d[np.argsort(d)]
+    return d
 
 
 # ---- (3) dirr ... code section ... -----------------------------------------
@@ -265,13 +290,21 @@ def combine_dicts(ds):
     new_d = dict(zip(ks, nd))
     return new_d
 
+
+def find_dups(a_list):
+    """Find dups in a list using an Ordered dictionary, return a list of
+    duplicated elements
+    """
+    from collections import OrderedDict
+    counter = OrderedDict()
+    for item in a_list:
+        if item in counter:
+            counter[item] += 1
+        else:
+            counter[item] = 1
+    return [item for item, counts in counter.items() if counts > 1]
 # ---- (5) demos  -------------------------------------------------------------
 #
-def _demo():
-    """
-    : -
-    """
-    pass
 
 # ----------------------------------------------------------------------------
 # ---- __main__ .... code section --------------------------------------------
@@ -281,5 +314,4 @@ if __name__ == "__main__":
     : - run the _demo
     """
 #    print("Script... {}".format(script))
-    _demo()
-
+#    _demo()

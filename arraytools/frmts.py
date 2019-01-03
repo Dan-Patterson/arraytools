@@ -305,11 +305,15 @@ Others:
 ----------
 """
 
+# pylint: disable=C0103
+# pylint: disable=R1710
+# pylint: disable=R0914
+
 # ---- imports, formats, constants ----
 
 import sys
-import numpy as np
 from textwrap import dedent, indent
+import numpy as np
 
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
       'float_kind': '{!r: 0.3f}'.format}
@@ -325,6 +329,7 @@ df_opt = ", ".join(["{}={}".format(i, pr_opt[i]) for i in pr_opt])
 script = sys.argv[0]
 
 __all__ = ['col_hdr',            # column headers
+           'xy_dist_headers',    # table dtype format
            'deline',             # remove excessive blank lines
            'in_by',              # an indent variant with options
            'redent',             # indent
@@ -357,6 +362,14 @@ def col_hdr(num=8):
     print(s)
 
 
+def xy_dist_headers(N):
+    """Construct headers for the optional table output"""
+    vals = np.repeat(np.arange(N), 2)
+    names = ['X_{}', 'Y_{}']*N + ['d_{}']*(N-1)
+    vals = (np.repeat(np.arange(N), 2)).tolist() + [i for i in range(1, N)]
+    n = [names[i].format(vals[i]) for i in range(len(vals))]
+    f = ['<f8']*N*2 + ['<f8']*(N-1)
+    return list(zip(n, f))
 # ----------------------------------------------------------------------
 # (1b) deline ... code section .....
 def deline(a, width=100, header="Array...", prefix="  ."):
@@ -399,7 +412,7 @@ def deline(a, width=100, header="Array...", prefix="  ."):
 
 # ---------------------------------------------------------------------------
 # (1c) in_by .... code section
-def in_by(obj, hdr="", nums=False, prefix="   ."):
+def in_by(obj, hdr="", line_nums=False, prefix="   ."):
     """A `textwrap.indent` variant for python 2.7 or a substitute for
     any version of python.  The function stands for `indent by`.
 
@@ -410,7 +423,7 @@ def in_by(obj, hdr="", nums=False, prefix="   ."):
         first. You can use repr representation before using if needed.
     `hdr` : text
         optional header
-    `nums` : boolean
+    `line_nums` : boolean
         True to add line numbers
     `prefix` : test
         Text to use for indent ie '  ' for 2 spaces or '....'
@@ -426,7 +439,7 @@ def in_by(obj, hdr="", nums=False, prefix="   ."):
     def _pre_num():
         c = 0
         for line in obj.splitlines(True):
-            if nums:
+            if line_nums:
                 frmt = "{:>02}{}{}".format(c, prefix, line)
             else:
                 frmt = "{}{}".format(prefix, line)
@@ -481,14 +494,15 @@ def head_tail(size=10, head=3, tail=None, fill=None):
     >>> head_tail(size=10, head=3, tail=None, fill="...")
     [0, 1, 2, '...', 7, 8, 9]
     """
-    if head is None:  head = 0
-    if tail is None:  tail = head
+    if head is None:
+        head = 0
+    if tail is None:
+        tail = head
     head, tail = [int(abs(i)) for i in [head, tail]]
     r = np.arange(size).tolist()
-    if fill is not None:
-        return r[:head] + [fill] + r[-tail:]
-    else:
+    if fill is None:
         return r[:head] + r[-tail:]
+    return r[:head] + [fill] + r[-tail:]
 
 
 # ----------------------------------------------------------------------
@@ -511,8 +525,7 @@ def _slice_rows(a, edge_rows=3):
     """
     if a.shape[0] <= (edge_rows * 2):
         return a
-    else:
-       return np.hstack((a[:edge_rows], a[-edge_rows:]))  # top, bott
+    return np.hstack((a[:edge_rows], a[-edge_rows:]))  # top, bott
 
 
 def _slice_cols(a, edge_cols=3):
@@ -532,7 +545,7 @@ def _slice_head_tail(a, edge_cols=3):
     left = a[names[:edge_cols]]
     right = a[names[-edge_cols:]]
     dt_new = list(left.dtype.descr) + [('...', '3U')] + list(right.dtype.descr)
-    z = np.zeros((shp,), dtype= dt_new)
+    z = np.zeros((shp,), dtype=dt_new)
     for i in left.dtype.names:
         z[i] = left[i]
     z['...'] = ['...'] * shp
@@ -611,8 +624,7 @@ def _col_kind_width(a, deci=0):
     dtn = a.dtype.names
     if dtn is None:  # ---- uniform dtype
         return [_ckw_(a, name="", deci=deci)]
-    else:  # ---- mixed dtype with names
-        return [_ckw_(a[name], name, deci=deci) for name in dtn]
+    return [_ckw_(a[name], name, deci=deci) for name in dtn]
 
 
 def _col_format(c, c_name="c00", deci=0):
@@ -737,14 +749,14 @@ def prn_nd(a, deci=2, width=100, title="Array", prefix="  .", prnt=True):
         d, r, c = a_shp[-3:]
         row_frmt = _row_format(a, sep='', deci=deci)
         row_frmt = (row_frmt + "  ") * d
-        if (a_dim == 3):
+        if a_dim == 3:
             rows = [a[..., i, :].flatten() for i in range(r)]
             txt += "\n" + _concat(rows, row_frmt, width, prefix)
-        elif (a_dim == 4):
+        elif a_dim == 4:
             d4, d, r, c = a_shp
             t = d4_frmt(a_shp, a, txt, a_dim)
             txt += t
-        elif (a_dim == 5):
+        elif a_dim == 5:
             d5, d4, d, r, c = a_shp
             hdr = "\n" + "-"*25
             for i in range(d5):
@@ -762,7 +774,7 @@ def prn_nd(a, deci=2, width=100, title="Array", prefix="  .", prnt=True):
 
 # ----------------------------------------------------------------------
 # (4) prn_ma .... code section
-def prn_ma(a, edge= 5, deci=2, width=100, prnt=True, prefix="  ."):
+def prn_ma(a, edge=5, deci=2, width=100, prnt=True, prefix="  ."):
     """Format a masked array to preserve columns widths and style.
 
     Parameters
@@ -827,7 +839,7 @@ def prn_ma(a, edge= 5, deci=2, width=100, prnt=True, prefix="  ."):
 # (5) pd and quick_prn
 def pd_(a, deci=2, use_names=True, prnt=True):
     """see help for `prn_rec`..."""
-    ret = prn_rec(a, deci=deci, use_names=use_names, prnt=prn)
+    ret = prn_rec(a, deci=deci, prnt=prnt)
     return ret
 
 def quick_prn(a, edges=3, max_lines=25, width=100, decimals=2):
@@ -873,7 +885,7 @@ def prn_struct(a, rows_m=25, cols_m=None, deci=2, width=100, prnt=True):
     rows_m = min(a.shape[0]//2, rows_m)
     # ---- slice the rows
     a = _slice_rows(a, edge_rows=rows_m)
-    form_width  = _col_format(a, deci=2)
+    form_width = _col_format(a, deci=deci)
     dts = [i[0] for i in form_width]
     wdths = [i[1] for i in form_width]
     tot_width = sum(wdths)
@@ -882,7 +894,7 @@ def prn_struct(a, rows_m=25, cols_m=None, deci=2, width=100, prnt=True):
         cols_m = min(np.sum(cs < width)//2, cols_m)
         a = _slice_head_tail(a, cols_m)
         dtn = list(a.dtype.names)
-        form_width  = _col_format(a, deci=2)  # _col_format again
+        form_width = _col_format(a, deci=deci)  # _col_format again
         dts = [i[0] for i in form_width]
         wdths = [i[1] for i in form_width]
     header = " ".join(['{'+"!s:<{}".format(i)+'}' for i in wdths])
@@ -895,8 +907,7 @@ def prn_struct(a, rows_m=25, cols_m=None, deci=2, width=100, prnt=True):
         print("\n{}".format(info))
         print("Head/tail rows: {}, columns: {}".format(rows_m, cols_m))
         return None
-    else:
-        return a
+    return a
     # ---- done ----
 
 
@@ -936,7 +947,7 @@ def prn_rec(a, rows_m=25, cols_m=None, deci=2, width=100, prnt=True):
     if a.shape[0] > rows_m:
         a = _slice_rows(a, edge_rows=rows_m)
     # ---- get the column formats from ... _col_format ----
-    form_width  = _col_format(a, deci=deci)
+    form_width = _col_format(a, deci=deci)
     dts = [i[0] for i in form_width]
     wdths = [i[1] for i in form_width]
     # slice off excess columns
@@ -962,8 +973,7 @@ def prn_rec(a, rows_m=25, cols_m=None, deci=2, width=100, prnt=True):
     if prnt:
         print(msg)
         return None
-    else:
-        return msg
+    return msg
 
 # ----------------------------------------------------------------------
 # (7) prn_ ... code section .....
@@ -1023,7 +1033,7 @@ def prn_(a, deci=2, width=100, title="Array", prefix=". . ", prnt=True):
     linewidth = width
     if a.ndim <= 1:
         return a
-    elif a.ndim == 2:
+    if a.ndim == 2:
         a = a.reshape((1,) + a.shape)
     # ---- pull the 1st and 3rd dimension for 3D and 4D arrays
     frmt = make_row_format(dim=a.shape[-3],
@@ -1035,10 +1045,10 @@ def prn_(a, deci=2, width=100, title="Array", prefix=". . ", prnt=True):
                            width=width,
                            prnt=False)
     if a.ndim == 3:
-        s0, s1, s2 = a.shape
+        s0, _, _ = a.shape
         out += _piece(a, None, frmt, linewidth)  # ---- _piece ----
     elif a.ndim == 4:
-        s0, s1, s2, _ = a.shape
+        s0, _, _, _ = a.shape
         for i in range(s0):
             out = out + "\n" + _piece(a[i], i, frmt, linewidth)  # ---- _piece
     if prnt:
@@ -1098,8 +1108,8 @@ def prn_3d4d(a, deci=2, edgeitems=3, width=100, prnt=True):
         n = int(a.dtype.str.lstrip('<^>|bOUSV')) #+ 1
         a_min = a_max = int('1'*n)  # cheat to get a number len of string
     elif a.dtype.kind in ('i', 'u', 'f'):
-         a_min = a.min()
-         a_max = a.max()
+        a_min = a.min()
+        a_max = a.max()
     fm0 = _row_format(d_, r_, c_, a.dtype.kind, 2, a_min, a_max)  # d=1
     split_0 = c_ > e*2  # boolean check
     if split_0:  # e in place of c_
@@ -1115,7 +1125,7 @@ def prn_3d4d(a, deci=2, edgeitems=3, width=100, prnt=True):
                     sub = fm1.format(*r_[:e]) + " ..." + fm1.format(*r_[-e:])
                 else:
                     sub = fm0.format(*r_)
-                if (j==-1):
+                if j == -1:
                     row.append("{!s:^{}}".format(" . .", len(sub)))
                 else:
                     row.append(sub)
@@ -1127,8 +1137,7 @@ def prn_3d4d(a, deci=2, edgeitems=3, width=100, prnt=True):
     if prnt:
         print(t)
         return None
-    else:
-        return t
+    return t
 
 
 # ----------------------------------------------------------------------
@@ -1204,4 +1213,3 @@ if __name__ == "__main__":
 #    print("Script... {}".format(script))
 #    row_frmt = make_row_format()
 #    a, b, c, d = _data()
-

@@ -72,6 +72,9 @@ References
 
 ---------------------------------------------------------------------
 """
+# pylint: disable=C0103
+# pylint: disable=R1710
+# pylint: disable=R0914
 
 import sys
 from textwrap import dedent, indent, wrap
@@ -104,9 +107,6 @@ __all__ = ['time_deco',
 
 # ---- decorators and helpers ------------------------------------------------
 #
-
-
-
 def time_deco(func):  # timing originally
     """Timing decorator function
 
@@ -219,6 +219,7 @@ def doc_func(func=None, verbose=True):
             """sub in dummy"""
             pass
         return None
+    #
     import inspect
     if func is None:
         func = demo_func
@@ -446,12 +447,6 @@ def dirr(obj, colwise=False, cols=4, sub=None, prn=True):
     """
     d_arr = dir(obj)
     a = np.array(d_arr)
-    if len(a) == 0:
-        if prn:
-            print("None")
-        else:
-            return "None"
-        return
     dt = a.dtype.descr[0][1]
     if sub not in (None, '', ' '):
         start = [0, 1][sub[0] == "*"]

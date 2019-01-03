@@ -321,14 +321,19 @@ Requires:
 ---------
   requires arraytools.tools and stride from there
 """
+# pylint: disable=C0103
+# pylint: disable=R1710
+# pylint: disable=R0914
+
 # ---- begin with imports ----
 
 import sys
+from textwrap import dedent, indent
 import numpy as np
+import matplotlib.pyplot as plt
 #from numpy.lib.stride_tricks import as_strided
 from arraytools.tools import stride
-from textwrap import dedent, indent
-import matplotlib.pyplot as plt
+
 
 ft = {'bool': lambda x: repr(x.astype('int32')),
       'float': '{: 0.2f}'.format}
@@ -360,7 +365,7 @@ def pad_a(a):
     """Pads the input array using mode='edge' replicating the values
     at the edges and corners.
     """
-    a_pad = np.pad(a, 1,  mode='edge')
+    a_pad = np.pad(a, 1, mode='edge')
     return a_pad
 
 
@@ -457,7 +462,6 @@ def slope_a(a, cell_size=1, kern=None, degrees=True, verb=False, keep=False):
     if not keep:
         s = np.squeeze(s)
     if verb:
-        from textwrap import indent, dedent  # if not imported
         p = "    "
         args = ["Results for slope_a... ",
                 indent(str(a), p), indent(str(s), p)]
@@ -532,7 +536,7 @@ def a2z(vals):
     return out
 
 
-def hillshade_a(a, cell_size=1, sun_azim=315, sun_elev=45, degrees=True):
+def hillshade_a(a, cell_size=1, sun_azim=315, sun_elev=45):
     """Hillshade calculation as outlined in Burrough and implemented by
     : esri in ArcMap and ArcGIS Pro.  All measures in radians.
 
@@ -602,7 +606,7 @@ def pyramid(core=10, steps=10, stepby=2, incr=(1, 1), posi=True):
     return a
 
 
-def _demo(cell_size=5, degrees=True, pad=False, verbose=True):
+def _demo(cell_size=5, pad=False):
     """Demonstration of calculations
     :
     """
@@ -612,9 +616,9 @@ def _demo(cell_size=5, degrees=True, pad=False, verbose=True):
     :aspect values\n    {}\n    :
     :------------------------------------------------------------------
     """
-    ft = {'float': '{: 0.1f}'.format}
+    ft0 = {'float': '{: 0.1f}'.format}
     np.set_printoptions()
-    np.set_printoptions(linewidth=100, precision=1, formatter=ft)
+    np.set_printoptions(linewidth=100, precision=1, formatter=ft0)
     # p = "    "
     # a = pyramid(core=5, steps=4, incr=(1,1), posi=True)
     t = 1.0e-8
@@ -669,7 +673,7 @@ def demo2():
     sa = slope_a(a, cell_size=cell_size)
     dataExtent = [0, 21, 0, 21]
     hs = hillshade_a(a, cell_size=cell_size, sun_azim=270,
-                     sun_elev=45.5, degrees=True)
+                     sun_elev=45.5)
     # bilinear
     f2 = plt.imshow(sa, interpolation='none', cmap='coolwarm',
                     vmin=a.min(), vmax=a.max(), extent=dataExtent)
@@ -691,6 +695,7 @@ def plot_(a, hs=None, interp='none'):
     if hs is not None:
         f2 = plt.imshow(hs, interpolation='bilinear', cmap='gray',
                         alpha=0.5, extent=dataExtent)
+        f2.show()
     plt.gca().invert_yaxis()
 #    plt.show()
 #    plt.close()
@@ -752,12 +757,12 @@ if __name__ == "__main__":
 #    a, sa, hs = demo2()  # demo2...........
 #    single_demo()
 
-    a = np.array([[0, 1, 2, 3, 3, 3, 2, 1, 0],
-                  [1, 2, 3, 4, 4, 4, 3, 2, 1],
-                  [2, 3, 4, 5, 5, 5, 4, 3, 2],
-                  [3, 4, 5, 5, 5, 5, 5, 4, 3],
-                  [3, 4, 5, 5, 5, 5, 5, 4, 3],
-                  [3, 4, 5, 5, 5, 5, 5, 4, 3],
-                  [2, 3, 4, 5, 5, 5, 4, 3, 2],
-                  [1, 2, 3, 4, 4, 4, 3, 2, 1],
-                  [0, 1, 2, 3, 3, 3, 2, 1, 0]])
+#    a = np.array([[0, 1, 2, 3, 3, 3, 2, 1, 0],
+#                  [1, 2, 3, 4, 4, 4, 3, 2, 1],
+#                  [2, 3, 4, 5, 5, 5, 4, 3, 2],
+#                  [3, 4, 5, 5, 5, 5, 5, 4, 3],
+#                  [3, 4, 5, 5, 5, 5, 5, 4, 3],
+#                  [3, 4, 5, 5, 5, 5, 5, 4, 3],
+#                  [2, 3, 4, 5, 5, 5, 4, 3, 2],
+#                  [1, 2, 3, 4, 4, 4, 3, 2, 1],
+#                  [0, 1, 2, 3, 3, 3, 2, 1, 0]])

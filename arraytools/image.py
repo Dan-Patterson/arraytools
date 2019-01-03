@@ -7,24 +7,29 @@ Script :   image.py
 
 Author :   Dan.Patterson@carleton.ca
 
-Modified : 2018-01-05
+Modified : 2019-01-02
 
 Purpose :  tools for working with numpy arrays as images
 
 Useage:
 
-Functions:  tools function examples below
+Functions:
 ---------_
-: (1) a_filter(a, mode=1, ignore_ndata=True)  # mode is a 3x3 filter
-:References:
+a_filter(a, mode=1, ignore_ndata=True)  # mode is a 3x3 filter
+
+References:
 :
 :---------------------------------------------------------------------:
 """
+# pylint: disable=C0103
+# pylint: disable=R1710
+# pylint: disable=R0914
+
 # ---- imports, formats, constants ----
 import sys
 import warnings
 import numpy as np
-from arraytools.tools import stride, block
+from arraytools.tools import stride
 
 ft = {'bool': lambda x: repr(x.astype('int32')),
       'float_kind': '{: 0.3f}'.format}
@@ -199,14 +204,14 @@ def a_filter(a, mode=1, pad_output=True, ignore_nodata=True, nodata=None):
 
 
 def plot_img(img):
-    """rgb to gray scale"""
+    """plot image as gray scale"""
     import matplotlib.pyplot as plt
     plt.imshow(img, cmap=plt.get_cmap('gray'))
 #    plt.show()
 
 
 def rgb_gray(a):
-    """ """
+    """Convert 3d array to 2d gray scale"""
     shp = a.shape
     if shp[2] == 3:
         r, g, b = a[:, :, 0], a[:, :, 1], a[:, :, 2]
@@ -216,11 +221,11 @@ def rgb_gray(a):
     return gray
 
 
-def normalize(f):
-    """ """
-    lmin = f.min()
-    lmax = f.max()
-    nor = np.floor((f - lmin) / (lmax - lmin)*255.)
+def normalize(a):
+    """Normalize array to unsigned integer in range 0-255"""
+    lmin = a.min()
+    lmax = a.max()
+    nor = np.floor((a - lmin) / (lmax - lmin)*255.)
     nor = nor.astype('uint8')
     return nor
 
@@ -232,7 +237,7 @@ def equalize(a):
     : - derive the histogram, produce the ogive, then normalize it.
     https://en.wikipedia.org/wiki/Histogram_equalization
     """
-    hist, bins = np.histogram(a.flatten(), bins=256, range=[0, 256])
+    hist, _ = np.histogram(a.flatten(), bins=256, range=[0, 256])
     cdf = hist.cumsum()
     cdf_m = np.ma.masked_equal(cdf, 0)
     cdf_m = (cdf_m - cdf_m.min())*255 / (cdf_m.max() - cdf_m.min())

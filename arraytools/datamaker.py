@@ -7,7 +7,7 @@ Script:   datamaker.py
 
 Author:   Dan_Patterson@carleton.ca
 
-Modified: 2018-10-16
+Modified: 2018-11-03
 
 Purpose:  tools for working with numpy arrays
 
