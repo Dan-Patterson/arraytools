@@ -26,6 +26,10 @@ scipy.spatial.Delaunay.html>`_.
 shapes-with-pyqt-shapely-and-arcpy/>`_.
 ---------------------------------------------------------------------
 """
+# pylint: disable=C0103  # invalid-name
+# pylint: disable=R0914  # Too many local variables
+# pylint: disable=R1710  # inconsistent-return-statements
+# pylint: disable=W0105  # string statement has no effect
 
 import sys
 import numpy as np
@@ -64,7 +68,7 @@ def Vor_pnts(pnts, testing=True, plot=True):
     a loop to return the geometries.
     """
     avg = np.mean(pnts, axis=0)
-    p =  pnts - avg
+    p = pnts - avg
     tri = Voronoi(p)
     out = []
     for region in tri.regions:
@@ -95,7 +99,7 @@ def Del_pnts(pnts, testing=False, plot=True):
     """
     pnts = np.unique(pnts, axis=0)  # get the unique points only
     avg = np.mean(pnts, axis=0)
-    p =  pnts - avg
+    p = pnts - avg
     tri = Delaunay(p)
     simps = tri.simplices
     del_pnts = [p[s]+avg for s in simps]
@@ -109,8 +113,8 @@ def Del_pnts(pnts, testing=False, plot=True):
 # ---- Do the work
 #
 
-pnts = np.array([[ 0, 0], [ 0, 100], [100, 100], [100,  80], [ 20,  80],
-                 [ 20, 20], [100, 20], [100, 0], [ 0, 0]]) 
+#pnts = np.array([[0, 0], [0, 100], [100, 100], [100, 80], [20,  80],
+#                 [20, 20], [100, 20], [100, 0], [0, 0]])
 # ----------------------------------------------------------------------
 # __main__ .... code section
 if __name__ == "__main__":

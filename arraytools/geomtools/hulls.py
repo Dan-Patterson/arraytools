@@ -36,14 +36,17 @@ point-of-two-line-segments>'_.
 :
 :---------------------------------------------------------------------:
 """
+# pylint: disable=C0103
+# pylint: disable=R1710
+# pylint: disable=R0914
+
 # ---- imports, formats, constants ----
 import sys
-import numpy as np
 import warnings
+warnings.simplefilter('ignore', FutureWarning)
+import numpy as np
 import math
 
-
-warnings.simplefilter('ignore', FutureWarning)
 
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
       'float_kind': '{: 0.3f}'.format}
@@ -165,49 +168,36 @@ def point_in_polygon(pnt, poly):  # pnt_in_poly(pnt, poly):  #
 #        amount of neighbours
 #    Returns:
 #    --------
-#    list
+#    list of the k nearest neighbours, based on squared distance
 #    """
 #    s = sorted(pnts,
-#               key=lambda x: math.sqrt((x[0]-p[0])**2 + (x[1]-p[1])**2))[0:k]
+#               key=lambda x: (x[0]-p[0])**2 + (x[1]-p[1])**2)[0:k]
+##    s = sorted(pnts,
+##               key=lambda x: math.sqrt((x[0]-p[0])**2 + (x[1]-p[1])**2))[0:k]
 #    return s
 
 
-def knn(p, pnts, k=1, return_dist=True):
+def knn0(pnts, p, k):
     """
     Calculates k nearest neighbours for a given point.
 
-    Parameters:
-    -----------
-    p :array
-        x,y reference point
-    pnts : array
-        Points array to examine
+    points : array
+        list of points
+    p : two number array-like
+        reference point
     k : integer
-        The `k` in k-nearest neighbours
-
+        amount of neighbours
     Returns:
     --------
-    Array of k-nearest points and optionally their distance from the source.
+    list of the k nearest neighbours, based on squared distance
     """
-    def _remove_self_(p, pnts):
-        """Remove a point which is duplicated or itself from the array
-        """
-        keep = ~np.all(pnts==p, axis=1)
-        return pnts[keep]
-    #
-    def _e_2d_(p, a):
-        """ array points to point distance... mini e_dist
-        """
-        diff = a - p[np.newaxis, :]
-        return np.sqrt(np.einsum('ij,ij->i', diff, diff))
-    #
-    k = max(1, min(abs(int(k)), len(pnts)))
-    pnts = _remove_self_(p, pnts)
-    d = _e_2d_(p, pnts)
-    idx = np.argsort(d)
-    if return_dist:
-        return pnts[idx][:k], d[idx][:k]
-    return pnts[idx][:k]
+    p = np.asarray(p)
+    pnts = np.asarray(pnts)
+    diff = pnts - p[np.newaxis, :]
+    d = np.einsum('ij,ij->i', diff, diff)
+    idx = np.argsort(d)[:k]
+#    s = [i.tolist() for i in pnts[idx]]
+    return pnts[idx].tolist()
 
 
 def concave(points, k):
@@ -221,6 +211,8 @@ def concave(points, k):
     k : integer
         initially the number of points to start forming the concave hull,
         k will be the initial set of neighbors
+    knn0, intersects, angle, point_in_polygon :
+        functions used by concave
 
     Notes:
     ------
@@ -250,7 +242,7 @@ def concave(points, k):
     while (cur_p != frst_p or len(hull) == 1) and len(p_set) > 0:
         if len(hull) == 3:
             p_set.append(frst_p)         # Add first point again
-        knn_pnts = knn(cur_p, p_set, k)  # Find nearest neighbours
+        knn_pnts = knn0(p_set, cur_p, k)  # Find nearest neighbours
         cur_pnts = sorted(knn_pnts, key=lambda x: -angle(x, cur_p, prev_ang))
         its = True
         i = -1
@@ -316,80 +308,14 @@ def convex(points):
     return np.array(lower[:-1] + upper)  # upper[:-1]) # for open loop
 
 
-def nd_intersect2(a, b, indices=False):
-    """Intersection of 2, nx2 arrays using views.  Return optional indices
-
-    `<https://stackoverflow.com/questions/9269681/intersection-of-2d-
-    numpy-ndarrays>`_.
-    """
-    a_view = a.view([('',a.dtype)]*a.shape[1])
-    b_view = b.view([('',b.dtype)]*b.shape[1])
-    if indices:
-        ab, idx0, idx1 = np.intersect1d(a_view, b_view, return_indices=indices)
-        return ab.view(a.dtype).reshape(-1, a.shape[1]), idx0, idx1
-    else:
-        ab = np.intersect1d(a_view, b_view)
-        return ab.view(a.dtype).reshape(-1, a.shape[1])
-
-def nd_intersect(a, b, invert=False):
-    """Intersect of two, 2D arrays using views and in1d
-
-    Parameters:
-    -----------
-    a, b : arrays
-        Arrays are assumed to have a shape = (N, 2)
-
-    `<https://github.com/numpy/numpy/blob/master/numpy/lib/arraysetops.py>`_.
-
-    `<https://stackoverflow.com/questions/9269681/intersection-of-2d-
-    numpy-ndarrays>`_.
-    """
-    a_view = a.view([('',a.dtype)]*a.shape[1])
-    b_view = b.view([('',b.dtype)]*b.shape[1])
-    if len(a) < len(b):
-        idx = np.in1d(a_view, b_view, assume_unique=False, invert=False)
-        return a[idx] 
-    else:
-        idx = np.in1d(b_view, a_view, assume_unique=False, invert=False)
-        return b[idx] 
-
-#  https://github.com/numpy/numpy/blob/master/numpy/lib/arraysetops.py
-
-def nd_difference(a, b):
-    """Difference of 2, nx2 arrays using views.  Try to have array `a` the 
-    smaller of the two arrays... not necessary, but less checks.  Returns the
-    difference between the two arrays.
-
-    Parameters:
-    -----------
-    a, b : arrays
-        Arrays are assumed to have a shape = (N, 2)
-    """
-    a_view = a.view([('',a.dtype)]*a.shape[1])
-    b_view = b.view([('',b.dtype)]*b.shape[1])
-    if len(a) < len(b):
-        idx = np.in1d(a_view, b_view, assume_unique=False, invert=True)
-        return a[idx]
-    else:
-        idx = np.in1d(b_view, a_view, assume_unique=False, invert=True)
-        return b[idx]
-
-def nd_diffxor(a, b, uni=False):
-    """using setxor... it is slower than nd_diff, 36 microseconds vs 18.2
-    but this is faster for large sets
-    """
-    a_view = a.view([('',a.dtype)]*a.shape[1])
-    b_view = b.view([('',b.dtype)]*b.shape[1])
-    ab = np.setxor1d(a_view, b_view, assume_unique=uni)
-    return ab.view(a.dtype).reshape(-1, a.shape[1])
-
 
 # ----------------------------------------------------------------------
 # .... running script or testing code section
 
 def ice():
     """Ice demo for concave hull generation"""
-    pth = r"C:\GIS\A_Tools_scripts\Polygon_lineTools\Data\pointset.csv"
+#    pth = r"C:\GIS\A_Tools_scripts\Polygon_lineTools\Data\pointset.csv"
+    pth = r"C:\GIS\A_Tools_scripts\Polygon_lineTools\Data\samplepoints3.csv"
     a = np.loadtxt(pth, delimiter=",", skiprows=1)
     return a
 
@@ -397,8 +323,8 @@ def ice():
 def c_():
     """Letter c for concave hull determination
     """
-    c = np.array([[ 0, 0], [ 0, 100], [100, 100], [100,  80], [ 20,  80],
-                  [ 20, 20], [100, 20], [100, 0], [ 0, 0]])
+    c = np.array([[0, 0], [0, 100], [100, 100], [100, 80], [20, 80],
+                  [20, 20], [100, 20], [100, 0], [0, 0]])
     return c
 
 
@@ -421,15 +347,15 @@ def _demo():
                   [0, 1, 1, 1, 1, 0, 1, 1, 0, 1],
                   [1, 0, 1, 0, 0, 1, 0, 1, 1, 0]])
     xs, ys = np.where(a == 1)
-    cell_size =  10
+    cell_size = 10
     xy = np.array(list(zip(xs*cell_size, ys*cell_size)))
     # (2) ---- for each group, perform the concave hull
     in_arrays = [a]
     groups = [xy] #[a[np.where(a[group_by] == i)[0]] for i in uniq]
     hulls = []
     out_arrs = []
-    for i in range(0, len(groups)):
-        p = groups[i]
+    cnt = 0
+    for p in groups:
         # ---- point preparation section ------------------------------------
         p = np.array(list(set([tuple(i) for i in p])))  # Remove duplicates
         idx_cr = np.lexsort((p[:, 0], p[:, 1]))         # indices of sorted array
@@ -441,7 +367,8 @@ def _demo():
         else:
             cx = np.array(convex(in_pnts))
         hulls.append(cx)
-        z = np.zeros_like(in_arrays[i])
+        z = np.zeros_like(in_arrays[cnt])
+        cnt += 1
         for i in cx:
             x = int(i[0]//cell_size)
             y = int(i[1]//cell_size)

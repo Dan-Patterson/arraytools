@@ -18,9 +18,12 @@ References
 
 `<https://stackoverflow.com/questions/3252194/numpy-and-line-intersections>`_.
 
-
----------------------------------------------------------------------
 """
+# pylint: disable=C0103  # invalid-name
+# pylint: disable=R0914  # Too many local variables
+# pylint: disable=R1710  # inconsistent-return-statements
+# pylint: disable=W0105  # string statement has no effect
+
 # ---- imports, formats, constants ----
 import sys
 from textwrap import dedent
@@ -134,7 +137,7 @@ def split_area(a, pieces=4, step_size=10, tol=1.0, x_axis=True):
         areas.append(e_area(sub))        # ---- e_area
         arrs.append(sub)
     tot_area = sum(areas)
-    cum_area =  np.cumsum(areas)
+    cum_area = np.cumsum(areas)
     area = tot_area/float(pieces)  # required area
     bins = np.arange(1, pieces+1) * area
     inds = np.digitize(cum_area, bins)
@@ -181,7 +184,8 @@ def split_area(a, pieces=4, step_size=10, tol=1.0, x_axis=True):
     return arrs, areas, f, t
 
 
-def perp(a) :
+def perp(a):
+    """Perpendicular to array"""
     b = np.empty_like(a)
     b_dim = b.ndim
     if b_dim == 1:
@@ -193,7 +197,7 @@ def perp(a) :
     return b
 
 
-def seg_int(a, v) :
+def seg_int(a, v):
     """Returns the point of intersection of the line segments passing through
     a1, a0 and v1, v0.
 
@@ -253,7 +257,7 @@ def _demo():
     ys = [0., 30., 30., 80., 100., 100., 0., 0.]
     a = np.array(list(zip(xs, ys))) * 1.0  # --- must be floats
     v = np.array([[50., 0], [50, 100.]])
-    ext = np.array([[0., 0], [0, 100.],[100, 100.], [100., 0.], [0., 0.]])
+    ext = np.array([[0., 0], [0, 100.], [100, 100.], [100., 0.], [0., 0.]])
 
 #    return a, v
 
@@ -315,7 +319,7 @@ if __name__ == "__main__":
     : - run the _demo
     """
 #    print("Script... {}".format(script))
-    polygons, out = _demo()
+#    polygons, out = _demo()
 #    a, arrs, areas, f, t, v = _demo()
 #    a, out, out_fc, SR, polygons = _demo()
 """

@@ -31,38 +31,55 @@ script = sys.argv[0]  # print this should you need to locate the script
 import arcpy
 import timeit
 
-poly_rings = [
+rings = [
     [[15,0], [25,0], [25,10], [15,10], [15,0]],
     [[18,13], [24,13], [24,18], [18,18], [18,13]
 ]]
 
+
+#z = np.asarray(rings)
+z = np.load(r"C:\Git_Dan\arraytools\Data\Ontario.npy")
+rings = [z.tolist()]
+z = [z]
 def FromArcPyArray():
     aarr = arcpy.Array(
-        arcpy.Array(arcpy.Point(*xy) for xy in ring) for ring in poly_rings
+        arcpy.Array(arcpy.Point(*xy) for xy in ring) for ring in rings
     )
     return arcpy.Polygon(aarr)
 
 def FromEsriJSON():
-    esri_json = {"type":"Polygon", "rings":poly_rings}
+    esri_json = {"type":"Polygon", "rings":rings}
     return arcpy.AsShape(esri_json, True)
 
 def FromGeoJSON():
-    geojson = {"type":"Polygon", "coordinates":poly_rings}
+    geojson = {"type":"Polygon", "coordinates":rings}
     return arcpy.AsShape(geojson)
 
-def FromWKT():
+def FromWKT(rings):
     wkt = "MULTIPOLYGON({})".format(
         ",".join("(({}))".format(
             ", ".join("{} {}".format(*xy) for xy in ring)
-        ) for ring in poly_rings)
+        ) for ring in rings)
     )
-    return arcpy.FromWKT(wkt)
+    return wkt #arcpy.FromWKT(wkt)
 
-for ctor in [FromArcPyArray, FromEsriJSON, FromGeoJSON, FromWKT]:
-    pg = ctor()
-    print("\n".join(
-        str(i) for i in [ctor.__name__, timeit.timeit(ctor, number=10000), ""]
-    ))
+def FromWKT_np(p):
+    """modified approach
+    """
+    t = []
+    for part in p:
+        t1 = ", ".join("{} {}".format(*i) for i in part)
+        t.append("(({}))".format(t1)) # t1
+    t3 = ", ".join(t)
+    wkt = "MULTIPOLYGON({})".format(t3)
+    return wkt, t3 # arcpy.FromWKT(wkt)
+
+#for ctor in [FromArcPyArray, FromEsriJSON, FromGeoJSON, FromWKT, FromWKT_np]:
+#for ctor in [FromWKT(rings), FromWKT_np(rings)]:
+#    pg = ctor
+#    print("\n".join(
+#        str(i) for i in [ctor.__name__, timeit.timeit(ctor, number=10000), ""]
+#    ))
 
 # ----------------------------------------------------------------------
 # __main__ .... code section

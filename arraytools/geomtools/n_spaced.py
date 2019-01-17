@@ -16,18 +16,20 @@ Purpose:
 
 References:
 -----------
+`<http://stackoverflow.com/questions/6835531/sorting-a-python-array-
+recarray-by-column>`_.
 
-[1]
-http://stackoverflow.com/questions/6835531/sorting-a-python-array-
-recarray-by-column
-
-:---------------------------------------------------------------------:
 """
+# pylint: disable=C0103  # invalid-name
+# pylint: disable=R0914  # Too many local variables
+# pylint: disable=R1710  # inconsistent-return-statements
+# pylint: disable=W0105  # string statement has no effect
+
 # ---- imports, formats, constants ------------------------------------------
 
 import sys
-import numpy as np
 from textwrap import dedent
+import numpy as np
 
 ft = {'bool': lambda x: repr(x.astype('int32')),
       'float': '{: 0.1f}'.format}
@@ -37,14 +39,13 @@ np.ma.masked_print_option.set_display('-')
 
 script = sys.argv[0]
 
-
 # ---- functions ------------------------------------------------------------
 #
 def not_closer(a, min_d=1, ordered=False):
     """Find the points that are separated by a distance greater than
     min_d.  This ensures a degree of point spacing
 
-    Requires:
+    Parameters:
     --------
     a : array
       2D array of coordinates.
@@ -73,7 +74,7 @@ def not_closer(a, min_d=1, ordered=False):
 def n_spaced(L=0, B=0, R=10, T=10, min_space=1, num=10, verbose=True):
     """Produce num points within the bounds specified by the extent (L,B,R,T)
 
-    Requires:
+    Parameters:
     ---------
 
     L(eft), B, R, T(op) : numbers
@@ -135,8 +136,8 @@ def _demo():
 if __name__ == "__main__":
     """ run the demos, comment out what you don't want"""
     # print("Script... {}".format(script))
-    a = np.array([[0, 0], [0, 2], [2, 2], [2, 0]], dtype='float64')
-    b = _demo()
+#    a = np.array([[0, 0], [0, 2], [2, 2], [2, 0]], dtype='float64')
+#    b = _demo()
 
 # z = np.zeros((3,), dtype=[('A', 'int', (2,)), ('B', 'float')])
 # z["A"] = np.arange(6).reshape(3,2)

@@ -7,7 +7,7 @@ Script :   pip.py
 
 Author :   Dan.Patterson@carleton.ca
 
-Modified : 2018-04-09
+Modified : 2019-01-02
 
 Purpose:
 --------
@@ -24,7 +24,7 @@ bounding-box/33051576#33051576>`_.
 
 Notes:
 ------
-Remove points that are outside of the polygon extent, then filter those 
+Remove points that are outside of the polygon extent, then filter those
 using the crossing number approach to test whether a point is within.
 
 **Sample run**
@@ -54,6 +54,11 @@ using the crossing number approach to test whether a point is within.
 369 ms ± 19.1 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 """
+# pylint: disable=C0103  # invalid-name
+# pylint: disable=R0914  # Too many local variables
+# pylint: disable=R1710  # inconsistent-return-statements
+# pylint: disable=W0105  # string statement has no effect
+
 # ----10| ------20| ------30| ------40| ------50| ------60| ------70| ------80|
 import numpy as np
 import arcpy
@@ -160,9 +165,9 @@ def crossing_num(pnts, poly):
 def _demo():
     """ used in the testing
     : polygon layers
-    : C:\Git_Dan\a_Data\testdata.gdb\Carp_5x5km  full 25 polygons
-    : C:\Git_Dan\a_Data\testdata.gdb\subpoly     centre polygon with 'ext'
-    : C:\Git_Dan\a_Data\testdata.gdb\centre_4    above, but split into 4
+    : C:/Git_Dan/a_Data/testdata.gdb/Carp_5x5km  full 25 polygons
+    : C:/Git_Dan/a_Data/testdata.gdb/subpoly     centre polygon with 'ext'
+    : C:/Git_Dan/a_Data/testdata.gdb/centre_4    above, but split into 4
     """
     ext = np.array([[342000, 5022000], [343000, 5023000]])
     in_fc = r'C:\Git_Dan\a_Data\testdata.gdb\xy_10k'

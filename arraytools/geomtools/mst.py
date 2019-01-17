@@ -129,13 +129,17 @@ array([[3, 4], [ 0, 8], [7, 4], [10, 0], [10, 8], [0, 0]])
 
 : ---------------------------------------------------------------------:
 """
+# pylint: disable=C0103
+# pylint: disable=R1710
+# pylint: disable=R0914
+
 #---- imports, formats, constants ----
 #
 
 import sys
+from textwrap import dedent, indent
 import numpy as np
 import matplotlib.pyplot as plt
-from textwrap import dedent, indent
 
 ft = {'bool': lambda x: repr(x.astype('int32')),
       'float': '{: 0.1f}'.format}
@@ -250,7 +254,7 @@ if __name__ == "__main__":
     """Main section...   """
     # print("Script... {}".format(script))
     #    a = np.random.randint(1, 10, size=(10,2))
-    a = np.array([[0, 0], [0, 8], [10, 8],  [10, 0], [3, 4], [7, 4]])
+#    a = np.array([[0, 0], [0, 8], [10, 8], [10, 0], [3, 4], [7, 4]])
 #    idx, a_srt, d = dist_arr(a)     # return distance array and sorted pnts
 #    pairs = mst(d)                  # the orig-dest pairs for the mst
 #    plot_mst(a_srt, pairs)          # uncomment to plot

@@ -9,6 +9,9 @@
 :References:
 :
 """
+# pylint: disable=C0103
+# pylint: disable=R1710
+# pylint: disable=R0914
 
 # ---- imports, formats, constants ----
 
@@ -88,7 +91,7 @@ def _arc(radius=100, start=0, stop=1, step=0.1, xc=0.0, yc=0.0):
     ---------
     `radius` : number
         cirle radius from which the arc is obtained
-    `start`, `stop`, `incr` : numbers
+    `start`, `stop`, `step` : numbers
         angles in degrees
     `xc`, `yc` : number
         center coordinates in projected units
