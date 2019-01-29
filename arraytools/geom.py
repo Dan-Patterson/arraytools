@@ -31,14 +31,14 @@ Notes:
     '_demo', '_densify_2D', '_flat_', '_new_view_', '_reshape_', '_test',
     '_unpack', '_view_', 'adjacency_edge', 'angle_2pnts', 'angle_between',
     'angle_np', 'angle_seq', 'angles_poly', 'areas', 'as_strided', 'azim_np',
-    'center_', 'centers', 'centroid_', 'centroids', 'circle', 'convex',
+    'center_', 'centers', 'centroid_', 'centroids', 'convex',
     'cross', 'dedent', 'densify', 'dist_bearing', 'dx_dy_np', 'e_2d',
-    'e_area', 'e_dist', 'e_leng', 'ellipse', 'extent_', 'fill_diagonal', 'ft',
-    'hex_flat', 'hex_pointy', 'intersect_pnt', 'knn', 'lengths', 'max_',
+    'e_area', 'e_dist', 'e_leng', 'extent_', 'fill_diagonal', 'ft',
+    'intersect_pnt', 'knn', 'lengths', 'line_dir', 'max_',
     'min_', 'nn_kdtree', 'np', 'p_o_p', 'pnt_', 'pnt_in_list', 'pnt_on_poly',
-    'pnt_on_seg', 'point_in_polygon', 'radial_sort', 'rectangle',
+    'pnt_on_seg', 'point_in_polygon', 'radial_sort',
     'remove_self', 'rotate', 'seg_lengths', 'segment', 'simplify', 'stride',
-    'total_length', 'trans_rot', 'triangle', 'xy_grid'
+    'total_length', 'trans_rot'
 
 References:
 ----------
@@ -97,7 +97,7 @@ import sys
 from textwrap import dedent
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
-# from arraytools.fc import _xy
+from arraytools._basic import cartesian
 
 EPSILON = sys.float_info.epsilon  # note! for checking
 
@@ -112,26 +112,34 @@ script = sys.argv[0]  # print this should you need to locate the script
 
 # ---- order by appearance ----
 #
-__all__ = ['_flat_', '_unpack', 'segment', 'stride',
-           '_new_view_', '_view_', '_reshape_',
-           'min_', 'max_', 'extent_',
-           'center_', 'centroid_', 'centers', 'centroids',
-           'intersect_pnt',
-           'e_area', 'e_dist', 'e_leng',
+__all__ = ['_flat_', '_unpack',               # general
+           'poly2segments', 'stride',
+           '_new_view_', '_view_',
+           '_reshape_',
+           'min_', 'max_',
+           'extent_',                         # extent, centrality
+           'center_', 'centroid_',
+           'centers', 'centroids',
+           'intersect_pnt', 'intersects',     # intersection
+           'e_area', 'e_dist', 'e_leng',      # areas, distances, lengths
+           'e_2d', 'cartesian_dist',
            'areas', 'lengths',
            'total_length', 'seg_lengths',
-           'radial_sort',
-           'dx_dy_np', 'angle_between', 'angle_np', 'azim_np',
-           'angle_2pnts', 'angle_seq', 'angles_poly', 'dist_bearing',
-           '_densify_2D', '_convert', 'densify',
-           'simplify',
-           'rotate', 'trans_rot',
-           'convex', 'circle', 'ellipse',
-           'hex_flat', 'hex_pointy', 'rectangle', 'triangle',
-           'xy_grid',
-           'pnt_in_list', 'point_in_polygon',
-           'knn', 'nn_kdtree', 'cross', 'e_2d', 'fill_diagonal', 'remove_self',
-           'pnt_on_seg', 'pnt_on_poly', 'adjacency_edge'
+           'radial_sort',                     # sorting
+           'dist_bearing_sort',
+           'dx_dy_np', 'angle_between',       # angles, direction
+           'angle_np', 'azim_np',
+           'angle_2pnts', 'angle_seq',
+           'angles_poly',
+           'line_dir',
+           '_densify_2D', '_convert',         # densify simplify
+           'densify', 'simplify',
+           'rotate', 'trans_rot',             # translation, rotation
+           'pnt_in_list',                     # spatial queries and analysis
+           'pnt_on_seg', 'pnt_on_poly',
+           'point_in_polygon',
+           'knn', 'nn_kdtree', 'cross', 'remove_self',
+           'adjacency_edge'
            ]
 
 
@@ -165,7 +173,7 @@ def _unpack(iterable, param='__iter__'):
     return xy
 
 
-def segment(a):
+def poly2segments(a):
     """Segment poly* structures into o-d pairs from start to finish
 
     `a` : array
@@ -174,6 +182,8 @@ def segment(a):
         Returns a 3D array of point pairs.
     """
     a = _new_view_(a)
+    if a.shape[0] == 1:     # squeeze (1, n, m), (n, 1, m) (n, m, 1) arrays
+        a = a.squeeze()
     s0, s1 = a.shape
     fr_to = np.zeros((s0-1, s1, 2), dtype=a.dtype)
     fr_to[..., 0] = a[:-1]
@@ -268,27 +278,23 @@ def _reshape_(a):
         return _view_(a)
     #
     if _len == 0:
-        if shp == 1:
-            view = [_view_(i) for i in a]
-        elif shp == 2:
-            view = a
-        elif shp > 2:
+        if shp <= 2:
+            return a
+        if shp > 2:
             tmp = a.reshape(np.product(a.shape[:-1]), 2)
-            view = tmp.view('<f8')
-    elif _len == 1:
+            return tmp.view(a.dtype)
+    if _len == 1:
         fld_name = a.dtype.names[0]  # assumes 'Shape' field is the geometry
-        view = a[fld_name]
-    elif _len >= 2:
+        return a[fld_name]
+    if _len >= 2:
         if shp == 1:
             if len(a) == a.shape[0]:
                 view = _view_(a)
             else:
                 view = np.asanyarray([_view_(i) for i in a])
-        else:
-            view = np.asanyarray([_view_(i) for i in a])
-    else:
-        view = a
-    return view
+            return view
+        return np.asanyarray([_view_(i) for i in a])
+    return a
 
 
 # ---- extent, mins and maxs ------------------------------------------------
@@ -404,8 +410,11 @@ def centroids(a):
 # ---- point functions ------------------------------------------------------
 #
 def intersect_pnt(a, b=None):
-    """Returns the point of intersection of the segment passing through two
-    line segments (p0, p1) and (p2, p3)
+    """Returns the point of intersection of the vectors passing through two
+    point pairs (p0, p1) and (p2, p3).  This is not segment-segment
+    intersection.  An extrapolation will be returned if the segments do not
+    cross and the point of intersection will be returned where they **would**
+    intersect.
 
     Parameters:
     -----------
@@ -449,62 +458,83 @@ def intersects(*args):
 
     Requires:
     --------
-      intersects(line0, line1) or intersects(p0, p1, p2, p3)
-        p0, p1 -> line 1
-        p2, p3 -> line 2
+    - intersects(line0, line1)
+    - intersects(p0, p1, p2, p3)
+
+      - p0, p1 -> line 0
+      - p2, p3 -> line 1
 
     Returns:
     --------
-        boolean, if the segments do intersect
+    boolean, if the segments do intersect
 
+    >>> a = np.array([[0, 0], [10, 10]])
+    >>> b = np.array([[0, 10], [10, 0]])
+    >>> intersects(*args)  # True
+
+    Example:
+    -------
+    ::
+
+        c = np.array([[0, 0], [0, 90], [90, 90], [60, 60], [20, 20], [0, 0]])
+        segs = [np.array([c[i-1], c[i]]) for i in range(1, len(c))]
+        ln = np.array([[50, -10], [50, 100]])
+        print("line {}".format(ln.ravel()))
+        for i, j in enumerate(segs):
+            r = intersects(ln, j)
+            print("{}..{}".format(j.ravel(), r))
+        ...
+        line [ 50 -10  50 100]
+        [ 0  0  0 90]..(False, 'collinear')
+        [ 0 90 90 90]..(True, (50.0, 90.0))
+        [90 90 60 60]..(False, 'denom check')
+        [60 60 20 20]..(True, (50.0, 50))
+        [20 20  0  0]..(False, 'cross(p1-p0, p0-p2)')
     References:
     -----------
     `<https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-
     line-segments-intersect#565282>`_.
 
     """
-    if len(args) == 2:
+    if len(args) == 2:    # two lines
         p0, p1, p2, p3 = *args[0], *args[1]
-    elif len(args) == 4:
+    elif len(args) == 4:  # four points
         p0, p1, p2, p3 = args
     else:
         raise AttributeError("Pass 2, 2-pnt lines or 4 points to the function")
     #
-    # ---- First check ----   np.cross(p1-p0, p3-p2 )
-    p0_x, p0_y, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y = *p0, *p1, *p2, *p3
-    s10_x = p1_x - p0_x
-    s10_y = p1_y - p0_y
-    s32_x = p3_x - p2_x
-    s32_y = p3_y - p2_y
-    denom = s10_x * s32_y - s32_x * s10_y
-    if denom == 0.0:
-        return False
+    x0, y0, x1, y1, x2, y2, x3, y3 = *p0, *p1, *p2, *p3  # points to xs and ys
     #
-    # ---- Second check ----  np.cross(p1-p0, p0-p2 )
-    den_gt0 = denom > 0
-    s02_x = p0_x - p2_x
-    s02_y = p0_y - p2_y
-    s_numer = s10_x * s02_y - s10_y * s02_x
-    if (s_numer < 0) == den_gt0:
-        return False
+    # ---- First check ----   np.cross(p1-p0, p3-p2 )
+    denom = (x1 - x0) * (y3 - y2) - (x3 - x2) * (y1 - y0)
+    if denom == 0.0:  # collinear
+        return (False, "collinear")
+    #
+    # ---- Second check ----  np.cross(p1-p0, p0-p2)
+    denom_gt0 = denom > 0  # denominator greater than zero
+    #
+    s_numer = (x1 - x0) * (y0 - y2) - (y1 - y0) * (x0 - x2)
+    if (s_numer < 0) == denom_gt0:
+        return (False, "cross(p1-p0, p0-p2)")
     #
     # ---- Third check ----  np.cross(p3-p2, p0-p2)
-    t_numer = s32_x * s02_y - s32_y * s02_x
-    if (t_numer < 0) == den_gt0:
-        return False
+    t_numer = (x3 - x2) * (y0 - y2) - (y3 - y2) * (x0 - x2)
+    if (t_numer < 0) == denom_gt0:
+        return (False, "cross(p3-p2, p0-p2)")
     #
-    if ((s_numer > denom) == den_gt0) or ((t_numer > denom) == den_gt0):
-        return False
+    # ---- Fourth check ----
+    if ((s_numer > denom) == denom_gt0) or ((t_numer > denom) == denom_gt0):
+        return (False, "denom check")
     #
     # ---- check to see if the intersection point is one of the input points
+    # substitute p0 in the equation  These are the intersection points
     t = t_numer / denom
-    # substitute p0 in the equation
-    x = p0_x + (t * s10_x)
-    y = p0_y + (t * s10_y)
+    x = x0 + t * (x1 - x0)
+    y = y0 + t * (y1 - y0)
     # be careful that you are comparing tuples to tuples, lists to lists
     if sum([(x, y) == tuple(i) for i in [p0, p1, p2, p3]]) > 0:
-        return False
-    return True
+        return (False, "not input point")
+    return (True, (x, y))
 
 
 # ---- distance, length and area --------------------------------------------
@@ -568,6 +598,10 @@ def e_dist(a, b, metric='euclidean'):
             diff = a - p[np.newaxis, :]  # a and p are ndarrays
             return np.sqrt(np.einsum('ij,ij->i', diff, diff))
 
+    See also:
+    ---------
+    cartesian_dist : function
+        Produces pairs of x,y coordinates and the distance, without duplicates.
     """
     a = np.asarray(a)
     b = np.atleast_2d(b)
@@ -646,6 +680,49 @@ def e_leng(a):
             length += leng
     return length, diffs[0]
 
+
+
+def cartesian_dist(a, b):
+    """Form the cartesian product of two 2D arrays.
+
+    Parameters:
+    -----------
+    `a`, `b` : arrays
+        2D array of x,y values
+
+    Requires:
+    ---------
+    The `cartesian` function defined within.  The arrays are passed to it to
+    format the data structure to from-to x,y coordinate pairs.
+
+    Notes:
+    ------
+    The cartesian_dist function is about 2X slower than e_dist from
+    arraytools.geom.  It depends on whether you need the x,y coordinate pairs
+    and the distance or just one of the two forms of the distance matrix.
+
+    >>> a, b
+    array([[0., 0.],   array([[3., 3.],
+           [1., 1.],          [4., 4.]])
+           [2., 2.]])
+    cartesian_dist(a,b)
+    array([[0.  , 0.  , 3.  , 3.  , 4.24],
+           [0.  , 0.  , 4.  , 4.  , 5.66],
+           [1.  , 1.  , 3.  , 3.  , 2.83],
+           [1.  , 1.  , 4.  , 4.  , 4.24],
+           [2.  , 2.  , 3.  , 3.  , 1.41],
+           [2.  , 2.  , 4.  , 4.  , 2.83]])
+    >>> d = e_dist(a, b)
+    array([[4.24, 5.66],   # a0->b0, a0->b1
+           [2.83, 4.24],   # a1->b0, a1->b1
+           [1.41, 2.83]])  # a2->b0, a2->b1
+    >>> d.ravel()  # array([4.24, 5.66, 2.83, 4.24, 1.41, 2.83])
+    """
+    c = cartesian((a, b))
+    diff = c[:, :2] - c[:, 2:]
+    d = np.sqrt(np.einsum('ij,ij->i', diff, diff))
+    d = d.reshape(len(d), 1)
+    return np.concatenate((c, d), axis=1)
 
 
 # ---- Batch calculations of e_area and e_leng ------------------------------
@@ -732,19 +809,25 @@ def seg_lengths(a):
 
 # ---- sorting based on geometry --------------------------------------------
 #
-def radial_sort(pnts, cent=None, as_azimuth=False):
+def radial_sort(pnts, cent=None, distance=True, as_azimuth=False):
     """Sort about the point cloud center or from a given point
 
-    `pnts` : points
+    pnts : points
         An array of points (x,y) as array or list
-    `cent` : coordinate
-        list, tuple, array of the center's x,y coordinates
+    cent : array-like
+        - A list, tuple, array of the center's x,y coordinates.
+        - None, the center's coordinate is calculated from the values with
+          duplicates removed
+
     >>> cent = [0, 0] or np.array([0, 0])
 
     Returns:
     -------
-        The angles in the range -180, 180 x-axis oriented
+    - The angles in the range -180, 180 x-axis oriented
+    - The pnts are NOT returned sorted, you will have to use the sort_order to
+      complete the sorting.
 
+    >>> pnts_sorted = pnts[sort_order]
     """
     pnts = _new_view_(pnts)
     if cent is None:
@@ -755,12 +838,62 @@ def radial_sort(pnts, cent=None, as_azimuth=False):
     sort_order = np.argsort(ang_ab)
     if as_azimuth:
         ang_ab = np.where(ang_ab > 90, 450.0 - ang_ab, 90.0 - ang_ab)
+    if distance:
+        dist = e_dist(np.array([0, 0]), ba)
+        return ang_ab, sort_order, dist
     return ang_ab, sort_order
 
 
 # ---- angle related functions ----------------------------------------------
 # ---- ndarrays and structured arrays ----
 #
+def dist_bearing_sort(pnts, cent=None, as_struct=False):
+    """Sorts points based on a radial sort of a point set (X, Y) relative to
+    the center of the points.  The sort is done using the bearing, then the
+    distance of a point to the center.
+
+    *** Note done *** move to arraytools.wars when complete
+
+    xy = a0[0][['X', 'Y']]
+    pnts = _view_(xy) or....
+    s = dist_bearing_sort(a0[0][['X', 'Y']])
+    s.shape # (69688, 2)
+    11.4 ms ± 272 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    """
+    def _xy_struct_(a):
+        """construct a structured array from x,y data in an N-2 array assuming
+        X is first column and Y follows
+        """
+        shp = a.shape
+        dt = [('X', '<f8'), ('Y', '<f8'), ('angle', '<f8'), ('dist', '<f8')]
+        z = np.zeros((shp[0],), dtype=dt)
+        z['X'] = a[:, 0]
+        z['Y'] = a[:, 1]
+        z['angle'] = a[:, 2]
+        z['dist'] = a[:, 3]
+        return z
+    #
+    ang, order, dist = radial_sort(pnts, cent=cent, distance=True)
+    s = np.stack((pnts[:, 0], pnts[:, 1], ang, dist), axis=1)
+    s = s[order]
+    h = np.arange(-180, 180.5, 0.5, dtype='float')
+    hist = np.histogram(s[:, 3], bins=h)  # on distance
+    cnts, low = hist
+    out = []
+    for i in range(1, len(low)):
+        s0 = s[np.logical_and(s[:, 2] > low[i-1], s[:, 2] <= low[i])]
+        d_max = s0[:, 3].max()
+        delta = d_max*0.1
+        w = s0[np.logical_and(s0[:, 3] > d_max-delta, s0[:, 3] <= d_max)]
+        if len(w) < 5:
+            w = s0
+        out.append(w)
+    out = np.vstack((out))
+    if as_struct:
+        out = _xy_struct_(out)
+    return s, cnts, low, out
+
+
 def dx_dy_np(a):
     """Sequential difference in the x/y pairs from a table/array
 
@@ -867,7 +1000,7 @@ def angles_poly(a=None, inside=True, in_deg=True):
         b = np.asarray([(i.X, i.Y) if i is not None else ()
                        for j in a for i in j])
 
-    Sample data
+    Sample data: the letter C
 
     >>> a = np.array([[ 0, 0], [ 0, 100], [100, 100], [100,  80],
                       [ 20,  80], [ 20, 20], [100, 20], [100, 0], [ 0, 0]])
@@ -897,64 +1030,31 @@ def angles_poly(a=None, inside=True, in_deg=True):
     return angles
 
 
-def dist_bearing(orig=(0, 0), bearings=None, dists=None, prn=False):
-    """Point locations given distance and bearing.
-    Now only distance and angle are known.  Calculate the point coordinates
-    from distance and angle
+def line_dir(orig, dest, fromNorth=False):
+    """Direction of a line given 2 points
 
-    References:
-    ----------
-    `<https://community.esri.com/thread/66222>`_.
+    `orig`, `dest` : arrays
+        2D arrays of representing the start and end coordinates of two point
+        lines.
+    `fromNorth` : boolean
+        True or False gives angle relative to North or the x-axis.
 
-    `<https://community.esri.com/blogs/dan_patterson/2018/01/21/
-    origin-distances-and-bearings-geometry-wanderings>`_.
-
-    Notes:
-    -----
-    Sample calculation
-    ::
-      bearings = np.arange(0, 361, 10.)  # 37 bearings
-      dists = np.random.randint(10, 500, len(bearings)) * 1.0
-      dists = np.ones((len(bearings),))
-      dists.fill(100.)
-      data = dist_bearing(orig=orig, bearings=bearings, dists=dists)
-
-    Create a featureclass from the results
-    ::
-       shapeXY = ['X_f', 'Y_f']
-       fc_name = 'C:/path/Geodatabase.gdb/featureclassname'
-       arcpy.da.NumPyArrayToFeatureClass(out, fc_name, ['Xn', 'Yn'], "2951")
-       # ... syntax
-       arcpy.da.NumPyArrayToFeatureClass(
-                          in_array=out, out_table=fc_name,
-                          shape_fields=shapeXY, spatial_reference=SR)
+    Example:
+    --------
+    >>> orig = np.array([0, 0])
+    >>> xy_s = array([[-1,  0,  1,  1,  1,  0, -1, -1],
+                      [ 1,  1,  1,  0, -1, -1, -1,  0]])
+    >>> dest - xy_s.T
+    >>> dir_ = ["From x-axis", "From N."][fromNorth]
+    >>> ang = line_dir(orig, dest, fromNorth=False)
     """
-    orig = np.array(orig)
-    rads = np.deg2rad(bearings)
-    dx = np.sin(rads) * dists
-    dy = np.cos(rads) * dists
-    x_t = np.cumsum(dx) + orig[0]
-    y_t = np.cumsum(dy) + orig[1]
-    xy_f = np.array(list(zip(x_t[:-1], y_t[:-1])))
-    xy_f = np.vstack((orig, xy_f))
-    stack = (xy_f[:, 0], xy_f[:, 1], x_t, y_t, dx, dy, dists, bearings)
-    data = np.vstack(stack).T
-    names = ['X_f', 'Y_f', "X_t", "Yt", "dx", "dy", "dist", "bearing"]
-    N = len(names)
-    if prn:  # ---- just print the results ----------------------------------
-        frmt = "Origin (0,0)\n" + "{:>10s}"*N
-        print(frmt.format(*names))
-        frmt = "{: 10.2f}"*N
-        for i in data:
-            print(frmt.format(*i))
-        return data
-    # ---- produce a structured array from the output ----------------
-    names = ", ".join(names)
-    kind = ["<f8"]*N
-    kind = ", ".join(kind)
-    out = data.transpose()
-    out = np.core.records.fromarrays(out, names=names, formats=kind)
-    return out
+    orig = np.atleast_2d(orig)
+    dest = np.atleast_2d(dest)
+    dxy = dest - orig
+    ang = np.degrees(np.arctan2(dxy[:, 1], dxy[:, 0]))
+    if fromNorth:
+        ang = np.mod((450.0 - ang), 360.)
+    return ang
 
 
 # ---- densify functions -----------------------------------------------------
@@ -1125,199 +1225,12 @@ def trans_rot(a, angle=0.0, unique=True):
     return  np.einsum('ij,kj->ik', a - cent, R) + cent
 
 
-# ---- convex hull, circle ellipse, hexagons, rectangles, triangle, xy-grid --
+# ---- points in or on geometries --------------------------------------------
 #
-def convex(points):
-    """Calculates the convex hull for given points
-    :Input is a list of 2D points [(x, y), ...]
-    """
-    def _cross_(o, a, b):
-        """Cross-product for vectors o-a and o-b
-        """
-        xo, yo = o
-        xa, ya = a
-        xb, yb = b
-        return (xa - xo)*(yb - yo) - (ya - yo)*(xb - xo)
-    #
-    if isinstance(points, np.ndarray):
-        points = points.tolist()
-        points = [tuple(i) for i in points]
-    points = sorted(set(points))  # Remove duplicates
-    if len(points) <= 1:
-        return points
-    # Build lower hull
-    lower = []
-    for p in points:
-        while len(lower) >= 2 and _cross_(lower[-2], lower[-1], p) <= 0:
-            lower.pop()
-        lower.append(p)
-    # Build upper hull
-    upper = []
-    for p in reversed(points):
-        while len(upper) >= 2 and _cross_(upper[-2], upper[-1], p) <= 0:
-            upper.pop()
-        upper.append(p)
-    #print("lower\n{}\nupper\n{}".format(lower, upper))
-    return np.array(lower[:-1] + upper)  # upper[:-1]) # for open loop
-
-
-def circle(radius=1.0, theta=10.0, xc=0.0, yc=0.0):
-    """Produce a circle/ellipse depending on parameters.
-
-    `radius` : number
-        Distance from centre
-    `theta` : number
-        Angle of densification of the shape around 360 degrees
-    """
-    angles = np.deg2rad(np.arange(180.0, -180.0-theta, step=-theta))
-    x_s = radius*np.cos(angles) + xc    # X values
-    y_s = radius*np.sin(angles) + yc    # Y values
-    pnts = np.c_[x_s, y_s]
-    return pnts
-
-
-def ellipse(x_radius=1.0, y_radius=1.0, theta=10., xc=0.0, yc=0.0):
-    """Produce an ellipse depending on parameters.
-
-    `radius` : number
-        Distance from centre in the X and Y directions
-    `theta` : number
-        Angle of densification of the shape around 360 degrees
-    """
-    angles = np.deg2rad(np.arange(180.0, -180.0-theta, step=-theta))
-    x_s = x_radius*np.cos(angles) + xc    # X values
-    y_s = y_radius*np.sin(angles) + yc    # Y values
-    pnts = np.c_[x_s, y_s]
-    return pnts
-
-
-def hex_flat(dx=1, dy=1, cols=1, rows=1):
-    """Generate the points for the flat-headed hexagon
-
-    `dy_dx` : number
-        The radius width, remember this when setting hex spacing
-    `dx` : number
-        Increment in x direction, +ve moves west to east, left/right
-    `dy` : number
-        Increment in y direction, -ve moves north to south, top/bottom
-    """
-    f_rad = np.deg2rad([180., 120., 60., 0., -60., -120., -180.])
-    X = np.cos(f_rad) * dy
-    Y = np.sin(f_rad) * dy            # scaled hexagon about 0, 0
-    seed = np.array(list(zip(X, Y)))  # array of coordinates
-    dx = dx * 1.5
-    dy = dy * np.sqrt(3.)/2.0
-    hexs = [seed + [dx * i, dy * (i % 2)] for i in range(0, cols)]
-    m = len(hexs)
-    for j in range(1, rows):  # create the other rows
-        hexs += [hexs[h] + [0, dy * 2 * j] for h in range(m)]
-    return hexs
-
-
-def hex_pointy(dx=1, dy=1, cols=1, rows=1):
-    """Pointy hex angles, convert to sin, cos, zip and send
-
-    `dy_dx` - number
-        The radius width, remember this when setting hex spacing
-    `dx` : number
-        Increment in x direction, +ve moves west to east, left/right
-    `dy` : number
-        Increment in y direction, -ve moves north to south, top/bottom
-    """
-    p_rad = np.deg2rad([150., 90, 30., -30., -90., -150., 150.])
-    X = np.cos(p_rad) * dx
-    Y = np.sin(p_rad) * dy      # scaled hexagon about 0, 0
-    seed = np.array(list(zip(X, Y)))
-    dx = dx * np.sqrt(3.)/2.0
-    dy = dy * 1.5
-    hexs = [seed + [dx * i * 2, 0] for i in range(0, cols)]
-    m = len(hexs)
-    for j in range(1, rows):  # create the other rows
-        hexs += [hexs[h] + [dx * (j % 2), dy * j] for h in range(m)]
-    return hexs
-
-
-def rectangle(dx=1, dy=1, cols=1, rows=1):
-    """Create the array of pnts to pass on to arcpy using numpy magic
-
-    Parameters:
-    -----------
-    `dx` : number
-        Increment in x direction, +ve moves west to east, left/right
-    `dy` : number
-        Increment in y direction, -ve moves north to south, top/bottom
-    `rows`, `cols` : ints
-        Row and columns to produce
-    """
-    X = [0.0, 0.0, dx, dx, 0.0]       # X, Y values for a unit square
-    Y = [0.0, dy, dy, 0.0, 0.0]
-    seed = np.array(list(zip(X, Y)))  # [dx0, dy0] keep for insets
-    a = [seed + [j * dx, i * dy]       # make the shapes
-         for i in range(0, rows)   # cycle through the rows
-         for j in range(0, cols)]  # cycle through the columns
-    a = np.asarray(a)
-    return a
-
-
-def triangle(dx=1, dy=1, cols=1, rows=1):
-    """Create a row of meshed triangles
-
-    Parameters:
-    -----------
-    see `rectangle`
-    """
-    grid_type = 'triangle'
-    a, dx, b = dx/2.0, dx, dx*1.5
-    Xu = [0.0, a, dx, 0.0]   # X, Y values for a unit triangle, point up
-    Yu = [0.0, dy, 0.0, 0.0]
-    Xd = [a, b, dx, a]       # X, Y values for a unit triangle, point down
-    Yd = [dy, dy, 0.0, dy]   # shifted by dx
-    seedU = np.array(list(zip(Xu, Yu)))
-    seedD = np.array(list(zip(Xd, Yd)))
-    seed = np.array([seedU, seedD])
-    a = [seed + [j * dx, i * dy]       # make the shapes
-         for i in range(0, rows)       # cycle through the rows
-         for j in range(0, cols)]      # cycle through the columns
-    a = np.asarray(a)
-    s1, s2, s3, s4 = a.shape
-    a = a.reshape(s1*s2, s3, s4)
-    return a, grid_type
-
-
-def xy_grid(x, y=None, top_left=True):
-    """Create a 2D array of locations from x, y values.  The values need not
-    be uniformly spaced just sequential. Derived from `meshgrid` in References.
-
-    Parameters:
-    -----------
-    xs, ys : array-like
-        To form a mesh, there must at least be 2 values in each sequence
-    top_left: boolean
-        True, y's are sorted in descending order, x's in ascending
-
-    References:
-    -----------
-    `<https://github.com/numpy/numpy/blob/master/numpy/lib/function_base.py>`_.
-    """
-    if y is None:
-        y = x
-    xs = np.sort(np.asanyarray(x))
-    ys = np.asanyarray(y)
-    if top_left:
-        ys = np.argsort(-ys)
-    xs = np.reshape(xs, newshape=((1,) + xs.shape))
-    ys = np.reshape(ys, newshape=(ys.shape + (1,)))
-    xy = [xs, ys]
-    xy = np.broadcast_arrays(*xy, subok=True)
-    shp = np.prod(xy[0].shape)
-    final = np.zeros((shp, 2), dtype=xs.dtype)
-    final[:, 0] = xy[0].ravel()
-    final[:, 1] = xy[1].ravel()
-    return final
-
-
 def pnt_in_list(pnt, pnts_list):
     """Check to see if a point is in a list of points
+
+    sum([(x, y) == tuple(i) for i in [p0, p1, p2, p3]]) > 0
     """
     is_in = np.any([np.isclose(pnt, i) for i in pnts_list])
     return is_in
@@ -1339,154 +1252,6 @@ def point_in_polygon(pnt, poly):  # pnt_in_poly(pnt, poly):  #
             if y_cal < y:
                 return True
     return False
-
-
-def knn(p, pnts, k=1, return_dist=True):
-    """
-    Calculates k nearest neighbours for a given point.
-
-    Parameters:
-    -----------
-    p :array
-        x,y reference point
-    pnts : array
-        Points array to examine
-    k : integer
-        The `k` in k-nearest neighbours
-
-    Returns:
-    --------
-    Array of k-nearest points and optionally their distance from the source.
-    """
-    def _remove_self_(p, pnts):
-        """Remove a point which is duplicated or itself from the array
-        """
-        keep = ~np.all(pnts == p, axis=1)
-        return pnts[keep]
-    #
-    def _e_2d_(p, a):
-        """ array points to point distance... mini e_dist
-        """
-        diff = a - p[np.newaxis, :]
-        return np.sqrt(np.einsum('ij,ij->i', diff, diff))
-    #
-    p = np.asarray(p)
-    k = max(1, min(abs(int(k)), len(pnts)))
-    pnts = _remove_self_(p, pnts)
-    d = _e_2d_(p, pnts)
-    idx = np.argsort(d)
-    if return_dist:
-        return pnts[idx][:k], d[idx][:k]
-    return pnts[idx][:k]
-
-
-def nn_kdtree(a, N=3, sorted_=True, to_tbl=True, as_cKD=True):
-    """Produce the N closest neighbours array with their distances using
-    scipy.spatial.KDTree as an alternative to einsum.
-
-    Parameters:
-    -----------
-    a : array
-        Assumed to be an array of point objects for which `nearest` is needed.
-    N : integer
-        Number of neighbors to return.  Note: the point counts as 1, so N=3
-        returns the closest 2 points, plus itself.
-        For table output, max N is limited to 5 so that the tabular output
-        isn't ridiculous.
-    sorted_ : boolean
-        A nice option to facilitate things.  See `xy_sort`.  Its mini-version
-        is included in this function.
-    to_tbl : boolean
-        Produce a structured array output of coordinate pairs and distances.
-    as_cKD : boolean
-        Whether to use the `c` compiled or pure python version
-
-    References:
-    -----------
-    `<https://stackoverflow.com/questions/52366421/how-to-do-n-d-distance-
-    and-nearest-neighbor-calculations-on-numpy-arrays/52366706#52366706>`_.
-
-    `<https://stackoverflow.com/questions/6931209/difference-between-scipy-
-    spatial-kdtree-and-scipy-spatial-ckdtree/6931317#6931317>`_.
-    """
-    def _xy_sort_(a):
-        """mini xy_sort"""
-        a_view = a.view(a.dtype.descr * a.shape[1])
-        idx = np.argsort(a_view, axis=0, order=(a_view.dtype.names)).ravel()
-        a = np.ascontiguousarray(a[idx])
-        return a
-    #
-    def xy_dist_headers(N):
-        """Construct headers for the optional table output"""
-        vals = np.repeat(np.arange(N), 2)
-        names = ['X_{}', 'Y_{}']*N + ['d_{}']*(N-1)
-        vals = (np.repeat(np.arange(N), 2)).tolist() + [i for i in range(1, N)]
-        n = [names[i].format(vals[i]) for i in range(len(vals))]
-        f = ['<f8']*N*2 + ['<f8']*(N-1)
-        return list(zip(n, f))
-    #
-    from scipy.spatial import cKDTree, KDTree
-    #
-    if sorted_:
-        a = _xy_sort_(a)
-    # ---- query the tree for the N nearest neighbors and their distance
-    if as_cKD:
-        t = cKDTree(a)
-    else:
-        t = KDTree(a)
-    dists, indices = t.query(a, N)
-    if to_tbl and (N <= 5):
-        dt = xy_dist_headers(N)  # --- Format a structured array header
-        xys = a[indices]
-        new_shp = (xys.shape[0], np.prod(xys.shape[1:]))
-        xys = xys.reshape(new_shp)
-        ds = dists[:, 1:]  #[d[1:] for d in dists]
-        arr = np.concatenate((xys, ds), axis=1)
-        arr = arr.view(dtype=dt).squeeze()
-        return arr
-    dists = dists.view(np.float64).reshape(dists.shape[0], -1)
-    return dists
-
-
-# ---- mini stuff -----------------------------------------------------------
-#
-def cross(o, a, b):
-    """Cross-product for vectors o-a and o-b
-    """
-    xo, yo = o
-    xa, ya = a
-    xb, yb = b
-    return (xa - xo)*(yb - yo) - (ya - yo)*(xb - xo)
-
-
-def e_2d(p, a):
-    """ array points to point distance... mini e_dist
-    """
-    p = np.asarray(p)
-    diff = a - p[np.newaxis, :]
-    return np.sqrt(np.einsum('ij,ij->i', diff, diff))
-
-
-def fill_diagonal(n=5, seq=None):
-    """Fill the diagonal of a square array with a sequence
-    """
-    aye = np.eye(n)
-    row_col = np.diag_indices_from(aye)
-    if seq is None:
-        seq = np.arange(n)
-    elif len(seq) > n:
-        seq = seq[:n]
-    elif len(seq) < n:
-        seq = np.concatenate((np.array(seq), np.zeros(n)))[:n]
-    aye[row_col] = seq
-    return aye
-
-
-def remove_self(p, pnts):
-    """Remove a point which is duplicated or itself from the array
-    """
-    keep = ~np.all(pnts == p, axis=1)
-    return pnts[keep]
 
 
 def pnt_on_seg(pnt, seg):
@@ -1587,6 +1352,147 @@ def p_o_p(pnt, polys):
     for p in polys:
         result.append(pnt_on_poly(p, pnt))
     return result
+
+
+# ---- nearest neighbors, knn ------------------------------------------------
+#
+def knn(p, pnts, k=1, return_dist=True):
+    """
+    Calculates k nearest neighbours for a given point.
+
+    Parameters:
+    -----------
+    p :array
+        x,y reference point
+    pnts : array
+        Points array to examine
+    k : integer
+        The `k` in k-nearest neighbours
+
+    Returns:
+    --------
+    Array of k-nearest points and optionally their distance from the source.
+    """
+    def _remove_self_(p, pnts):
+        """Remove a point which is duplicated or itself from the array
+        """
+        keep = ~np.all(pnts == p, axis=1)
+        return pnts[keep]
+    #
+    def _e_2d_(p, a):
+        """ array points to point distance... mini e_dist
+        """
+        diff = a - p[np.newaxis, :]
+        return np.sqrt(np.einsum('ij,ij->i', diff, diff))
+    #
+    p = np.asarray(p)
+    k = max(1, min(abs(int(k)), len(pnts)))
+    pnts = _remove_self_(p, pnts)
+    d = _e_2d_(p, pnts)
+    idx = np.argsort(d)
+    if return_dist:
+        return pnts[idx][:k], d[idx][:k]
+    return pnts[idx][:k]
+
+
+def nn_kdtree(a, N=1, sorted_=True, to_tbl=True, as_cKD=True):
+    """Produce the N closest neighbours array with their distances using
+    scipy.spatial.KDTree as an alternative to einsum.
+
+    Parameters:
+    -----------
+    a : array
+        Assumed to be an array of point objects for which `nearest` is needed.
+    N : integer
+        Number of neighbors to return.  Note: the point counts as 1, so N=3
+        returns the closest 2 points, plus itself.
+        For table output, max N is limited to 5 so that the tabular output
+        isn't ridiculous.
+    sorted_ : boolean
+        A nice option to facilitate things.  See `xy_sort`.  Its mini-version
+        is included in this function.
+    to_tbl : boolean
+        Produce a structured array output of coordinate pairs and distances.
+    as_cKD : boolean
+        Whether to use the `c` compiled or pure python version
+
+    References:
+    -----------
+    `<https://stackoverflow.com/questions/52366421/how-to-do-n-d-distance-
+    and-nearest-neighbor-calculations-on-numpy-arrays/52366706#52366706>`_.
+
+    `<https://stackoverflow.com/questions/6931209/difference-between-scipy-
+    spatial-kdtree-and-scipy-spatial-ckdtree/6931317#6931317>`_.
+    """
+    def _xy_sort_(a):
+        """mini xy_sort"""
+        a_view = a.view(a.dtype.descr * a.shape[1])
+        idx = np.argsort(a_view, axis=0, order=(a_view.dtype.names)).ravel()
+        a = np.ascontiguousarray(a[idx])
+        return a, idx
+    #
+    def xy_dist_headers(N):
+        """Construct headers for the optional table output"""
+        vals = np.repeat(np.arange(N), 2)
+        names = ['X_{}', 'Y_{}']*N + ['d_{}']*(N-1)
+        vals = (np.repeat(np.arange(N), 2)).tolist() + [i for i in range(1, N)]
+        n = [names[i].format(vals[i]) for i in range(len(vals))]
+        f = ['<f8']*N*2 + ['<f8']*(N-1)
+        return list(zip(n, f))
+    #
+    from scipy.spatial import cKDTree, KDTree
+    #
+    if sorted_:
+        a, _ = _xy_sort_(a)
+    # ---- query the tree for the N nearest neighbors and their distance
+    if as_cKD:
+        t = cKDTree(a)
+    else:
+        t = KDTree(a)
+    dists, indices = t.query(a, N+1)  # so that point isn't duplicated
+    dists = dists[:, 1:]               # and the array is 2D
+    frumXY = a[indices[:, 0]]
+    indices = indices[:, 1:]
+    if to_tbl and (N <= 5):
+        dt = xy_dist_headers(N+1)  # --- Format a structured array header
+        xys = a[indices]
+        new_shp = (xys.shape[0], np.prod(xys.shape[1:]))
+        xys = xys.reshape(new_shp)
+        #ds = dists[:, 1]  # [d[1:] for d in dists]
+        arr = np.concatenate((frumXY, xys, dists), axis=1)
+        z = np.zeros((xys.shape[0],), dtype=dt)
+        names = z.dtype.names
+        for i, j in enumerate(names):
+            z[j] = arr[:, i]
+        return z
+    dists = dists.view(np.float64).reshape(dists.shape[0], -1)
+    return dists
+
+
+# ---- mini stuff -----------------------------------------------------------
+#
+def cross(o, a, b):
+    """Cross-product for vectors o-a and o-b
+    """
+    xo, yo = o
+    xa, ya = a
+    xb, yb = b
+    return (xa - xo)*(yb - yo) - (ya - yo)*(xb - xo)
+
+
+def e_2d(p, a):
+    """ array points to point distance... mini e_dist
+    """
+    p = np.asarray(p)
+    diff = a - p[np.newaxis, :]
+    return np.sqrt(np.einsum('ij,ij->i', diff, diff))
+
+
+def remove_self(p, pnts):
+    """Remove a point which is duplicated or itself from the array
+    """
+    keep = ~np.all(pnts == p, axis=1)
+    return pnts[keep]
 
 
 def adjacency_edge():
@@ -1720,35 +1626,22 @@ def _demo(prn=True):
         print(dedent(frmt).format(*args))
     return a
 
-#temp = np.subtract(a, xyz)  # so we only have to compute this once
-#dist = np.linalg.norm(np.subtract(temp, np.multiply(np.dot(temp, n)[:, None], n)),
-#                      axis=-1)
-
 
 # ----------------------------------------------------------------------
 # __main__ .... code section
 if __name__ == "__main__":
-    """Optionally...
-    : - print the script source name.
-    : - run the _demo
-    """
-#    from _common import fc_info
-#    from fc import _xyID, obj_array, _two_arrays
-#    from tools import group_pnts
+    # print the script source name.
+    print("Script... {}".format(script))
 
-#    args = _arrs_(prn=False)  # prn=True to see array properties
-#    a0, a1, a2, a3, a_1a, a_1b, a_2a, a_2b, a_3a, a_3b = args[:10]
-#    sze, shp, dtn = args[10:]
-#    a = np.array([[0, 0.05], [1, 1.05], [2, 1.95], [3, 3.0],
-#                  [4, 4.1], [5, 5.2], [6, 5.9]])
-#    dist, xc, yc, pc, slope, xn, yn, x2 = _test(a0)
-#    fc = r"C:\Git_Dan\a_Data\arcpytools_demo.gdb\polylines_pnts"
+# sample array... big C and points
+#c = np.array([[ 0, 0], [ 0, 1000], [1000, 1000], [1000,  800],
+#              [ 200,  800], [ 200, 200], [1000, 200], [1000, 0], [ 0, 0]])
+# pnts = np.random.randint(0, 1000, size=(1000,2))
 
 # for Ontario_LCC
 # total_length(a)  #: 6804096.2018476073  same as arcmap
 # areas(a)  #: [1074121438784.0]  1074121438405.34021
 
-#     ---- end
 #    from arraytools.fc_tools import fc
 #    in_fc = r'C:\Git_Dan\a_Data\arcpytools_demo.gdb\Can_geom_sp_LCC'
 #    in_fc = r'C:\Git_Dan\a_Data\arcpytools_demo.gdb\Ontario_LCC'
@@ -1763,3 +1656,24 @@ if __name__ == "__main__":
 #    v = r'C:\Git_Dan\arraytools\Data\sample_100K.npy'  # 20, 1000, 10k, 100K
 #    oa = obj_array(in_fc)
 #    ta = _two_arrays(in_fc, both=True, split=True)
+
+"""
+test for segment segment intersection
+
+a = np.array([[0,0], [3,3]])
+b = np.array([[0,3], [3,0]])
+p0, p1, p2, p3 = *a, *b
+x0, y0, x1, y1, x2, y2, x3, y3 = *p0, *p1, *p2, *p3
+denom = (x1 - x0) * (y3 - y2) - (x3 - x2) * (y1 - y0)
+denom_gt0 = denom > 0
+s_numer = (x1 - x0) * (y0 - y2) - (y1 - y0) * (x0 - x2)
+(s_numer < 0) == denom_gt0
+t_numer = (x3 - x2) * (y0 - y2) - (y3 - y2) * (x0 - x2)
+(t_numer < 0) == denom_gt0
+((s_numer > denom) == denom_gt0) or ((t_numer > denom) == denom_gt0)
+t = t_numer / denom
+x = x0 + t * (x1 - x0)
+y = y0 + t * (y1 - y0)
+print("intersecton pnt ({},{} t {})".format(x, y, t))
+intersecton pnt (1.5,1.5 t 0.5)
+"""

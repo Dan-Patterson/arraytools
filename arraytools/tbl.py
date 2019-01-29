@@ -3,11 +3,11 @@
 tbl
 ===
 
-Script :   tbl.py   tools for working with text array in table form
+Script :   tbl.py   tools for working with text arrays in table form
 
 Author :   Dan.Patterson@carleton.ca
 
-Modified : 2018-11-12
+Modified : 2019-01-28
 
 Purpose :  Tabulate data
 
@@ -29,7 +29,7 @@ following guidelines.
 >>> float_max = np.finfo(np.float).max
 >>> int_min = np.iinfo(np.int_).min
 >>> int_max = np.iinfo(np.int_).max
->>> f = r'C:\some\path\your.gdb\your_featureclass'
+>>> f = 'C:/some/path/your.gdb/your_featureclass'
 >>> null_dict = {'Int_fld': int_min, 'Float_fld': float_min}  # None strings
 >>> flds = ['Int_field', 'Txt01', 'Txt02']  # 2 text fields
 >>> a = arcpy.da.TableToNumPyArray(in_table=f, field_names=flds,
@@ -90,9 +90,10 @@ python-for-large-dataset>`_.
 np.unique - in the newer version, they use flags to get the sums
 
 """
-# pylint: disable=C0103
-# pylint: disable=R1710
-# pylint: disable=R0914
+# pylint: disable=C0103  # invalid-name
+# pylint: disable=R0914  # Too many local variables
+# pylint: disable=R1710  # inconsistent-return-statements
+# pylint: disable=W0105  # string statement has no effect
 
 import sys
 from textwrap import dedent
@@ -114,7 +115,9 @@ if 'prn' not in locals().keys():
     except:
         prn = print
 
-__all__ = ['find_in',
+__all__ = ['find_a_in_b',
+           'find_in',
+           'split_sort_slice',
            'tbl_count',
            'tbl_sum']
 
@@ -127,7 +130,58 @@ __all__ = ['find_in',
 #    pass
 #    return None
 
-def find_in(a, col=None, what=None, where='in', any_case=True, pull='all'):
+def find_a_in_b(a, b, a_fields=None, b_fields=None):
+    """ Find the indices of the elements in a smaller 2d array contained in
+    a larger 2d array. If the arrays are stuctured with field names,then these
+    need to be specified.  It should go without saying that the dtypes need to
+    be the same.
+
+    a, b : 1D or 2D, ndarray or structured/record arrays
+        The arrays are arranged so that `a` is the smallest and `b` is the
+         largest.  If the arrays are stuctured with field names, then these
+        need to be specified.  It should go without saying that the dtypes
+         need to be the same.
+    a_fields, b_fields : list of field names
+        If the dtype has names, specify these in a list.  Both do not need
+        names.
+
+    Example:
+    --------
+    To demonstrate, a small array was made from the last 10 records of a larger
+    array to check that they could be found.
+
+    >>> a.dtype # ([('ID', '<i4'), ('X', '<f8'), ('Y', '<f8'), ('Z', '<f8')])
+    >>> b.dtype # ([('X', '<f8'), ('Y', '<f8')])
+    >>> a.shape, b.shape # ((69688,), (10,))
+    >>> find_a_in_b(a, b, flds, flds)
+    array([69678, 69679, 69680, 69681, 69682,
+           69683, 69684, 69685, 69686, 69687], dtype=int64)
+
+    References:
+    -----------
+    `<https://stackoverflow.com/questions/38674027/find-the-row-indexes-of-
+    several-values-in-a-numpy-array/38674038#38674038>`_.
+    """
+    def _view_(a):
+        """from the same name in arraytools"""
+        return a.view((a.dtype[0], len(a.dtype.names)))
+    #
+    small, big = [a, b]
+    if a.size > b.size:
+        small, big = [b, a]
+    if a_fields is not None:
+        small = small[a_fields]
+        small = _view_(small)
+    if b_fields is not None:
+        big = big[b_fields]
+        big = _view_(big)
+    if a.ndim >= 1:  # last slice, if  [:2] instead, it returns both indices
+        indices = np.where((big == small[:, None]).all(-1))[1]
+    return indices, big, small
+
+
+def find_in(a=None, col=None, what=None, where='in',
+            any_case=True, pull='all'):
     """Query a recarray/structured array for values
 
     a : recarray/structured array
@@ -155,6 +209,8 @@ def find_in(a, col=None, what=None, where='in', any_case=True, pull='all'):
     :Required...\n
     {}
     """
+    if a is None:
+        return a
     err1 = "\nField not found:\nQuery fields: {}\nArray fields: {}"
     errors = [a.dtype.names is None,
               col is None, what is None,
@@ -197,6 +253,77 @@ def find_in(a, col=None, what=None, where='in', any_case=True, pull='all'):
     return a[q][pull]
 
 
+def split_sort_slice(a, split_fld=None, val_fld=None, ascend=True, num=1):
+    """Split a structured array into groups of common values based on the
+    split_fld, key field.  Once the array is split, the array is sorted on a
+    val_fld and sliced for the largest or smallest `num` records.
+
+    Parameters:
+    -----------
+    a : structured/recarray
+        Array must have field names to enable splitting on and sorting by
+    split_fld : text
+        The field/name in the dtype used to identify groupings of features
+    val_fld : text
+        As above, but this field contains the numeric values that you want to
+        sort by.
+    ascend : boolean
+        **True**, sorts in ascending order, so you can slice for the lowest
+        `num` records. **False**, sorts in descending order if you want to
+        slice the top `num` records
+
+    Example:
+    --------
+    >>> fn = "C:/Git_Dan/arraytools/Data/pnts_in_poly.npy"
+    >>> a = np.load(fn)
+    >>> out = split_sort_slice(fn, split_fld='Grid_codes', val_fld='Norm',
+                               ascend=False, num=2)
+    >>> arcpy.da.NumPyArrayToFeatureClass(out, out_fc, ['Xs', 'Ys'], '2951')
+
+    References:
+    -----------
+    `<https://community.esri.com/blogs/dan_patterson/2019/01/29/split-sort-
+    slice-the-top-x-in-y>`_.
+
+    `<https://community.esri.com/thread/227915-how-to-extract-top-five-max-
+    points>`_.
+    """
+    def _split_(a, fld):
+        """split unsorted array"""
+        out = []
+        uni, _ = np.unique(a[fld], True)
+        for _, j in enumerate(uni):
+            key = (a[fld] == j)
+            out.append(a[key])
+        return out
+    #
+    err_0 = """
+    A structured/recarray with a split_field and a val_fld is required.
+    You provided\n    array type  : {}"""
+    err_1 = """
+    split_field : {}
+    val field   : {}  
+    """
+    if a.dtype.names is None:
+        print(err_0.format(type(a)))
+        return a
+    check = sum([i in a.dtype.names for i in [split_fld, val_fld]])
+    if check != 2:
+        print((err_0 + err_1).format(type(a), split_fld, val_fld))
+        return a
+    #
+    subs = _split_(a, split_fld)
+    ordered = []
+    for _, sub in enumerate(subs):
+        r = sub[np.argsort(sub, order=val_fld)]
+        if not ascend:
+            r = r[::-1]
+        num = min(num, r.size)
+        ordered.extend(r[:num])
+    out = np.asarray(ordered)
+    return out
+
+
 def tbl_count(a, row=None, col=None, verbose=False):
     """Crosstabulate 2 fields data arrays, shape (N,), using np.unique.
     scipy.sparse has similar functionality and is faster for large arrays.
@@ -229,7 +356,7 @@ def tbl_count(a, row=None, col=None, verbose=False):
     c_vals = a[col]
     dt = np.dtype([(row, r_vals.dtype), (col, c_vals.dtype)])
     rc = np.asarray(list(zip(r_vals, c_vals)), dtype=dt)
-    u, idx, cnt = np.unique(rc, return_index=True, return_counts=True)
+    u, cnt = np.unique(rc, return_counts=True)
     rcc_dt = u.dtype.descr
     rcc_dt.append(('Count', '<i4'))
     ctab = np.asarray(list(zip(u[row], u[col], cnt)), dtype=rcc_dt)
@@ -306,7 +433,8 @@ def _data():
     return a
 
 if __name__ == "__main__":
-    """run crosstabulation with data"""
+    # print the script source name.
+    print("Script... {}".format(script))
 #    ctab, counts, out_tbl = tab_count(a['County'], a['Town'],
 #    r_fld='County', c_fld='Town', verbose=False)
 #    ctab, a, result, r, c = _demo()

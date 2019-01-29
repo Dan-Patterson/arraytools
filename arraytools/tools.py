@@ -7,7 +7,7 @@ Script :   tools.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2018-11-23
+Modified : 2019-01-06
 
 Purpose :  tools for working with numpy arrays
 
@@ -21,7 +21,7 @@ Useage:
 
 **Requires**
 -------------
-  see import section and __init__.py in the `arraytools` folder
+ see import section and __init__.py in the `arraytools` folder
 
 **Notes**
 ---------
@@ -246,6 +246,8 @@ Calls _check(a, r_c, subok=False) to check for array compliance
 
 **20. sliding_window_view**
 
+    Similar to stride, but not available until python 1.16 or above
+
 **21.  block_arr(a, win=[3, 3], nodata=-1)**
 
 Block an array given an input array, a window and a nodata value.
@@ -356,16 +358,18 @@ Alphabetical listing
 
 ---------------------------------------------------------------------
 """
-# pylint: disable=C0103
-# pylint: disable=R1710
-# pylint: disable=R0914
+# pylint: disable=C0103  # invalid-name
+# pylint: disable=R0914  # Too many local variables
+# pylint: disable=R1710  # inconsistent-return-statements
+# pylint: disable=W0105  # string statement has no effect
+
 
 # ---- imports, formats, constants -------------------------------------------
 import sys
 from textwrap import dedent, indent
 import warnings
 import numpy as np
-from numpy.lib.stride_tricks import as_strided
+# from numpy.lib.stride_tricks import as_strided
 
 warnings.simplefilter('ignore', FutureWarning)
 
@@ -384,10 +388,6 @@ __all__ = ['_tools_help_',
            '_func', 'find', 'group_pnts', # (23-28) querying, analysis
            'uniq', 'is_in',
            'running_count', 'sequences',
-           'sort_cols_by_row',            # (29-31) column and row sorting
-           'sort_rows_by_col',
-           'radial_sort',
-           'view_sort', 'xy_sort',
            'pack_last_axis'  # extras -------
            ]
 
@@ -692,7 +692,7 @@ def scale(a, x=2, y=2, num_z=None):
     return z3
 
 
-def split_array(a, fld='ID'):
+def split_array(a, fld='ID', ordered=False):
     """Split a structured or recarray array using unique values in the
     `fld` field.  It is assumed that there is a sequential ordering to
     the values in the field.  If there is not, use np.where in conjunction
@@ -710,8 +710,15 @@ def split_array(a, fld='ID'):
     A list of arrays split on the categorizing field
 
     """
-    return np.split(a, np.where(np.diff(a[fld]))[0] + 1)
-
+    if ordered:
+        return np.split(a, np.where(np.diff(a[fld]))[0] + 1)
+    else:
+        out = []
+        uni, idx = np.unique(a[fld], True)
+        for _, j in enumerate(uni):
+            key = (a[fld] == j)
+            out.append(a[key])
+        return out
 
 
 # ----------------------------------------------------------------------
@@ -814,7 +821,9 @@ def nd_struct(a, flds=None, types=None):
 
     See also:
     ---------
-    nd_rec : alternate using strings rather than list inputs
+    - nd_rec : alternate using strings rather than list inputs
+    - pack_last_axis(arr, names=None) : at the end
+    - nd2struct(a, fld_name=None : similar to this, but uniform dtype is used.
 
     Example::
 
@@ -845,20 +854,20 @@ def nd_struct(a, flds=None, types=None):
 
 
 def nd2struct(a, fld_names=None):
-    """Return a view of an ndarray as structured array with a uniform dtype/
+    """Return a view of an ndarray as structured array with a uniform dtype.
 
     Parameters
     ----------
     a : array
         ndarray with a uniform dtype.
-    fld_names : list
-        A list of strings one for each column/field.  If none are provided,
-        then the field names are assigned from an alphabetical list up to 26
-        fields.  The dtype of the input array is retained, but can be upcast.
+    fld_names : list/tuple
+        One name for each column/field.  If none are provided, then the field
+        names are assigned from an alphabetical list up to 26 fields.
+        The dtype of the input array is retained, but can be upcast.
 
     Examples
     --------
-    >>> a = np.arange(2*3).reshape(2,3)
+    >>> a = np.arange(2*3).reshape(2, 3)
     array([[0, 1, 2],
            [3, 4, 5]])  # dtype('int64')
     >>> b = nd2struct(a)
@@ -870,8 +879,8 @@ def nd2struct(a, fld_names=None):
 
     See Also
     --------
-    pack_last_axis(arr, names=None) at the end
-
+    - pack_last_axis(arr, names=None) at the end
+     -nd_struct(flds=None, types=None)  if you want to provide dtypes as well
     """
     if a.dtype.names:  # return if a structured array already
         return a
@@ -946,6 +955,8 @@ def xy_vals(a):
 def arrays_struct(arrs):
     """Stack arrays of any dtype to form a structured array, stacked in
     columns format.
+
+    fix
     """
     if len(arrs) < 2:
         return arrs
@@ -953,7 +964,8 @@ def arrays_struct(arrs):
     N = arrs[0].shape[0]
     out = np.empty((N,), dtype=out_dt)
     names = np.dtype(out_dt).names
-    for i in range(len(names)):
+    N = len(names)
+    for i in range(N):
         out[names[i]] = arrs[i]
     return out
 
@@ -969,19 +981,19 @@ def change_arr(a, order=None, prn=False):
 
     Parameters
     ----------
-    order : list of fields
+    order : list of field names or order numbers
         fields in the order that you want them
     prn : boolean
         True, prints additional information prior to returning the array
 
     Notes:
     ------
-    *reorder fields : ['a', 'c', 'b']*
+    reorder fields : ['a', 'c', 'b']
         For a structured/recarray, the desired field order is required.
         An ndarray, not using named fields, will require the numerical
         order of the fields.
 
-    *remove fields : ['a', 'c']*   ...  `b` is dropped
+    remove fields : ['a', 'c']   ...  `b` is dropped
         To remove fields, simply leave them out of the list.  The
         order of the remaining fields will be reflected in the output.
         This is a convenience function.... see the module header for
@@ -998,7 +1010,7 @@ def change_arr(a, order=None, prn=False):
     names = a.dtype.names
     if names is None:
         b = a[:, order]
-    else:
+    else:  # only for structured arrays
         out_flds = []
         out_flds = [i for i in order if i in names]
         if prn:
@@ -1179,17 +1191,32 @@ def stride(a, win=(3, 3), stepby=(1, 1)):
 
 
 # ---- sliding_window_view .... new ----
-def sliding_window_view(x, shape=None):
+def sliding_window_view(a, shape=None):
     """Create rolling window views of the 2D array with the given shape.
     proposed for upcoming numpy version.
+
+    Parameters:
+    a : 2D array
+    shape : tuple
+        window size. eg. (3, 3), (2, 2) etc
+    Reference:
+    ----------
+    `<https://github.com/numpy/numpy/pull/10771>`_.
+
+    See also:
+    ---------
+    view_as_windows and view_as_blocks
+
+    `<https://github.com/scikit-image/scikit-image/blob/master/skimage/
+    util/shape.py#L107>`_.
     """
     if shape is None:
-        shape = x.shape
-    o = np.array(x.shape) - np.array(shape) + 1  # output shape
-    strides = x.strides
+        shape = a.shape
+    o = np.array(a.shape) - np.array(shape) + 1  # output shape
+    strides = a.strides
     view_shape = np.concatenate((o, shape), axis=0)
     view_strides = np.concatenate((strides, strides), axis=0)
-    return np.lib.stride_tricks.as_strided(x, view_shape, view_strides)
+    return np.lib.stride_tricks.as_strided(a, view_shape, view_strides)
 
 
 def block(a, win=(3, 3)):
@@ -1260,7 +1287,7 @@ def rolling_stats(a, no_null=True, prn=True):
     Requires
     --------
     a : array
-        2D array  **Note, use 'stride' above to obtain rolling stats
+        4D array  **Note, use 'stride' above to obtain rolling stats
     no_null : boolean
         Whether to use masked values (nan) or not.
     prn : boolean
@@ -1268,9 +1295,29 @@ def rolling_stats(a, no_null=True, prn=True):
 
     Returns
     -------
-    The results return an array of 4 dimensions representing the original
+    The results return an array of 4 dimensions representing the original 2D
     array size and block size.  An original 6x6 array will be broken into
     block 4 3x3 chunks.
+
+    >>> array([[ 0,  1,  2,  3],  # 2D array
+               [ 4,  5,  6,  7],
+               [ 8,  9, 10, 11],
+               [12, 13, 14, 15]])
+        Array... ndim 4  shape(2, 2, 2, 2)  # blocked into 2x2
+        |  0  1    2  3 |
+        |  4  5    6  7 |
+        |=> (0 2 2 2)
+        |  8  9   10 11 |
+        | 12 13   14 15 |
+        |=> (1 2 2 2)
+    >>> rolling_stats(c)
+        Min...     Max...    Mean...        Med...         Sum...
+        [[ 0  2]   [[ 5  7]  [[ 2.5  4.5]   [[ 2.5  4.5]   [[10 18]
+         [ 8 10]]   [13 15]]  [10.5 12.5]]   [10.5 12.5]]   [42 50]]
+        Std...         Var...         Range...
+        [[2.06 2.06]   [[4.25 4.25]   [[5 5]
+         [2.06 2.06]]   [4.25 4.25]]   [5 5]]
+
     """
     a = np.asarray(a)
     a = np.atleast_2d(a)
@@ -1297,7 +1344,7 @@ def rolling_stats(a, no_null=True, prn=True):
         a_ptp = a_max - a_min
     if prn:
         s = ['Min', 'Max', 'Mean', 'Med', 'Sum', 'Std', 'Var', 'Range']
-        frmt = "...\n{}\n".join([i for i in s])
+        frmt = "...\n{}\n".join([i for i in s]) + "...\n{}\n"
         v = [a_min, a_max, a_mean, a_med, a_sum, a_std, a_var, a_ptp]
         args = [indent(str(i), '... ') for i in v]
         print(frmt.format(*args))
@@ -1400,7 +1447,7 @@ def find(a, func, this=None, count=0, keep=None, prn=False, r_lim=2):
         print("  Remaining\n  {}".format(a))
     # ---- recursion functions check and calls ----
     if func in ['cumsum']:  # functions that support recursion
-        if (len(a) > 0) and (count < r_lim):  # recursive call
+        if a and (count < r_lim):  # len(a) > 0recursive call
             count += 1
             find(a, func, this, count, keep, prn, r_lim)
         elif count == r_lim:
@@ -1504,14 +1551,14 @@ def group_pnts(a, key_fld='IDs', shp_flds=['Xs', 'Ys']):
     from_to = list(zip(idx, np.cumsum(cnt)))
     subs = [a[shp_flds][i:j] for i, j in from_to]
     groups = [sub.view(dtype='float').reshape(sub.shape[0], -1)
-              for sub in subs]
+              for sub in subs if sub.size > 0]
     return groups
 
 
 # ---- (6) analysis .... code section ----
 # ---- uniq, is_in
 #
-def uniq(ar, return_index=False, return_inverse=False,
+def uniq(ar, key_flds=None, return_index=False, return_inverse=False,
          return_counts=False, axis=None):
     """Taken from, but modified for simple axis 0 and 1 and structured
     arrays in (N, m) or (N,) format.
@@ -1519,13 +1566,28 @@ def uniq(ar, return_index=False, return_inverse=False,
     To enable determination of unique values in uniform arrays with
     uniform dtypes.  np.unique in versions < 1.13 need to use this.
 
+    ar : array
+        If this is a structured array, you can use `key_flds` to control
+        how uniqueness is determined.
+    key_flds : list, tuple
+        Specify fields to slice the input array to determine uniqueness.  The
+        unique values based on these keys are then used to return a slice of
+        the input array.
     https://github.com/numpy/numpy/blob/master/numpy/lib/arraysetops.py
     """
     ar = np.asanyarray(ar)
-    if np.version.version > '1.13':
+    if key_flds is not None:
+        a_slice = ar[key_flds]
+        return_index = True
+        out = np.unique(a_slice, return_index, return_inverse,
+                        return_counts, axis=axis)
+        out_arr = ar[out[1]]
+        values = [out_arr]
+        values.extend(list(out[1:]))
+        return values
+    else:
         return np.unique(ar, return_index, return_inverse,
                          return_counts, axis=axis)
-
 
 def is_in(arr, look_for, keep_shape=True, binary=True, not_in=False):
     """Similar to `np.isin` for numpy versions < 1.13, but with additions to
@@ -1600,7 +1662,8 @@ def running_count(a, to_label=False):
 
     """
     dt = [('Value', a.dtype.str), ('Count', '<i4')]
-    z = np.zeros((a.shape[0],), dtype=dt)
+    N = a.shape[0]  # used for padding
+    z = np.zeros((N,), dtype=dt)
     idx = a.argsort(kind='mergesort')
     s_a = a[idx]
     neq = np.where(s_a[1:] != s_a[:-1])[0] + 1
@@ -1612,16 +1675,17 @@ def running_count(a, to_label=False):
     z['Value'] = a
     z['Count'] = out
     if to_label:
-        z = np.array(["{}_{:0>3}".format(*i) for i in list(zip(a, out))])
+        pad = int(round(np.log10(N)))
+        z = np.array(["{}_{:0>{}}".format(*i, pad) for i in list(zip(a, out))])
     return z
 
 
 def sequences(data, stepsize=0):
-    """Return an array of sequence information denoted by stepsize
+    """Return an array of sequence information denoted by stepsize.
 
-    data :
+    data : array-like
         List/array of values in 1D
-    stepsize :
+    stepsize : integer
         Separation between the values.  If stepsize=0, sequences of equal
         values will be searched.  If stepsize is 1, then sequences incrementing
         by 1... etcetera.  Stepsize can be both positive or negative
@@ -1629,14 +1693,14 @@ def sequences(data, stepsize=0):
     >>> # check for incrementing sequence by 1's
     >>> d = [1, 2, 3, 4, 4, 5]
     >>> s = sequences(d, 1)
-    array([(0, 1, 4, 0, 4), (1, 4, 2, 4, 6)],
-          dtype=[('ID', '<i4'), ('Value', '<i4'), ('Count', '<i4'),
-                 ('From_', '<i4'), ('To_', '<i4')])
-    >>> prn_rec(s)  # prn_rec in frmts.py
-     id  ID   Value   Count   From_   To_
-    ---------------------------------------
-     000    0       1       4       0     4
-     001    1       4       2       4     6
+    array([(0, 0, 4, 1, 4), (1, 4, 6, 4, 2)],
+      dtype=[('ID', '<i4'), ('From_', '<i4'), ('To_', '<i4'),
+      ('Value', '<i4'), ('Count', '<i4')])
+    >>> art.prn(s)
+     id  ID    From_   To_   Value   Count  
+    ----------------------------------------
+     000     0       0     4       1       4
+     001     1       4     6       4       2
 
     Notes:
     ------
@@ -1646,9 +1710,18 @@ def sequences(data, stepsize=0):
 
     Variants:
     ---------
-    Change `N` in the expression to find other splits in the data
+    Change **N** in the expression to find other splits in the data
 
     >>> np.split(data, np.where(np.abs(np.diff(data)) >= N)[0]+1)
+
+    Keep for now::
+        checking sequences of 0, 1
+    >>> a = np.array([1,0,1,1,1,0,0,0,0,1,1,0,0])
+    >>> np.hstack([[x.sum(), *[0]*(len(x) -1)]
+                   if x[0] == 1
+                   else x
+                   for x in np.split(a, np.where(np.diff(a) != 0)[0]+1)])
+    array([1, 0, 3, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0])
 
     References:
     -----------
@@ -1658,8 +1731,9 @@ def sequences(data, stepsize=0):
     #
     a = np.array(data)
     a_dt = a.dtype.kind
-    dt = [('ID', '<i4'), ('Value', a.dtype.str), ('Count', '<i4'),
-          ('From_', '<i4'), ('To_', '<i4')]
+    dt = [('ID', '<i4'), ('From_', '<i4'), ('To_', '<i4'),
+          ('Value', a.dtype.str), ('Count', '<i4'),
+          ]
     if a_dt in ('U', 'S'):
         seqs = np.split(a, np.where(a[1:] != a[:-1])[0] + 1)
     elif a_dt in ('i', 'f'):
@@ -1670,83 +1744,9 @@ def sequences(data, stepsize=0):
     too = np.cumsum(cnts)
     frum = np.zeros_like(too)
     frum[1:] = too[:-1]
-    out = np.array(list(zip(seq_num, vals, cnts, frum, too)), dtype=dt)
+    out = np.array(list(zip(seq_num, frum, too, vals, cnts)), dtype=dt)
     return out
 
-
-# ---- (7) sorting,  column and row sorting .... code section ---------------
-# ---- sort_rows_by_col, sort_cols_by_row, radial_sort ----
-def sort_rows_by_col(a, col=0, descending=False):
-    """Sort a 2D array by column.
-
-    >>> sort_rows_by_col(a, 0, True)
-    >>> a =array([[0, 1, 2],    array([[6, 7, 8],
-                  [3, 4, 5],           [3, 4, 5],
-                  [6, 7, 8]])          [0, 1, 2]])
-    """
-    a = np.asarray(a)
-    shp = a.shape[0]
-    if not (0 <= abs(col) <= shp):
-        raise ValueError("column ({}) in range (0 to {})".format(col, shp))
-    a_s = a[a[:, col].argsort()]
-    if descending:
-        a_s = a_s[::-1]
-    return a_s
-
-
-def sort_cols_by_row(a, col=0, descending=False):
-    """Sort the rows of an array in the order of their column values
-    :  Uses lexsort """
-    ret = a[np.lexsort(np.transpose(a)[::-1])]
-    if descending:
-        ret = np.flipud(ret)
-    return ret
-
-
-def radial_sort(pnts, cent=None):
-    """Sort about the point cloud center or from a given point
-
-    Requires:
-    ---------
-    pnts : array-like, 2D
-        an array of points (x,y) as array or list
-    cent : floats
-        list, tuple, array of the center's x,y coordinates
-        cent = [0, 0] or np.array([0, 0])
-
-    Returns:
-    --------
-    The angles in the range -180, 180 x-axis oriented, and the sort order.
-    """
-    pnts = np.asarray(pnts, dtype='float64')
-    if cent is None:
-        cent = pnts.mean(axis=0)
-    ba = pnts - cent
-    ang_ab = np.arctan2(ba[:, 1], ba[:, 0])
-    ang_ab = np.degrees(ang_ab)
-    sort_order = np.argsort(ang_ab)
-    return ang_ab, sort_order
-
-
-def view_sort(a):
-    """Sort 2D arrays assumed to be coordinates and other baggage, in the order
-    that they appear in the row.  It is best used for sorting x,y coorinate,
-    using argsort.
-
-    Returns:
-    --------
-    The sorted array and the indices of their original positions in the
-    input array.
-    """
-    a_view = a.view(a.dtype.descr * a.shape[1])
-    idx = np.argsort(a_view, axis=0, order=(a_view.dtype.names)).ravel()
-    a = np.ascontiguousarray(a[idx])
-    return a, idx
-
-def xy_sort(a):
-    """Formally called `view_sort`.  See the documentation there
-    """
-    return view_sort(a)
 
 
 # ---- extras *****
@@ -1816,9 +1816,6 @@ def _tools_help_():
     (26) is_in
     (27) running_count
     (28) sequences(data, stepsize)
-    (29) sort_rows_by_col
-    (30) sort_cols_by_row
-    (31) radial_sort
     (32) pack_last_axis
     ---  _tools_help_  this function
     :-------------------------------------------------------------------:
@@ -1907,13 +1904,5 @@ def pyramid(core=9, steps=10, incr=(1, 1), posi=True):
 # ----------------------------------------------------------------------
 # ---- __main__ .... code section
 if __name__ == "__main__":
-    """Optionally...
-    : - print the script source name.
-    : - run the _demo
-    """
-#    print("Script... {}".format(script))  # script =  sys.argv[0]
-#    data_path = script.replace('tools.py', 'Data')
-#    def f():
-#        pass
-#    print(f.__code__.co_filename)
-#    _demo_tools()
+    # print the script source name.
+    print("Script... {}".format(script))
