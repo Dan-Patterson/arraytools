@@ -18,6 +18,10 @@ References:
 -----------
 concave/convex hulls
 
+`<https://www.researchgate.net/publication/220868874_Concave_hull_A_k-
+nearest_neighbours_approach_for_the_computation_of_the_region_occupied_by_a
+_set_of_points>`_.
+
 `<https://tereshenkov.wordpress.com/2017/11/28/building-concave-hulls-alpha-
 shapes-with-pyqt-shapely-and-arcpy/>`_.
 
@@ -156,25 +160,43 @@ def point_in_polygon(pnt, poly):  # pnt_in_poly(pnt, poly):  #
     return False
 
 
-#def knn(pnts, p, k):
-#    """
-#    Calculates k nearest neighbours for a given point.
-#
-#    points : array
-#        list of points
-#    p : two number array-like
-#        reference point
-#    k : integer
-#        amount of neighbours
-#    Returns:
-#    --------
-#    list of the k nearest neighbours, based on squared distance
-#    """
-#    s = sorted(pnts,
-#               key=lambda x: (x[0]-p[0])**2 + (x[1]-p[1])**2)[0:k]
-##    s = sorted(pnts,
-##               key=lambda x: math.sqrt((x[0]-p[0])**2 + (x[1]-p[1])**2))[0:k]
-#    return s
+def knn(p, pnts, k=1, return_dist=True):
+    """
+    Calculates k nearest neighbours for a given point.
+
+    Parameters:
+    -----------
+    p :array
+        x,y reference point
+    pnts : array
+        Points array to examine
+    k : integer
+        The `k` in k-nearest neighbours
+
+    Returns:
+    --------
+    Array of k-nearest points and optionally their distance from the source.
+    """
+    def _remove_self_(p, pnts):
+        """Remove a point which is duplicated or itself from the array
+        """
+        keep = ~np.all(pnts == p, axis=1)
+        return pnts[keep]
+    #
+    def _e_2d_(p, a):
+        """ array points to point distance... mini e_dist
+        """
+        diff = a - p[np.newaxis, :]
+        return np.einsum('ij,ij->i', diff, diff)
+    #
+    p = np.asarray(p)
+    k = max(1, min(abs(int(k)), len(pnts)))
+    pnts = _remove_self_(p, pnts)
+    d = _e_2d_(p, pnts)
+    idx = np.argsort(d)
+    if return_dist:
+        return pnts[idx][:k], d[idx][:k]
+    return pnts[idx][:k]
 
 
 def knn0(pnts, p, k):
@@ -199,8 +221,60 @@ def knn0(pnts, p, k):
 #    s = [i.tolist() for i in pnts[idx]]
     return pnts[idx].tolist()
 
+def find_a_in_b(a, b, a_fields=None, b_fields=None):
+    """ Find the indices of the elements in a smaller 2d array contained in
+    a larger 2d array. If the arrays are stuctured with field names,then these
+    need to be specified.  It should go without saying that the dtypes need to
+    be the same.
 
-def concave(points, k):
+    a, b : 1D and 2D, ndarray or structured/record arrays
+        The arrays are arranged so that a is the smallest and b is the largest.
+        If the arrays are stuctured with field names, then these
+        need to be specified.  It should go without saying that the dtypes need to
+        be the same.
+    a_fields, b_fields : list of field names
+        If the dtype has names, specify these in a list.  Both do not need
+        names.
+
+    Example:
+    --------
+    To demonstrate, a small array was made from the last 10 records of a larger
+    array to check that they could be found.
+
+    >>> a.dtype # ([('ID', '<i4'), ('X', '<f8'), ('Y', '<f8'), ('Z', '<f8')])
+    >>> b.dtype # ([('X', '<f8'), ('Y', '<f8')])
+    >>> a.shape, b.shape # ((69688,), (10,))
+    >>> find_a_in_b(a, b, flds, flds)
+    array([69678, 69679, 69680, 69681, 69682,
+           69683, 69684,69685, 69686, 69687], dtype=int64)
+
+    References:
+    -----------
+    `<https://stackoverflow.com/questions/38674027/find-the-row-indexes-of-
+    several-values-in-a-numpy-array/38674038#38674038>`_.
+    """
+    def _view_(a):
+        """from the same name in arraytools"""
+        return a.view((a.dtype[0], len(a.dtype.names)))
+    #
+    small, big = [a, b]
+    if a.size > b.size:
+        small, big = [b, a]
+    if a_fields is not None:
+        small = small[a_fields]
+        small = _view_(small)
+    if b_fields is not None:
+        big = big[b_fields]
+        big = _view_(big)
+    if a.ndim >= 1:  # last slice, if  [:2] instead, it returns both indices
+        indices = np.where((big == small[:,None]).all(-1))[1]
+#       indices = np.where(big == small[:,None])[1]
+#    elif a.ndim == 2:
+#        indices = np.where((big == small[:,None]).all(-1))[1]
+    return indices
+
+
+def concave(points, k, pip_check=False):
     """Calculates the concave hull for given points
 
     Requires:
@@ -211,7 +285,10 @@ def concave(points, k):
     k : integer
         initially the number of points to start forming the concave hull,
         k will be the initial set of neighbors
-    knn0, intersects, angle, point_in_polygon :
+    pip_check : boolean
+        Whether to do the final point in polygon check.  Not needed for closely
+        spaced dense point patterns.
+    knn0, intersects, angle, point_in_polygon : functions
         functions used by concave
 
     Notes:
@@ -219,6 +296,10 @@ def concave(points, k):
     This recursively calls itself to check concave hull.
 
     p_set : The working copy of the input points
+
+    70,000 points with final pop check removed, 1011 pnts on ch
+        23.1 s ± 1.13 s per loop (mean ± std. dev. of 7 runs, 1 loop each)
+        2min 15s ± 2.69 s per loop (mean ± std. dev. of 7 runs, 1 loop each)
     """
     k = max(k, 3)  # Make sure k >= 3
     if isinstance(points, np.ndarray):  # Remove duplicates if not done already
@@ -241,7 +322,7 @@ def concave(points, k):
 
     while (cur_p != frst_p or len(hull) == 1) and len(p_set) > 0:
         if len(hull) == 3:
-            p_set.append(frst_p)         # Add first point again
+            p_set.append(frst_p)          # Add first point again
         knn_pnts = knn0(p_set, cur_p, k)  # Find nearest neighbours
         cur_pnts = sorted(knn_pnts, key=lambda x: -angle(x, cur_p, prev_ang))
         its = True
@@ -260,9 +341,10 @@ def concave(points, k):
         cur_p = cur_pnts[i]
         hull.append(cur_p)  # Valid candidate was found
         p_set.remove(cur_p)
-    for point in p_set:
-        if not point_in_polygon(point, hull):
-            return concave(points, k + 1)
+    if pip_check:
+        for point in p_set:
+            if not point_in_polygon(point, hull):
+                return concave(points, k + 1)
     #
     hull = np.array(hull)
     return hull
@@ -312,13 +394,6 @@ def convex(points):
 # ----------------------------------------------------------------------
 # .... running script or testing code section
 
-def ice():
-    """Ice demo for concave hull generation"""
-#    pth = r"C:\GIS\A_Tools_scripts\Polygon_lineTools\Data\pointset.csv"
-    pth = r"C:\GIS\A_Tools_scripts\Polygon_lineTools\Data\samplepoints3.csv"
-    a = np.loadtxt(pth, delimiter=",", skiprows=1)
-    return a
-
 
 def c_():
     """Letter c for concave hull determination
@@ -328,53 +403,6 @@ def c_():
     return c
 
 
-def _demo():
-    """Demo data
-    """
-    hull_type = 'concave'
-    k_factor = 3 # 3 to 11
-    # (1) ---- get the points
-    #a = np.array([[0, 0], [0, 10], [10, 0], [0,0]])
-
-    a = np.array([[0, 1, 1, 0, 1, 1, 1, 0, 0, 0],
-                  [0, 0, 1, 1, 0, 1, 1, 0, 0, 0],
-                  [1, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-                  [0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
-                  [1, 0, 0, 1, 1, 0, 0, 1, 0, 0],
-                  [0, 1, 1, 0, 0, 0, 1, 1, 1, 0],
-                  [0, 1, 1, 1, 0, 1, 1, 1, 1, 0],
-                  [1, 1, 0, 1, 1, 1, 0, 1, 0, 0],
-                  [0, 1, 1, 1, 1, 0, 1, 1, 0, 1],
-                  [1, 0, 1, 0, 0, 1, 0, 1, 1, 0]])
-    xs, ys = np.where(a == 1)
-    cell_size = 10
-    xy = np.array(list(zip(xs*cell_size, ys*cell_size)))
-    # (2) ---- for each group, perform the concave hull
-    in_arrays = [a]
-    groups = [xy] #[a[np.where(a[group_by] == i)[0]] for i in uniq]
-    hulls = []
-    out_arrs = []
-    cnt = 0
-    for p in groups:
-        # ---- point preparation section ------------------------------------
-        p = np.array(list(set([tuple(i) for i in p])))  # Remove duplicates
-        idx_cr = np.lexsort((p[:, 0], p[:, 1]))         # indices of sorted array
-        in_pnts = np.asarray([p[i] for i in idx_cr])    # p[idx_cr]  #
-        in_pnts = in_pnts.tolist()
-        in_pnts = [tuple(i) for i in in_pnts]
-        if hull_type == 'concave':
-            cx = np.array(concave(in_pnts, k_factor))  # requires a list of tuples
-        else:
-            cx = np.array(convex(in_pnts))
-        hulls.append(cx)
-        z = np.zeros_like(in_arrays[cnt])
-        cnt += 1
-        for i in cx:
-            x = int(i[0]//cell_size)
-            y = int(i[1]//cell_size)
-            z[x, y] = 1
-        out_arrs.append(z)
-    return a, xy, hulls, out_arrs
 # ----------------------------------------------------------------------
 # __main__ .... code section
 if __name__ == "__main__":

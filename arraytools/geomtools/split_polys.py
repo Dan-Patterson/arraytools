@@ -29,7 +29,7 @@ import sys
 from textwrap import dedent
 import numpy as np
 from arraytools.fc_tools._common import * # fc_info
-from arraytools.geom import e_area, _extent
+from arraytools.geom import e_area, extent_
 from arraytools.fc_tools.apt import arc_np, _id_geom_array, output_polygons
 import arcpy
 
