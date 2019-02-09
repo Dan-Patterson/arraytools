@@ -1,0 +1,484 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>arraytools.stackstats &mdash; arraytools 0.9 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> arraytools
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.9
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">arraytools... :</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../arraytools_mods.html">Modules in arraytools</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Sphinx...:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Sphinx_documentation.html">How to document Sphinx</a></li>
+</ul>
+<p class="caption"><span class="caption-text">ReStructuredText...:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../md_tester.html">Documentation tips</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">arraytools</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>arraytools.stackstats</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for arraytools.stackstats</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: UTF-8 -*-ct</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">==========</span>
+<span class="sd">stackstats</span>
+<span class="sd">==========</span>
+
+<span class="sd">Script:   stackstats.py</span>
+
+<span class="sd">Author:   Dan.Patterson@carleton.ca</span>
+
+<span class="sd">Modified: 2019-01-06</span>
+
+<span class="sd">Purpose:  tools for working with numpy arrays</span>
+
+<span class="sd">Requires</span>
+<span class="sd">--------</span>
+<span class="sd">arraytools.tools - nd2struct, stride</span>
+
+<span class="sd">References</span>
+<span class="sd">----------</span>
+
+<span class="sd">`&lt;https://community.esri.com/blogs/dan_patterson/2018/02/06/cell-\</span>
+<span class="sd">statistics-made-easy-raster-data-over-time&gt;`_.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1"># pylint: disable=C0103</span>
+<span class="c1"># pylint: disable=R1710</span>
+<span class="c1"># pylint: disable=R0914</span>
+
+<span class="c1"># ---- imports, formats, constants ----</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">ft</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;bool&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">repr</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)),</span>
+      <span class="s1">&#39;float_kind&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{: 0.3f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">}</span>
+<span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">edgeitems</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">suppress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">threshold</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">formatter</span><span class="o">=</span><span class="n">ft</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_print_option</span><span class="o">.</span><span class="n">set_display</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>  <span class="c1"># change to a single -</span>
+
+<span class="n">script</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># print this should you need to locate the script</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;check_shapes&#39;</span><span class="p">,</span> <span class="s1">&#39;check_stack&#39;</span><span class="p">,</span> <span class="s1">&#39;mask_stack&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;stack_sum&#39;</span><span class="p">,</span> <span class="s1">&#39;stack_cumsum&#39;</span><span class="p">,</span>  <span class="c1"># statistical functions</span>
+           <span class="s1">&#39;stack_prod&#39;</span><span class="p">,</span> <span class="s1">&#39;stack_cumprod&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;stack_min&#39;</span><span class="p">,</span> <span class="s1">&#39;stack_mean&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;stack_median&#39;</span><span class="p">,</span> <span class="s1">&#39;stack_max&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;stack_std&#39;</span><span class="p">,</span> <span class="s1">&#39;stack_var&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;stack_percentile&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;stack_stats&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;stack_stats_tbl&#39;</span><span class="p">]</span>
+
+
+<span class="c1"># ---- array checks and creation --------------------------------------------</span>
+<span class="c1"># ---- 3D arrays for stacked operations</span>
+<span class="c1">#</span>
+<div class="viewcode-block" id="check_shapes"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.stackstats.check_shapes">[docs]</a><span class="k">def</span> <span class="nf">check_shapes</span><span class="p">(</span><span class="n">arrs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check the shapes of the arrays to ensure they are all equal</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">shps</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">shape</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">arrs</span><span class="p">]</span>
+    <span class="n">eq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">shps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">shps</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]))</span>
+    <span class="n">err</span> <span class="o">=</span> <span class="s2">&quot;Arrays arr not of the same shape...&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">eq</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">shps</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="check_stack"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.stackstats.check_stack">[docs]</a><span class="k">def</span> <span class="nf">check_stack</span><span class="p">(</span><span class="n">arrs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Do the basic checking of the stack to ensure that a 3D array is</span>
+<span class="sd">    generated</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">err1</span> <span class="o">=</span> <span class="s2">&quot;Object, structured arrays not supported, current type...&quot;</span>
+    <span class="n">err2</span> <span class="o">=</span> <span class="s2">&quot;3D arrays supported current ndim...&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="n">arrs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arrs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">arrs</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;V&#39;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err1</span><span class="p">,</span> <span class="n">arrs</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">arrs</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err2</span><span class="p">,</span> <span class="n">arrs</span><span class="o">.</span><span class="n">ndim</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">arrs</span></div>
+
+
+<div class="viewcode-block" id="mask_stack"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.stackstats.mask_stack">[docs]</a><span class="k">def</span> <span class="nf">mask_stack</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Produce masks for a 3d array&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">nodata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">arrs</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">arrs</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">...mask_stack requires a 3d array and a nodata value</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">arrs</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="n">arrs</span><span class="p">[:,</span> <span class="o">...</span><span class="p">]</span> <span class="o">==</span> <span class="n">nodata</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">msk</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">arrs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+    <span class="n">msk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">msk</span><span class="p">)</span>
+    <span class="n">a_m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">msk</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">a_m</span></div>
+
+
+<span class="c1"># ---- Statistics for stacked arrays (3D) ------------------------------------</span>
+<span class="c1">#</span>
+<div class="viewcode-block" id="stack_sum"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.stackstats.stack_sum">[docs]</a><span class="k">def</span> <span class="nf">stack_sum</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;see stack_stats&quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">check_stack</span><span class="p">(</span><span class="n">arrs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">mask_stack</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="stack_cumsum"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.stackstats.stack_cumsum">[docs]</a><span class="k">def</span> <span class="nf">stack_cumsum</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;see stack_stats&quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">check_stack</span><span class="p">(</span><span class="n">arrs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">mask_stack</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nancumsum</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="stack_prod"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.stackstats.stack_prod">[docs]</a><span class="k">def</span> <span class="nf">stack_prod</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;see stack_stats&quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">check_stack</span><span class="p">(</span><span class="n">arrs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">mask_stack</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanprod</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="stack_cumprod"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.stackstats.stack_cumprod">[docs]</a><span class="k">def</span> <span class="nf">stack_cumprod</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;see stack_stats&quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">check_stack</span><span class="p">(</span><span class="n">arrs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">mask_stack</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nancumprod</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="stack_min"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.stackstats.stack_min">[docs]</a><span class="k">def</span> <span class="nf">stack_min</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;see stack_stats&quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">check_stack</span><span class="p">(</span><span class="n">arrs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">mask_stack</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="stack_mean"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.stackstats.stack_mean">[docs]</a><span class="k">def</span> <span class="nf">stack_mean</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;see stack_stats&quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">check_stack</span><span class="p">(</span><span class="n">arrs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">mask_stack</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="stack_median"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.stackstats.stack_median">[docs]</a><span class="k">def</span> <span class="nf">stack_median</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;see stack_stats&quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">check_stack</span><span class="p">(</span><span class="n">arrs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">mask_stack</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="stack_max"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.stackstats.stack_max">[docs]</a><span class="k">def</span> <span class="nf">stack_max</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;see stack_stats&quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">check_stack</span><span class="p">(</span><span class="n">arrs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">mask_stack</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="stack_std"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.stackstats.stack_std">[docs]</a><span class="k">def</span> <span class="nf">stack_std</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;see stack_stats&quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">check_stack</span><span class="p">(</span><span class="n">arrs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">mask_stack</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="stack_var"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.stackstats.stack_var">[docs]</a><span class="k">def</span> <span class="nf">stack_var</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;see stack_stats&quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">check_stack</span><span class="p">(</span><span class="n">arrs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">mask_stack</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanvar</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="stack_percentile"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.stackstats.stack_percentile">[docs]</a><span class="k">def</span> <span class="nf">stack_percentile</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;nanpercentile for an array stack with optional nodata masked</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    arrs : array-like</span>
+<span class="sd">        Either a list, tuple of arrays or an array with ndim=3</span>
+<span class="sd">    q : number</span>
+<span class="sd">        the percentile</span>
+<span class="sd">    nodata : number</span>
+<span class="sd">        nodata value, numeric or np.nan (will upscale integers)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">check_stack</span><span class="p">(</span><span class="n">arrs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">mask_stack</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanpercentile</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">q</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="stack_stats"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.stackstats.stack_stats">[docs]</a><span class="k">def</span> <span class="nf">stack_stats</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;All statistics for arrs.</span>
+
+<span class="sd">    - arrs :</span>
+<span class="sd">        either a list, tuple of arrays or an array with ndim=3</span>
+<span class="sd">    - ax :</span>
+<span class="sd">        axis, either, 0 (by band) or (1,2) to get a single value for each band</span>
+<span class="sd">    - nodata :</span>
+<span class="sd">        nodata value, numeric or np.nan (will upscale integers)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">arrs</span> <span class="o">=</span> <span class="n">check_stack</span><span class="p">(</span><span class="n">arrs</span><span class="p">)</span>
+    <span class="n">a_m</span> <span class="o">=</span> <span class="n">mask_stack</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">)</span>
+    <span class="n">nan_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">a_m</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">nan_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">a_m</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">nan_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">a_m</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">nan_median</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">a_m</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">nan_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">a_m</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">nan_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">a_m</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">nan_var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanvar</span><span class="p">(</span><span class="n">a_m</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">stats</span> <span class="o">=</span> <span class="p">[</span><span class="n">nan_sum</span><span class="p">,</span> <span class="n">nan_min</span><span class="p">,</span> <span class="n">nan_mean</span><span class="p">,</span> <span class="n">nan_median</span><span class="p">,</span> <span class="n">nan_max</span><span class="p">,</span> <span class="n">nan_std</span><span class="p">,</span> <span class="n">nan_var</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">ax</span><span class="p">):</span>
+        <span class="n">nan_cumsum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nancumsum</span><span class="p">(</span><span class="n">a_m</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+        <span class="n">stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nan_cumsum</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">stats</span></div>
+
+
+<div class="viewcode-block" id="stack_stats_tbl"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.stackstats.stack_stats_tbl">[docs]</a><span class="k">def</span> <span class="nf">stack_stats_tbl</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>  <span class="c1"># col_names, args):</span>
+    <span class="sd">&quot;&quot;&quot;Produce the output table</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Table of statistical results by band.  The dtype is shown below</span>
+<span class="sd">    dtype=[(&#39;Band&#39;, &#39;&lt;i4&#39;), (&#39;N&#39;, &#39;&lt;i4&#39;), (&#39;N_nan&#39;, &#39;&lt;i4&#39;), (&#39;Sum&#39;, &#39;&lt;f8&#39;),</span>
+<span class="sd">           (&#39;Min&#39;, &#39;&lt;f8&#39;), (&#39;Mean&#39;, &#39;&lt;f8&#39;), (&#39;Med&#39;, &#39;&lt;f8&#39;), (&#39;Max&#39;, &#39;&lt;f8&#39;),</span>
+<span class="sd">           (&#39;Std&#39;, &#39;&lt;f8&#39;), (&#39;Var&#39;, &#39;&lt;f8&#39;)])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stats</span> <span class="o">=</span> <span class="n">stack_stats</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;&lt;f8&#39;</span><span class="p">)</span>
+         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Sum&#39;</span><span class="p">,</span> <span class="s1">&#39;Min&#39;</span><span class="p">,</span> <span class="s1">&#39;Mean&#39;</span><span class="p">,</span> <span class="s1">&#39;Med&#39;</span><span class="p">,</span> <span class="s1">&#39;Max&#39;</span><span class="p">,</span> <span class="s1">&#39;Std&#39;</span><span class="p">,</span> <span class="s1">&#39;Var&#39;</span><span class="p">]]</span>
+    <span class="n">dts</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;Band&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;i4&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;i4&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;N_nan&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;i4&#39;</span><span class="p">)]</span> <span class="o">+</span> <span class="n">d</span>
+    <span class="n">N</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">arrs</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dts</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dts</span><span class="p">)</span>
+    <span class="n">z</span><span class="p">[</span><span class="n">z</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+    <span class="n">z</span><span class="p">[</span><span class="n">z</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">r</span><span class="o">*</span><span class="n">c</span><span class="p">]</span><span class="o">*</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">z</span><span class="p">[</span><span class="n">z</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">arrs</span> <span class="o">==</span> <span class="n">nodata</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="o">-</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">z</span><span class="p">[</span><span class="n">z</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">]]</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">z</span></div>
+
+
+<span class="k">def</span> <span class="nf">_demo_stack</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    demo stack :</span>
+<span class="sd">        Simply 31 layers shaped (31, 100, 150) with uniform values one for</span>
+<span class="sd">        each day, numbers from 1 to 31.</span>
+<span class="sd">    &gt;&gt;&gt; stack_stats_tbl(stack)</span>
+<span class="sd">    array([( 0, 15000, 0,   15000.,   1.,   1.,   1.,   1.,  0.,  0.),</span>
+<span class="sd">           ( 1, 15000, 0,   30000.,   2.,   2.,   2.,   2.,  0.,  0.),</span>
+<span class="sd">           ( 2, 15000, 0,   45000.,   3.,   3.,   3.,   3.,  0.,  0.),</span>
+<span class="sd">           ( 3, 15000, 0,   60000.,   4.,   4.,   4.,   4.,  0.,  0.),</span>
+<span class="sd">           ( 4, 15000, 0,   75000.,   5.,   5.,   5.,   5.,  0.,  0.),</span>
+<span class="sd">           ( 5, 15000, 0,   90000.,   6.,   6.,   6.,   6.,  0.,  0.),</span>
+<span class="sd">           .... snip ....</span>
+<span class="sd">           (27, 15000, 0,  420000.,  28.,  28.,  28.,  28.,  0.,  0.),</span>
+<span class="sd">           (28, 15000, 0,  435000.,  29.,  29.,  29.,  29.,  0.,  0.),</span>
+<span class="sd">           (29, 15000, 0,  450000.,  30.,  30.,  30.,  30.,  0.,  0.),</span>
+<span class="sd">           (30, 15000, 0,  465000.,  31.,  31.,  31.,  31.,  0.,  0.)],</span>
+<span class="sd">          dtype=[(&#39;Band&#39;, &#39;&lt;i4&#39;), (&#39;N&#39;, &#39;&lt;i4&#39;), (&#39;N_nan&#39;, &#39;&lt;i4&#39;),</span>
+<span class="sd">                 (&#39;Sum&#39;, &#39;&lt;f8&#39;), (&#39;Min&#39;, &#39;&lt;f8&#39;), (&#39;Mean&#39;, &#39;&lt;f8&#39;),</span>
+<span class="sd">                 (&#39;Med&#39;, &#39;&lt;f8&#39;), (&#39;Max&#39;, &#39;&lt;f8&#39;), (&#39;Std&#39;, &#39;&lt;f8&#39;),</span>
+<span class="sd">                 (&#39;Var&#39;, &#39;&lt;f8&#39;)])</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">script</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;/Data/Arr_31_100_150.npy&quot;</span>
+    <span class="n">stack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">stack</span>
+
+
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="c1"># __main__ .... code section</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># print the script source name.</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Script... </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">script</span><span class="p">))</span>
+<span class="c1">#    stack = _demo_stack()</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Dan Patterson
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

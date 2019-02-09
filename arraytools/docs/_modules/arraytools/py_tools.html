@@ -1,0 +1,514 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>arraytools.py_tools &mdash; arraytools 0.9 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> arraytools
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.9
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">arraytools... :</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../arraytools_mods.html">Modules in arraytools</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Sphinx...:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Sphinx_documentation.html">How to document Sphinx</a></li>
+</ul>
+<p class="caption"><span class="caption-text">ReStructuredText...:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../md_tester.html">Documentation tips</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">arraytools</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>arraytools.py_tools</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for arraytools.py_tools</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: UTF-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">========</span>
+<span class="sd">py_tools</span>
+<span class="sd">========</span>
+
+<span class="sd">Script : py_tools.py</span>
+
+<span class="sd">Author : Dan_Patterson@carleton.ca</span>
+
+<span class="sd">Modified : 2019-01-06</span>
+
+<span class="sd">Purpose : tools for working with python, numpy and other python packages</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1"># pylint: disable=C0103</span>
+<span class="c1"># pylint: disable=R1710</span>
+<span class="c1"># pylint: disable=R0914</span>
+
+<span class="c1"># ---- imports, formats, constants ---------------------------------------</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">textwrap</span> <span class="k">import</span> <span class="n">dedent</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<span class="n">ft</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;bool&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">repr</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)),</span>
+      <span class="s1">&#39;float_kind&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{: 0.3f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">}</span>
+<span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">edgeitems</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">suppress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">threshold</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">formatter</span><span class="o">=</span><span class="n">ft</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_print_option</span><span class="o">.</span><span class="n">set_display</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>  <span class="c1"># change to a single -</span>
+
+<span class="n">script</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># print this should you need to locate the script</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;comp_info&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;get_dir&#39;</span><span class="p">,</span> <span class="s1">&#39;folders&#39;</span><span class="p">,</span> <span class="s1">&#39;sub_folders&#39;</span><span class="p">,</span>  <span class="c1"># basic folder functions</span>
+           <span class="s1">&#39;dir_py&#39;</span><span class="p">,</span>    <span class="c1"># object and directory functions</span>
+           <span class="s1">&#39;_flatten&#39;</span><span class="p">,</span> <span class="s1">&#39;flatten_shape&#39;</span><span class="p">,</span>  <span class="c1"># iterables</span>
+           <span class="s1">&#39;pack&#39;</span><span class="p">,</span> <span class="s1">&#39;unpack&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;combine_dicts&#39;</span><span class="p">]</span>
+
+
+<span class="c1"># ---- (1) computer, python stuff ... code section ---------------------------</span>
+<span class="c1">#</span>
+<div class="viewcode-block" id="comp_info"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.py_tools.comp_info">[docs]</a><span class="k">def</span> <span class="nf">comp_info</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Return information for the computer and python version</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">platform</span>
+    <span class="n">winv</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">platform</span><span class="p">()</span>
+    <span class="n">py_ver</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">python_version</span><span class="p">()</span>
+    <span class="n">plat</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">architecture</span><span class="p">()</span>
+    <span class="n">proc</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">processor</span><span class="p">()</span>
+    <span class="n">p_node</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">_node</span><span class="p">()</span>
+    <span class="n">u_name</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">uname</span><span class="p">()</span>
+    <span class="n">ud</span> <span class="o">=</span> <span class="n">u_name</span><span class="o">.</span><span class="n">_asdict</span><span class="p">()</span>
+    <span class="n">udl</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">ud</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">ud</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+    <span class="n">frmt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    ---------------------------</span>
+<span class="s2">    Computer/python information</span>
+
+<span class="s2">    Platform:        </span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">    python version:  </span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">    windows version: </span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">    processor:       </span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">    node:            </span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">    user/machine:    </span><span class="si">{}</span><span class="se">\n</span><span class="s2"></span>
+<span class="s2">    Alternate form....&quot;&quot;&quot;</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">winv</span><span class="p">,</span> <span class="n">py_ver</span><span class="p">,</span> <span class="n">plat</span><span class="p">,</span> <span class="n">proc</span><span class="p">,</span> <span class="n">p_node</span><span class="p">,</span> <span class="n">u_name</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">dedent</span><span class="p">(</span><span class="n">frmt</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;</span><span class="si">{:&lt;10}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">udl</span><span class="p">]))</span></div>
+
+
+<span class="c1"># ---- (2) general file functions ... code section ---------------------------</span>
+<span class="c1">#</span>
+<div class="viewcode-block" id="get_dir"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.py_tools.get_dir">[docs]</a><span class="k">def</span> <span class="nf">get_dir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get the directory list from a path, excluding geodatabase folders.</span>
+<span class="sd">    Used by.. folders</span>
+
+<span class="sd">    &gt;&gt;&gt; get_dir(&#39;C:/Git_Dan/arraytools&#39;)</span>
+<span class="sd">    [&#39;C:/Git_Dan/arraytools/.spyproject&#39;,</span>
+<span class="sd">     &#39;C:/Git_Dan/arraytools/analysis&#39;,</span>
+<span class="sd">     ... snip ...</span>
+<span class="sd">     &#39;C:/Git_Dan/arraytools/__pycache__&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; # ---- common path prefix</span>
+<span class="sd">    &gt;&gt;&gt; os.path.commonprefix(get_dir(&#39;C:/Git_Dan/arraytools&#39;))</span>
+<span class="sd">    &#39;C:/Git_Dan/arraytools/&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">full</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">p</span><span class="p">)]</span>
+    <span class="n">dirlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">val</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">full</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">val</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">dirlist</span></div>
+
+
+<div class="viewcode-block" id="folders"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.py_tools.folders">[docs]</a><span class="k">def</span> <span class="nf">folders</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Print recursive listing of folders in a path.  Make sure you `raw`</span>
+<span class="sd">    format the path::</span>
+
+<span class="sd">        ``r&#39;c:\\Temp&#39;  or &#39;c:/Temp&#39; or &#39;c:\\Temp&#39;``</span>
+<span class="sd">    Requires,  ``_get_dir`` also, an example of path common prefix</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">first</span><span class="p">:</span>  <span class="c1"># Detect outermost call, print a heading</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="o">*</span><span class="mi">30</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">|.... Folder listing for ....|</span><span class="se">\n</span><span class="s2">|--</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;|-&quot;</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">cprev</span> <span class="o">=</span> <span class="n">path</span>
+    <span class="n">dirlist</span> <span class="o">=</span> <span class="n">get_dir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dirlist</span><span class="p">:</span>
+        <span class="n">fullname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>  <span class="c1"># Turn name into full pathname</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">fullname</span><span class="p">):</span>       <span class="c1"># If a directory, recurse.</span>
+            <span class="n">cprev</span> <span class="o">=</span> <span class="n">path</span>
+            <span class="n">pad</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">cprev</span><span class="p">)</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">cprev</span><span class="p">,</span> <span class="n">pad</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">n</span><span class="p">)</span>  <span class="c1"># fullname) # os.path.relpath(fullname))</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="s2">&quot;  &quot;</span>
+            <span class="n">folders</span><span class="p">(</span><span class="n">fullname</span><span class="p">,</span> <span class="n">first</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">p</span><span class="p">)</span></div>
+    <span class="c1"># ----</span>
+
+
+<div class="viewcode-block" id="sub_folders"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.py_tools.sub_folders">[docs]</a><span class="k">def</span> <span class="nf">sub_folders</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">combine</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Print the folders in a path, excluding &#39;.&#39; folders</span>
+<span class="sd">    This is the best one.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">pathlib</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Path...</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">combine</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([(</span><span class="n">p</span><span class="o">.</span><span class="n">_str</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+                   <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span>
+                   <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="ow">and</span> <span class="s2">&quot;.&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">_str</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">f</span><span class="p">))</span></div>
+
+
+<span class="k">def</span> <span class="nf">env_list</span><span class="p">(</span><span class="n">pth</span><span class="p">,</span> <span class="n">ordered</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;List folders and files in a path.  Requires ``os`` module.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">pth</span><span class="p">):</span>
+        <span class="n">check</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pth</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+        <span class="n">check</span> <span class="o">=</span> <span class="n">check</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">check</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;.&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">check</span><span class="p">):</span>
+            <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">check</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ordered</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">d</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">d</span>
+
+
+<span class="c1"># ---- (3) dirr ... code section ... -----------------------------------------</span>
+<span class="c1">#</span>
+<div class="viewcode-block" id="dir_py"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.py_tools.dir_py">[docs]</a><span class="k">def</span> <span class="nf">dir_py</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">colwise</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">prn</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The non-numpy version of dirr</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">zip_longest</span> <span class="k">as</span> <span class="n">zl</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="nb">dir</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">a</span><span class="p">])</span>
+    <span class="n">frmt</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;{{!s:&lt;</span><span class="si">{}</span><span class="s2">}} &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">w</span><span class="p">)))</span><span class="o">*</span><span class="n">cols</span>
+    <span class="n">csze</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="n">cols</span>  <span class="c1"># split it</span>
+    <span class="n">csze</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">csze</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">csze</span> <span class="o">%</span> <span class="mi">1</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">colwise</span><span class="p">:</span>
+        <span class="n">a_0</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">:</span> <span class="n">i</span><span class="o">+</span><span class="n">csze</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">csze</span><span class="p">)]</span>
+        <span class="n">a_0</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">zl</span><span class="p">(</span><span class="o">*</span><span class="n">a_0</span><span class="p">,</span> <span class="n">fillvalue</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">a_0</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">:</span> <span class="n">i</span><span class="o">+</span><span class="n">cols</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">cols</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;__name__&#39;</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;-&quot;</span><span class="o">*</span><span class="mi">70</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">obj</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;-&quot;</span><span class="o">*</span><span class="mi">70</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span> <span class="s2">&quot;py version&quot;</span><span class="p">]</span>
+    <span class="n">txt_out</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s2">| dir(</span><span class="si">{}</span><span class="s2">) ...</span><span class="se">\n</span><span class="s2">|    </span><span class="si">{}</span><span class="se">\n</span><span class="s2">-------&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">a_0</span><span class="p">:</span>
+        <span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  (</span><span class="si">{:&gt;03.0f}</span><span class="s2">)  &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cnt</span><span class="p">)</span>
+        <span class="n">frmt</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;{{!s:&lt;</span><span class="si">{}</span><span class="s2">}} &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">w</span><span class="p">)))</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">txt</span> <span class="o">+=</span> <span class="n">frmt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">txt_out</span> <span class="o">+=</span> <span class="n">txt</span>
+    <span class="k">if</span> <span class="n">prn</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">txt_out</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">txt_out</span></div>
+
+
+<span class="c1"># ---- (4) iterables ---------------------------------------------------------</span>
+<span class="c1">#</span>
+<span class="k">def</span> <span class="nf">_flatten</span><span class="p">(</span><span class="n">a_list</span><span class="p">,</span> <span class="n">flat_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Change the isinstance as appropriate.</span>
+
+<span class="sd">    Flatten an object using recursion</span>
+
+<span class="sd">    See itertools.chain() for an alternate method of flattening.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">flat_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">flat_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">a_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
+            <span class="n">_flatten</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">flat_list</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">flat_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">flat_list</span>
+
+
+<div class="viewcode-block" id="flatten_shape"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.py_tools.flatten_shape">[docs]</a><span class="k">def</span> <span class="nf">flatten_shape</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">completely</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Flatten a array or geometry shape object using itertools.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    shp : array</span>
+<span class="sd">       an array or an array representing polygon, polyline, or point shapes</span>
+<span class="sd">    completely : boolean</span>
+<span class="sd">       True returns points for all objects</span>
+<span class="sd">       False, returns Array for polygon or polyline objects</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    For conventional array-like objects use `completely = False` to flatten</span>
+<span class="sd">    the object completely.</span>
+
+<span class="sd">    For geometry objects, use `True` for polygon and polylines to retain their</span>
+<span class="sd">    parts, but for points, use `False` since you need to retain the x,y pair</span>
+
+<span class="sd">    The `__iter__` property.  Polygon, Polyline, Array all have this property.</span>
+<span class="sd">    Points do not.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">itertools</span>
+    <span class="k">if</span> <span class="n">completely</span><span class="p">:</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="n">shp</span><span class="p">)]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">shp</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">vals</span></div>
+
+
+<div class="viewcode-block" id="pack"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.py_tools.pack">[docs]</a><span class="k">def</span> <span class="nf">pack</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">param</span><span class="o">=</span><span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Pack an iterable into an ndarray or object array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">a</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">a</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="unpack"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.py_tools.unpack">[docs]</a><span class="k">def</span> <span class="nf">unpack</span><span class="p">(</span><span class="n">iterable</span><span class="p">,</span> <span class="n">param</span><span class="o">=</span><span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Unpack an iterable based on the param(eter) condition using recursion.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - Use `flatten` for recarrays or structured arrays.</span>
+<span class="sd">    - See main docs for more information and options.</span>
+<span class="sd">    - To produce uniform array from this, use the following after this is done.</span>
+
+<span class="sd">    &gt;&gt;&gt; out = np.array(xy).reshape(len(xy)//2, 2)</span>
+
+<span class="sd">    - To check whether unpack can be used.</span>
+
+<span class="sd">    &gt;&gt;&gt; isinstance(x, (list, tuple, np.ndarray, np.void)) like in flatten above</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xy</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+            <span class="n">xy</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">unpack</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">xy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">xy</span></div>
+
+<div class="viewcode-block" id="combine_dicts"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.py_tools.combine_dicts">[docs]</a><span class="k">def</span> <span class="nf">combine_dicts</span><span class="p">(</span><span class="n">ds</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Combine dictionary values from multiple dictionaries and combine</span>
+<span class="sd">    their keys if needed.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    If not at the top of the script, import numpy as np</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A new dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>                   <span class="c1"># key, value pairs</span>
+                  <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ds</span>              <span class="c1"># dict in dictionaries</span>
+                  <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>  <span class="c1"># get the key, values from items</span>
+    <span class="n">ks</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">a</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">ks</span> <span class="o">=</span> <span class="n">ks</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">lexsort</span><span class="p">((</span><span class="n">ks</span><span class="p">,</span> <span class="n">idx</span><span class="p">))]</span>         <span class="c1"># optional sort by appearance</span>
+    <span class="n">uniq</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">a</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">i</span><span class="p">][:,</span> <span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ks</span><span class="p">]</span>
+    <span class="n">nd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">uniq</span><span class="p">]</span>
+    <span class="n">new_d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="n">nd</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">new_d</span></div>
+
+
+<span class="k">def</span> <span class="nf">find_dups</span><span class="p">(</span><span class="n">a_list</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Find dups in a list using an Ordered dictionary, return a list of</span>
+<span class="sd">    duplicated elements</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+    <span class="n">counter</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">a_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">counter</span><span class="p">:</span>
+            <span class="n">counter</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">counter</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span><span class="p">,</span> <span class="n">counts</span> <span class="ow">in</span> <span class="n">counter</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">counts</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span>
+
+<span class="c1"># ---- __main__ .... code section --------------------------------------------</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># print the script source name.</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Script... </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">script</span><span class="p">))</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Dan Patterson
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

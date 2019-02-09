@@ -1,0 +1,787 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>arraytools.grid &mdash; arraytools 0.9 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> arraytools
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.9
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">arraytools... :</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../arraytools_mods.html">Modules in arraytools</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Sphinx...:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Sphinx_documentation.html">How to document Sphinx</a></li>
+</ul>
+<p class="caption"><span class="caption-text">ReStructuredText...:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../md_tester.html">Documentation tips</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">arraytools</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>arraytools.grid</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for arraytools.grid</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: UTF-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">====</span>
+<span class="sd">grid</span>
+<span class="sd">====</span>
+
+<span class="sd">Script :   grid.py</span>
+
+<span class="sd">Author :   Dan_Patterson@carleton.ca</span>
+
+<span class="sd">Modified : 2018-11-23</span>
+
+<span class="sd">Purpose :  tools for working with numpy arrays</span>
+
+
+<span class="sd">Functions::</span>
+
+<span class="sd">    art.grid.__all__</span>
+<span class="sd">    [&#39;check_shapes&#39;, &#39;combine_&#39;, &#39;expand_zone&#39;, &#39;euc_dist&#39;, &#39;euc_alloc&#39;,</span>
+<span class="sd">      &#39;expand_&#39;, &#39;shrink_&#39;, &#39;regions_&#39;, &#39;expand_zone&#39;, &#39;fill_arr&#39;,</span>
+<span class="sd">      &#39;reclass_vals&#39;, &#39;reclass_ranges&#39;, &#39;scale_up&#39;]</span>
+
+<span class="sd">References</span>
+<span class="sd">----------</span>
+<span class="sd">`&lt;https://community.esri.com/blogs/dan_patterson/2018/01/19/</span>
+<span class="sd">combine-data-classification-from-raster-combinations&gt;`_</span>
+
+<span class="sd">`&lt;https://stackoverflow.com/questions/48035246/</span>
+<span class="sd">intersect-multiple-2d-np-arrays-for-determining-zones&gt;`_</span>
+
+<span class="sd">---------------------------------------------------------------------</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1"># pylint: disable=C0103</span>
+<span class="c1"># pylint: disable=R1710</span>
+<span class="c1"># pylint: disable=R0914</span>
+
+<span class="c1"># ---- imports, formats, constants ----</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="c1">#from textwrap import dedent, indent</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">arraytools.tools</span> <span class="k">import</span> <span class="n">nd_rec</span><span class="p">,</span> <span class="n">stride</span>
+
+<span class="n">ft</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;bool&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">repr</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)),</span>
+      <span class="s1">&#39;float_kind&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{: 0.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">}</span>
+<span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">edgeitems</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">suppress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">threshold</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">formatter</span><span class="o">=</span><span class="n">ft</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_print_option</span><span class="o">.</span><span class="n">set_display</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>  <span class="c1"># change to a single -</span>
+
+<span class="n">script</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># print this should you need to locate the script</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;check_shapes&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;combine_&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;euc_dist&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;euc_alloc&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;expand_&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;shrink_&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;regions_&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;expand_zone&#39;</span><span class="p">,</span>  <span class="c1"># other functions</span>
+           <span class="s1">&#39;fill_arr&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;reclass_vals&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;reclass_ranges&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;scale_up&#39;</span>
+           <span class="p">]</span>
+
+<span class="c1"># ---- array checks and creation --------------------------------------------</span>
+<span class="c1"># ---- 3D arrays for stacked operations</span>
+<span class="c1">#</span>
+<div class="viewcode-block" id="check_shapes"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.grid.check_shapes">[docs]</a><span class="k">def</span> <span class="nf">check_shapes</span><span class="p">(</span><span class="n">arrs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check the shapes of the arrays to ensure they are all equal</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">shps</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">shape</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">arrs</span><span class="p">]</span>
+    <span class="n">eq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">shps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">shps</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]))</span>
+    <span class="n">err</span> <span class="o">=</span> <span class="s2">&quot;Arrays `arrs` need to have the same shape...&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">eq</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">shps</span><span class="p">))</span></div>
+
+
+<span class="c1"># ---- array functions ----------------------------------------------------</span>
+<span class="c1"># (1) combine ----</span>
+<div class="viewcode-block" id="combine_"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.grid.combine_">[docs]</a><span class="k">def</span> <span class="nf">combine_</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">ret_classes</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Combine arrays to produce a unique classification scheme</span>
+
+<span class="sd">    `arrs` : iterable</span>
+<span class="sd">        list, tuple of arrays of the same shape</span>
+<span class="sd">    `ret_classes` : array</span>
+<span class="sd">        a structured array with the class values for each array and the</span>
+<span class="sd">        last column is the new_class</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    You should mask any values prior to running this if you want to account</span>
+<span class="sd">    for nodata values.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">err</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">...A list of 2D arrays, or a 3D array is required, not...</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">check_shapes</span><span class="p">(</span><span class="n">arrs</span><span class="p">)</span>
+    <span class="n">seq</span> <span class="o">=</span> <span class="p">[</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">arrs</span><span class="p">]</span>
+    <span class="n">is_seq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">is_nd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">arrs</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">is_seq</span><span class="p">:</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">return_inverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="n">arrs</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">is_nd</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arrs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">):</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">arrs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">return_inverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                       <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">arrs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">arrs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">return_inverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                       <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">arrs</span><span class="p">))]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">arrs</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">arrs</span>
+    <span class="c1">#</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">item</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">+</span><span class="mi">1</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">])</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">M</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+    <span class="n">strides</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">cumprod</span><span class="p">()</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">vals</span> <span class="o">=</span> <span class="p">(</span><span class="n">indices</span> <span class="o">*</span> <span class="n">strides</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">uniqs</span><span class="p">,</span> <span class="n">cls_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="n">return_inverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">combo</span> <span class="o">=</span> <span class="n">cls_new</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">arrs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ret_classes</span><span class="p">:</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">arrs</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">classes</span><span class="p">,</span> <span class="n">cls_new</span><span class="p">]</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="n">nd_rec</span><span class="p">(</span><span class="n">classes</span><span class="p">)</span>    <span class="c1"># call nd_rec</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">classes</span><span class="p">)</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="n">classes</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">classes</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">classes</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">combo</span><span class="p">,</span> <span class="n">classes</span>
+    <span class="k">return</span> <span class="n">combo</span></div>
+
+
+<div class="viewcode-block" id="euc_dist"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.grid.euc_dist">[docs]</a><span class="k">def</span> <span class="nf">euc_dist</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">origins</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">cell_size</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate the euclidean distance and/or allocation</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a : array</span>
+<span class="sd">        numpy float or integer array</span>
+<span class="sd">    origins : number, list or tuple</span>
+<span class="sd">        The locations to calculate distance for.  Anything that is not a mask</span>
+<span class="sd">        is an origin. If a single number is provided, a `mask` will be created</span>
+<span class="sd">        using it.  A list/tuple of values can be used for multiple value</span>
+<span class="sd">        masking.</span>
+<span class="sd">    cell_size : float, int</span>
+<span class="sd">        The cell size of the raster.  What does each cell represent on the</span>
+<span class="sd">        ground.  1.0 is assumed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">ndimage</span> <span class="k">as</span> <span class="n">nd</span>
+    <span class="c1">#</span>
+    <span class="n">cell_size</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">cell_size</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cell_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">cell_size</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">msk</span> <span class="o">=</span> <span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">origins</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">nd</span><span class="o">.</span><span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">msk</span><span class="p">,</span>
+                                     <span class="n">sampling</span><span class="o">=</span><span class="n">cell_size</span><span class="p">,</span>
+                                     <span class="n">return_distances</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dist</span></div>
+
+
+<div class="viewcode-block" id="euc_alloc"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.grid.euc_alloc">[docs]</a><span class="k">def</span> <span class="nf">euc_alloc</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">fill_zones</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate the euclidean distance and/or allocation</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a : array</span>
+<span class="sd">        numpy float or integer array</span>
+<span class="sd">    fill_zones : number, list or tuple</span>
+<span class="sd">        These are the cells/zones to fill with the values of the closest cell.</span>
+<span class="sd">        If a single number is provided, a `mask` will be created using it.  A</span>
+<span class="sd">        list or tuple of values can be used to provide multiple value masking.</span>
+<span class="sd">    dist : boolean</span>
+<span class="sd">        True, the distance of the closest non-masked value to the masked cell</span>
+<span class="sd">    alloc : boolean</span>
+<span class="sd">        True, the value of the closest non-masked value to the masked cell</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">ndimage</span> <span class="k">as</span> <span class="n">nd</span>
+    <span class="c1">#</span>
+    <span class="n">msk</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">fill_zones</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">nd</span><span class="o">.</span><span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">msk</span><span class="p">,</span>
+                                    <span class="n">return_distances</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                    <span class="n">return_indices</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">alloc</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">idx</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">alloc</span></div>
+
+
+<div class="viewcode-block" id="expand_"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.grid.expand_">[docs]</a><span class="k">def</span> <span class="nf">expand_</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mask_vals</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">buff_dist</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Expand/buffer a raster by cells (a distance)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">ndimage</span> <span class="k">as</span> <span class="n">nd</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">a</span> <span class="o">==</span> <span class="n">val</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">dist</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">nd</span><span class="o">.</span><span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">return_distances</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                          <span class="n">return_indices</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">alloc</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">idx</span><span class="p">)]</span>
+    <span class="n">a0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">dist</span> <span class="o">&lt;=</span> <span class="n">buff_dist</span><span class="p">,</span> <span class="n">alloc</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>  <span class="c1">#0)</span>
+    <span class="k">return</span> <span class="n">a0</span></div>
+
+
+<div class="viewcode-block" id="shrink_"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.grid.shrink_">[docs]</a><span class="k">def</span> <span class="nf">shrink_</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mask_vals</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">buff_dist</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Expand/buffer a raster by a distance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">ndimage</span> <span class="k">as</span> <span class="n">nd</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">a</span> <span class="o">==</span> <span class="n">val</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">dist</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">nd</span><span class="o">.</span><span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">return_distances</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                          <span class="n">return_indices</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">alloc</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">idx</span><span class="p">)]</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">dist</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dist</span> <span class="o">&lt;=</span> <span class="n">buff_dist</span><span class="p">)</span>
+    <span class="n">a0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">alloc</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>  <span class="c1">#0)</span>
+    <span class="k">return</span> <span class="n">a0</span></div>
+
+
+<div class="viewcode-block" id="regions_"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.grid.regions_">[docs]</a><span class="k">def</span> <span class="nf">regions_</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">cross</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Delineate `regions` or `zones` in a raster.  This is analogous to</span>
+<span class="sd">    `regiongroup` in gis software.  In scipy.ndimage, a `label` is ascribed</span>
+<span class="sd">    to these groupings.  Any nonzero value will be considered a zone.</span>
+<span class="sd">    A `structure` is used to filter the raster to describe cell connectivity.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a : ndarray</span>
+<span class="sd">        pre-processing may be needed to assign values to `0` which will be</span>
+<span class="sd">        considered background/offsite</span>
+<span class="sd">    cross : boolean</span>
+<span class="sd">       - True, [[0,1,0], [1,1,1], [0,1,0]], diagonal cells not included</span>
+<span class="sd">       - False, [[1,1,1], [1,1,1], [1,1,1]], diagonals included</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The use of `np.unique` will ensure that array values are queried and</span>
+<span class="sd">    returned in ascending order.</span>
+
+<span class="sd">    big sample 2000x2000  about 1 sec with 16 classes</span>
+<span class="sd">        aa = np.repeat(np.repeat(a, 500, axis=1), 500, axis=0)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">ndimage</span> <span class="k">as</span> <span class="n">nd</span>
+    <span class="c1">#</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="s1">&#39;i&#39;</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">A 2D array of integers is required, you provided</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">a</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">a</span>
+    <span class="k">if</span> <span class="n">cross</span><span class="p">:</span>
+        <span class="n">struct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">struct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="c1">#</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">details</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">is_first</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">u</span><span class="p">:</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">a</span> <span class="o">==</span> <span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">s</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">nd</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="n">struct</span><span class="p">)</span>
+        <span class="n">details</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">i</span><span class="p">,</span> <span class="n">n</span><span class="p">])</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">out</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">s</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_first</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+            <span class="n">is_first</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">n_</span> <span class="o">=</span> <span class="n">n</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">s</span><span class="o">+</span><span class="n">n_</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+            <span class="n">n_</span> <span class="o">+=</span> <span class="n">n</span>
+    <span class="n">details</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">details</span><span class="p">)</span>
+    <span class="n">details</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[(</span><span class="n">details</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">details</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))]</span>
+    <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="n">details</span></div>
+
+
+<span class="c1"># ---- Raster functions ------------------------------------</span>
+<span class="c1">#</span>
+<div class="viewcode-block" id="expand_zone"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.grid.expand_zone">[docs]</a><span class="k">def</span> <span class="nf">expand_zone</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">zone</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Expand a value (zone) in a 2D array, normally assumed to represent a</span>
+<span class="sd">    raster surface.</span>
+
+<span class="sd">    zone : number</span>
+<span class="sd">        The value/class to expand into the surrounding cells</span>
+<span class="sd">    win : list/tuple</span>
+<span class="sd">        select a (2, 2) or (3, 3) moving window</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">You need a zone that is within the range of values.&quot;</span>
+    <span class="k">if</span> <span class="n">zone</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">a</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">zone</span> <span class="o">&lt;</span> <span class="n">a</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="ow">or</span> <span class="p">(</span><span class="n">zone</span> <span class="o">&gt;</span> <span class="n">a</span><span class="o">.</span><span class="n">max</span><span class="p">()):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">a</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">win</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+        <span class="n">win</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">win</span> <span class="o">==</span> <span class="mi">2</span><span class="p">]</span>  <span class="c1"># check for 2 or 3 in win</span>
+    <span class="n">ap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">pad_width</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="n">constant_values</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="c1"># n, m = ap.shape</span>
+    <span class="k">if</span> <span class="n">win</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">a_c</span> <span class="o">=</span> <span class="n">ap</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">1</span><span class="p">:]</span>  <span class="c1"># for 2x2 even</span>
+    <span class="k">elif</span> <span class="n">win</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">a_c</span> <span class="o">=</span> <span class="n">ap</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># for 3x3 odd</span>
+    <span class="n">a_s</span> <span class="o">=</span> <span class="n">stride</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="p">(</span><span class="n">win</span><span class="p">,</span> <span class="n">win</span><span class="p">),</span> <span class="n">stepby</span><span class="o">=</span><span class="p">(</span><span class="n">win</span><span class="p">,</span> <span class="n">win</span><span class="p">))</span>  <span class="c1"># stride the array</span>
+    <span class="n">r</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">a_s</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">a_s</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">a_s</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">zone</span> <span class="ow">in</span> <span class="n">a_s</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">out1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">out1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dx</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="p">[:</span><span class="n">dx</span><span class="p">,</span> <span class="p">:</span><span class="n">dy</span><span class="p">]</span>
+    <span class="n">final</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">out</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">zone</span><span class="p">,</span> <span class="n">a_c</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">final</span></div>
+
+
+<div class="viewcode-block" id="fill_arr"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.grid.fill_arr">[docs]</a><span class="k">def</span> <span class="nf">fill_arr</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;try filling an array</span>
+<span class="sd">    as in fill, sinks</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#fd = np.array([[32, 64, 128], [16, 0, 1], [8, 4, 2]])  # flow direction</span>
+<span class="c1">#    if (zone &lt; a.min()) or (zone &gt; a.max()) or (zone is None):</span>
+<span class="c1">#        print(&quot;\nYou need a zone that is within the range of values.&quot;)</span>
+<span class="c1">#        return a, None</span>
+    <span class="k">if</span> <span class="n">win</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">pr</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pr</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">ap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">pad_width</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">pr</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="n">constant_values</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">win</span> <span class="o">==</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">a_c</span> <span class="o">=</span> <span class="n">ap</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">1</span><span class="p">:]</span>  <span class="c1"># for 2x2 even</span>
+    <span class="k">elif</span> <span class="n">win</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+        <span class="n">a_c</span> <span class="o">=</span> <span class="n">ap</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>   <span class="c1"># for 3x3 odd</span>
+    <span class="n">a_s</span> <span class="o">=</span> <span class="n">stride</span><span class="p">(</span><span class="n">a_c</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="n">win</span><span class="p">)</span>  <span class="c1"># stride the array</span>
+    <span class="n">r</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">a_s</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">a_s</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">a_s</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+            <span class="c1"># do stuff</span>
+            <span class="n">sub</span> <span class="o">=</span> <span class="n">a_s</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+            <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">sub</span><span class="p">[:</span><span class="mi">4</span><span class="p">],</span> <span class="n">sub</span><span class="p">[</span><span class="mi">5</span><span class="p">:]])</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+            <span class="n">e_min</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">edges</span><span class="p">)]</span>  <span class="c1"># argmax or argmin???</span>
+            <span class="k">if</span> <span class="n">sub</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">e_min</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e_min</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span>  <span class="c1"># , a_s, ap, a_c</span></div>
+
+
+<span class="c1"># (xx) reclass_vals .... code section</span>
+<div class="viewcode-block" id="reclass_vals"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.grid.reclass_vals">[docs]</a><span class="k">def</span> <span class="nf">reclass_vals</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">old_vals</span><span class="o">=</span><span class="p">[],</span> <span class="n">new_vals</span><span class="o">=</span><span class="p">[],</span> <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">mask_val</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reclass an array of integer or floating point values.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    old_vals : number(s)</span>
+<span class="sd">        list/array of values to reclassify</span>
+<span class="sd">    new_bins : number(s)</span>
+<span class="sd">        new class values for old value</span>
+<span class="sd">    mask : boolean</span>
+<span class="sd">        Does the raster contains nodata values or values to be masked</span>
+<span class="sd">    mask_val : number(s)</span>
+<span class="sd">        Values to use as the mask</span>
+
+<span class="sd">    Array dimensions will be squeezed.</span>
+
+<span class="sd">     &gt;&gt;&gt; a = np.arange(10).reshape(2,5)</span>
+<span class="sd">     &gt;&gt;&gt; a0 = np.arange(5)</span>
+<span class="sd">     &gt;&gt;&gt; art.reclass_vals(a, a0, np.ones_like(a0))</span>
+<span class="sd">     # array([[0, 1, 2, 3, 4]   ==&gt; array([[1, 1, 1, 1, 1],</span>
+<span class="sd">     #        [5, 6, 7, 8, 9]])           [5, 6, 7, 8, 9]])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a_rc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">old_vals</span><span class="p">,</span> <span class="n">new_vals</span><span class="p">]</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Error....</span><span class="se">\n</span><span class="s2">Lengths of old and new classes not equal </span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">old_vals</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_vals</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">a</span>
+    <span class="n">old_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">old_vals</span><span class="p">,</span> <span class="n">new_vals</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">old_new</span><span class="p">:</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">==</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">a_rc</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">a_rc</span></div>
+
+
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="c1"># (15) reclass .... code section</span>
+<div class="viewcode-block" id="reclass_ranges"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.grid.reclass_ranges">[docs]</a><span class="k">def</span> <span class="nf">reclass_ranges</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="p">[],</span> <span class="n">new_bins</span><span class="o">=</span><span class="p">[],</span> <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">mask_val</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reclass an array of integer or floating point values based on old and</span>
+<span class="sd">    new range values.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bins : list/array</span>
+<span class="sd">        Sequential list/array of the lower limits of each class include one</span>
+<span class="sd">        value higher to cover the upper range.</span>
+<span class="sd">    new_bins : number(s)</span>
+<span class="sd">        New class values for each bin</span>
+<span class="sd">    mask : boolean</span>
+<span class="sd">        Does the raster contains nodata values or values to be masked</span>
+<span class="sd">    mask_val : number(s)</span>
+<span class="sd">        Values to use as the mask</span>
+
+<span class="sd">    Array dimensions will be squeezed::</span>
+
+<span class="sd">        &gt;&gt;&gt; z = np.arange(3*5).reshape(3,5)</span>
+<span class="sd">        &gt;&gt;&gt; bins = [0, 5, 10, 15]</span>
+<span class="sd">        &gt;&gt;&gt; new_bins = [1, 2, 3, 4]</span>
+<span class="sd">        &gt;&gt;&gt; z_recl = reclass(z, bins, new_bins, mask=False, mask_val=None)</span>
+<span class="sd">        # ==&gt; .... z                     ==&gt; .... z_recl</span>
+<span class="sd">        array([[ 0,  1,  2,  3,  4],   array([[1, 1, 1, 1, 1],</span>
+<span class="sd">        ...    [ 5,  6,  7,  8,  9],          [2, 2, 2, 2, 2],</span>
+<span class="sd">        ...    [10, 11, 12, 13, 14]])         [3, 3, 3, 3, 3]])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a_rc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># or (len(new_bins &lt;2)):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Bins = </span><span class="si">{}</span><span class="s2"> new = </span><span class="si">{}</span><span class="s2"> won&#39;t work&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="n">new_bins</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">a</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_bins</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">new_bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">new_classes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">bins</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">bins</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">new_bins</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">rc</span> <span class="ow">in</span> <span class="n">new_classes</span><span class="p">:</span>
+        <span class="n">q1</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">&gt;=</span> <span class="n">rc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">q2</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">&lt;</span> <span class="n">rc</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">a_rc</span> <span class="o">=</span> <span class="n">a_rc</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">q1</span> <span class="o">&amp;</span> <span class="n">q2</span><span class="p">,</span> <span class="n">rc</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">a_rc</span></div>
+
+
+<span class="c1"># (16) scale .... code section</span>
+<div class="viewcode-block" id="scale_up"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.grid.scale_up">[docs]</a><span class="k">def</span> <span class="nf">scale_up</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">num_z</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Scale the input array repeating the array values up by the</span>
+<span class="sd">    x and y factors.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a : array</span>
+<span class="sd">        An ndarray, 1D arrays will be upcast to 2D</span>
+<span class="sd">    x, y : numbers</span>
+<span class="sd">        Factors to scale the array in x (col) and y (row).  Scale factors</span>
+<span class="sd">        must be greater than 2</span>
+<span class="sd">    num_z : number</span>
+<span class="sd">        For 3D, produces the 3rd dimension, ie. if num_z = 3 with the</span>
+<span class="sd">        defaults, you will get an array with shape=(3, 6, 6).  If</span>
+<span class="sd">        num_z != None or 0, then the options are &#39;repeat&#39;, &#39;random&#39;.</span>
+<span class="sd">        With &#39;repeat&#39; the extras are kept the same and you can add random</span>
+<span class="sd">        values to particular slices of the 3rd dimension, or multiply them.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; a = np.array([[0, 1, 2], [3, 4, 5]]</span>
+<span class="sd">    &gt;&gt;&gt; b = scale(a, x=2, y=2)</span>
+<span class="sd">    array([[0, 0, 1, 1, 2, 2],</span>
+<span class="sd">           [0, 0, 1, 1, 2, 2],</span>
+<span class="sd">           [3, 3, 4, 4, 5, 5],</span>
+<span class="sd">           [3, 3, 4, 4, 5, 5]])</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    &gt;&gt;&gt; a = np.arange(2*2).reshape(2,2)</span>
+<span class="sd">    array([[0, 1],</span>
+<span class="sd">           [2, 3]])</span>
+<span class="sd">    &gt;&gt;&gt; f_(scale(a, x=2, y=2, num_z=2))</span>
+<span class="sd">    Array... shape (3, 4, 4), ndim 3, not masked</span>
+<span class="sd">    0, 0, 1, 1    0, 0, 1, 1    0, 0, 1, 1</span>
+<span class="sd">    0, 0, 1, 1    0, 0, 1, 1    0, 0, 1, 1</span>
+<span class="sd">    2, 2, 3, 3    2, 2, 3, 3    2, 2, 3, 3</span>
+<span class="sd">    2, 2, 3, 3    2, 2, 3, 3    2, 2, 3, 3</span>
+<span class="sd">    sub (0)       sub (1)       sub (2)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">y</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;x or y scale &lt; 1... </span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">scale_up</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="n">z0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">y</span><span class="p">)</span>  <span class="c1"># repeat for x, then tile</span>
+    <span class="n">z1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hsplit</span><span class="p">(</span><span class="n">z0</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>         <span class="c1"># split into y parts horizontally</span>
+    <span class="n">z2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">z1</span><span class="p">)</span>            <span class="c1"># stack them vertically</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>            <span class="c1"># if there are more, repeat</span>
+        <span class="n">z3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hsplit</span><span class="p">(</span><span class="n">z2</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">z3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">z3</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">z3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">z2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">num_z</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="p">[</span><span class="n">z3</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_z</span><span class="p">):</span>
+            <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">z3</span><span class="p">)</span>
+        <span class="n">z3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dstack</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+        <span class="n">z3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rollaxis</span><span class="p">(</span><span class="n">z3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">z3</span></div>
+
+
+<span class="c1"># ---- demo functions -------------------------------------------------------</span>
+<span class="c1">#</span>
+<span class="k">def</span> <span class="nf">_demo_combine</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;demo combine</span>
+<span class="sd">    dt = [(&#39;a&#39;, &#39;&lt;i8&#39;), (&#39;b&#39;, &#39;&lt;i8&#39;), (&#39;c&#39;, &#39;&lt;i8&#39;), (&#39;vals&#39;, &#39;&lt;i8&#39;)]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+
+    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]])</span>
+
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]])</span>
+<span class="c1">#    ret = combine_(*[a, b, c])</span>
+    <span class="k">return</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span>  <span class="c1">#, ret</span>
+
+
+<span class="k">def</span> <span class="nf">_demo_reclass</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    : -</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">9</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
+<span class="c1">#    f = np.array([[32, 64, 128], [16, 0, 1], [8, 4, 2]])</span>
+<span class="c1">#    out, out2 = expand_zone(a, zone=1, win=(3,3))</span>
+    <span class="n">a_rc</span> <span class="o">=</span> <span class="n">reclass_vals</span><span class="p">(</span><span class="n">a</span><span class="p">,</span>
+                        <span class="n">old_vals</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+                        <span class="n">new_vals</span><span class="o">=</span><span class="p">[</span><span class="mi">9</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                        <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">mask_val</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">a_rc</span>
+
+<span class="k">def</span> <span class="nf">_demo_euclid</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; euclid functions&quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>   <span class="c1"># note the block of 0&#39;s in the</span>
+                  <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>   <span class="c1"># top right corner</span>
+                  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>   <span class="c1"># and the bottom right</span>
+                  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>  <span class="c1"># from scipy help</span>
+                  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span>
+
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="c1"># __main__ .... code section</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># print the script source name.</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Script... </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">script</span><span class="p">))</span>
+<span class="c1">#    print(&quot;Script... {}&quot;.format(script))</span>
+<span class="c1"># https://stackoverflow.com/questions/47861214/</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Dan Patterson
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

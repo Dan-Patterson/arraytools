@@ -1,0 +1,771 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>arraytools.utils &mdash; arraytools 0.9 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> arraytools
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.9
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">arraytools... :</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../arraytools_mods.html">Modules in arraytools</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Sphinx...:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Sphinx_documentation.html">How to document Sphinx</a></li>
+</ul>
+<p class="caption"><span class="caption-text">ReStructuredText...:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../md_tester.html">Documentation tips</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">arraytools</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>arraytools.utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for arraytools.utils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">=====</span>
+<span class="sd">utils</span>
+<span class="sd">=====</span>
+
+<span class="sd">Script :   utils.py</span>
+
+<span class="sd">Author :   Dan_Patterson@carleton.ca</span>
+
+<span class="sd">Modified : 2019-01-06</span>
+
+<span class="sd">Purpose:  tools for working with numpy arrays</span>
+
+<span class="sd">References</span>
+<span class="sd">----------</span>
+<span class="sd">`&lt;http://pro.arcgis.com/en/pro-app/arcpy/data-access/numpyarraytotable.htm&gt;`_.</span>
+
+<span class="sd">`&lt;http://pro.arcgis.com/en/pro-app/arcpy/data-access/tabletonumpyarray.htm&gt;`_.</span>
+
+
+<span class="sd">Useage:</span>
+<span class="sd">-------</span>
+
+<span class="sd">**doc_func(func=None)** : see get_func and get_modu</span>
+
+<span class="sd">**get_func** :</span>
+
+<span class="sd">Retrieve function information::</span>
+
+<span class="sd">    get_func(func, line_nums=True, verbose=True)</span>
+<span class="sd">    print(art.get_func(art.main))</span>
+
+<span class="sd">    Function: .... main ....</span>
+<span class="sd">    Line number... 1334</span>
+<span class="sd">    Docs:</span>
+<span class="sd">    Do nothing</span>
+<span class="sd">    Defaults: None</span>
+<span class="sd">    Keyword Defaults: None</span>
+<span class="sd">    Variable names:</span>
+<span class="sd">    Source code:</span>
+<span class="sd">       0  def main():</span>
+<span class="sd">       1   &#39;&#39;&#39;Do nothing&#39;&#39;&#39;</span>
+<span class="sd">       2      pass</span>
+
+<span class="sd">get_modu :</span>
+<span class="sd">    retrieve module info</span>
+
+<span class="sd">**info** :</span>
+
+<span class="sd">Retrieve array information::</span>
+
+<span class="sd">    - array([(0, 1, 2, 3, 4), (5, 6, 7, 8, 9),</span>
+<span class="sd">             (10, 11, 12, 13, 14), (15, 16, 17, 18, 19)],</span>
+<span class="sd">      dtype=[(&#39;A&#39;, &#39;&lt;i8&#39;), (&#39;B&#39;, &#39;&lt;i8&#39;)... snip ..., (&#39;E&#39;, &#39;&lt;i8&#39;)])</span>
+<span class="sd">    ---------------------</span>
+<span class="sd">    Array information....</span>
+<span class="sd">    array</span>
+<span class="sd">      |__shape (4,)</span>
+<span class="sd">      |__ndim  1</span>
+<span class="sd">      |__size  4</span>
+<span class="sd">      |__type  &lt;class &#39;numpy.ndarray&#39;&gt;</span>
+<span class="sd">    dtype      [(&#39;A&#39;, &#39;&lt;i8&#39;), (&#39;B&#39;, &#39;&lt;i8&#39;) ... , (&#39;E&#39;, &#39;&lt;i8&#39;)]</span>
+<span class="sd">      |__kind  V</span>
+<span class="sd">      |__char  V</span>
+<span class="sd">      |__num   20</span>
+<span class="sd">      |__type  &lt;class &#39;numpy.void&#39;&gt;</span>
+<span class="sd">      |__name  void320</span>
+<span class="sd">      |__shape ()</span>
+<span class="sd">      |__description</span>
+<span class="sd">         |__name, itemsize</span>
+<span class="sd">         |__[&#39;A&#39;, &#39;&lt;i8&#39;]</span>
+<span class="sd">         |__[&#39;B&#39;, &#39;&lt;i8&#39;]</span>
+<span class="sd">         |__[&#39;C&#39;, &#39;&lt;i8&#39;]</span>
+<span class="sd">         |__[&#39;D&#39;, &#39;&lt;i8&#39;]</span>
+<span class="sd">         |__[&#39;E&#39;, &#39;&lt;i8&#39;]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># pylint: disable=C0103  # invalid-name</span>
+<span class="c1"># pylint: disable=R0914  # Too many local variables</span>
+<span class="c1"># pylint: disable=R1710  # inconsistent-return-statements</span>
+<span class="c1"># pylint: disable=W0105  # string statement has no effect</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">textwrap</span> <span class="k">import</span> <span class="n">dedent</span><span class="p">,</span> <span class="n">indent</span><span class="p">,</span> <span class="n">wrap</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="ne">FutureWarning</span><span class="p">)</span>
+
+<span class="c1">#from arcpytools import fc_info, tweet  #, frmt_rec, _col_format</span>
+<span class="c1">#import arcpy</span>
+
+<span class="n">ft</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;bool&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">repr</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)),</span>
+      <span class="s1">&#39;float_kind&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{: 0.3f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">}</span>
+<span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">edgeitems</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">suppress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">threshold</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">formatter</span><span class="o">=</span><span class="n">ft</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_print_option</span><span class="o">.</span><span class="n">set_display</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>  <span class="c1"># change to a single -</span>
+
+<span class="n">script</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># print this should you need to locate the script</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;time_deco&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;run_deco&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;doc_func&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;get_func&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;get_modu&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;dirr&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;_wrapper&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;_utils_help_&#39;</span>
+           <span class="p">]</span>
+
+<span class="c1"># ---- decorators and helpers ------------------------------------------------</span>
+<span class="c1">#</span>
+<div class="viewcode-block" id="time_deco"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.utils.time_deco">[docs]</a><span class="k">def</span> <span class="nf">time_deco</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>  <span class="c1"># timing originally</span>
+    <span class="sd">&quot;&quot;&quot;Timing decorator function</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    The following import.  Uncomment the import or move it inside the script.</span>
+
+<span class="sd">    &gt;&gt;&gt; from functools import wraps</span>
+
+<span class="sd">    Example function::</span>
+
+<span class="sd">        @time_deco  # on the line above the function</span>
+<span class="sd">        def some_func():</span>
+<span class="sd">            ``do stuff``</span>
+<span class="sd">            return None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">time</span>
+    <span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">t_0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>        <span class="c1"># start time</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>   <span class="c1"># ... run the function ...</span>
+        <span class="n">t_1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>        <span class="c1"># end time</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">t_1</span> <span class="o">-</span> <span class="n">t_0</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Timing function for... </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Time: </span><span class="si">{: &lt;8.2e}</span><span class="s2">s for </span><span class="si">{:,}</span><span class="s2"> objects&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">result</span><span class="p">))</span>
+        <span class="c1"># return result                   # return the result of the function</span>
+        <span class="k">return</span> <span class="n">dt</span>                       <span class="c1"># return delta time</span>
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
+
+<div class="viewcode-block" id="run_deco"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.utils.run_deco">[docs]</a><span class="k">def</span> <span class="nf">run_deco</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Prints basic function information and the results of a run.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    The following import.  Uncomment the import or move it inside the script.</span>
+
+<span class="sd">    &gt;&gt;&gt; from functools import wraps</span>
+
+<span class="sd">    Example function::</span>
+
+<span class="sd">        @run_deco  # on the line above the function</span>
+<span class="sd">        def some_func():</span>
+<span class="sd">            ``do stuff``</span>
+<span class="sd">            return None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;wrapper function&quot;&quot;&quot;</span>
+        <span class="n">frmt</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;Function... </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;  args.... </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
+                          <span class="s2">&quot;  kwargs.. </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;  docs.... </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">])</span>
+        <span class="n">ar</span> <span class="o">=</span> <span class="p">[</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">func</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">dedent</span><span class="p">(</span><span class="n">frmt</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">ar</span><span class="p">))</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{!r:}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">result</span><span class="p">))</span>  <span class="c1"># comment out if results not needed</span>
+        <span class="k">return</span> <span class="n">result</span>                    <span class="c1"># for optional use outside.</span>
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
+
+<span class="c1"># ----------------------------------------------------------------------------</span>
+<span class="c1"># ---- (1) doc_func ... code section ... ----</span>
+<div class="viewcode-block" id="doc_func"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.utils.doc_func">[docs]</a><span class="k">def</span> <span class="nf">doc_func</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;(doc_func)...Documenting code using inspect</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    func : function</span>
+<span class="sd">        Function name to document, without quotes</span>
+<span class="sd">    verbose : Boolean</span>
+<span class="sd">        True prints the result, False returns a string of the result.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A listing of the source code with line numbers</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Requires the `inspect` module</span>
+
+<span class="sd">    Source code for::</span>
+
+<span class="sd">        module level</span>
+<span class="sd">        - inspect.getsourcelines(sys.modules[__name__])[0]</span>
+
+<span class="sd">        function level</span>
+<span class="sd">        - as a list =&gt; inspect.getsourcelines(num_41)[0]</span>
+<span class="sd">        - as a string =&gt; inspect.getsource(num_41)</span>
+
+<span class="sd">        file level</span>
+<span class="sd">        - script = sys.argv[0]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">demo_func</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;dummy...</span>
+<span class="sd">        : Demonstrates retrieving and documenting module and function info.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">sub</span><span class="p">():</span>
+            <span class="sd">&quot;&quot;&quot;sub in dummy&quot;&quot;&quot;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sub&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="c1">#</span>
+    <span class="kn">import</span> <span class="nn">inspect</span>
+    <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">demo_func</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isfunction</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Error... `</span><span class="si">{}</span><span class="s2">` is not a function, but is of type... </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">func</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">script2</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># a useful way to get a file&#39;s name</span>
+    <span class="n">lines</span><span class="p">,</span> <span class="n">line_num</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getsourcelines</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;</span><span class="si">{:4d}</span><span class="s2">  </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">idx</span><span class="o">+</span><span class="n">line_num</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">)])</span>
+    <span class="n">nmes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;args&#39;</span><span class="p">,</span> <span class="s1">&#39;varargs&#39;</span><span class="p">,</span> <span class="s1">&#39;varkw&#39;</span><span class="p">,</span> <span class="s1">&#39;defaults&#39;</span><span class="p">,</span> <span class="s1">&#39;kwonlyargs&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;kwonlydefaults&#39;</span><span class="p">,</span> <span class="s1">&#39;annotations&#39;</span><span class="p">]</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfullargspec</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="n">f_args</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">nmes</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">f</span><span class="p">)))])</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">line_num</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span>
+            <span class="n">inspect</span><span class="o">.</span><span class="n">getcomments</span><span class="p">(</span><span class="n">func</span><span class="p">),</span>
+            <span class="n">inspect</span><span class="o">.</span><span class="n">isfunction</span><span class="p">(</span><span class="n">func</span><span class="p">),</span>
+            <span class="n">inspect</span><span class="o">.</span><span class="n">ismethod</span><span class="p">(</span><span class="n">func</span><span class="p">),</span>
+            <span class="n">inspect</span><span class="o">.</span><span class="n">getmodulename</span><span class="p">(</span><span class="n">script2</span><span class="p">),</span>
+            <span class="n">f_args</span><span class="p">]</span>
+    <span class="n">frmt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    :----------------------------------------------------------------------</span>
+<span class="s2">    :---- doc_func(func) ----</span>
+<span class="s2">    :Code for a function on line...</span><span class="si">{}</span><span class="s2">...</span>
+<span class="s2">    :</span>
+<span class="s2">    </span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">    Comments preceeding function</span>
+<span class="s2">    </span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">    function?... </span><span class="si">{}</span><span class="s2"> ... or method? </span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">    Module name... </span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">    Full specs....</span>
+<span class="s2">    </span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">    ----------------------------------------------------------------------</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="n">dedent</span><span class="p">(</span><span class="n">frmt</span><span class="p">))</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+
+
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="c1"># ---- (2) get_func .... code section ----</span>
+<div class="viewcode-block" id="get_func"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.utils.get_func">[docs]</a><span class="k">def</span> <span class="nf">get_func</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">line_nums</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get function information (ie. for a def)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    &gt;&gt;&gt; from textwrap import dedent, indent, wrap</span>
+<span class="sd">    &gt;&gt;&gt; import inspect</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    The function information includes arguments and source code.</span>
+<span class="sd">    A string is returned for printing.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Import the module containing the function and put the object name in</span>
+<span class="sd">    without quotes...</span>
+
+<span class="sd">    &gt;&gt;&gt; from arraytools.utils import get_func</span>
+<span class="sd">    &gt;&gt;&gt; get_func(get_func)  # returns this source code etc.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">frmt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    :-----------------------------------------------------------------</span>
+<span class="s2">    :Function: .... </span><span class="si">{}</span><span class="s2"> ....</span>
+<span class="s2">    :Line number... </span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">    :Docs:</span>
+<span class="s2">    </span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">    :Defaults: </span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">    :Keyword Defaults: </span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">    :Variable names:</span>
+<span class="s2">    </span><span class="si">{}</span><span class="se">\n</span><span class="s2"></span>
+<span class="s2">    :Source code:</span>
+<span class="s2">    </span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">    :</span>
+<span class="s2">    :-----------------------------------------------------------------</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">inspect</span>  <span class="c1"># required if not imported at the top</span>
+    <span class="c1"># from textwrap import dedent, wrap</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isfunction</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Error... `</span><span class="si">{}</span><span class="s2">` is not a function, but is of type... </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">func</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">lines</span><span class="p">,</span> <span class="n">ln_num</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getsourcelines</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">line_nums</span><span class="p">:</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;</span><span class="si">{:4d}</span><span class="s2">  </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="n">ln_num</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">)])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">])</span>
+
+    <span class="n">vars_</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">func</span><span class="o">.</span><span class="vm">__code__</span><span class="o">.</span><span class="n">co_varnames</span><span class="p">])</span>
+    <span class="n">vars_</span> <span class="o">=</span> <span class="n">wrap</span><span class="p">(</span><span class="n">vars_</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+    <span class="n">vars_</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">vars_</span><span class="p">])</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">ln_num</span><span class="p">,</span> <span class="n">dedent</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">),</span> <span class="n">func</span><span class="o">.</span><span class="vm">__defaults__</span><span class="p">,</span>
+            <span class="n">func</span><span class="o">.</span><span class="vm">__kwdefaults__</span><span class="p">,</span> <span class="n">indent</span><span class="p">(</span><span class="n">vars_</span><span class="p">,</span> <span class="s2">&quot;    &quot;</span><span class="p">),</span> <span class="n">code</span><span class="p">]</span>
+    <span class="n">code_mem</span> <span class="o">=</span> <span class="n">dedent</span><span class="p">(</span><span class="n">frmt</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">code_mem</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">code_mem</span></div>
+
+
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="c1"># ---- (3) get_modu .... code section ----</span>
+<div class="viewcode-block" id="get_modu"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.utils.get_modu">[docs]</a><span class="k">def</span> <span class="nf">get_modu</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get module (script) information, including source code for</span>
+<span class="sd">    documentation purposes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    &gt;&gt;&gt; from textwrap import dedent, indent</span>
+<span class="sd">    &gt;&gt;&gt; import inspect</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A string is returned for printing.  It will be the whole module</span>
+<span class="sd">    so use with caution.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Useage::</span>
+
+<span class="sd">    &gt;&gt;&gt; from arraytools.utils import get_modu</span>
+<span class="sd">    &gt;&gt;&gt; get_modu(tools, code=False, verbose=True)</span>
+<span class="sd">    &gt;&gt;&gt; # No quotes around module name, code=True for module code</span>
+
+<span class="sd">   &quot;&quot;&quot;</span>
+    <span class="n">frmt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    :-----------------------------------------------------------------</span>
+<span class="s2">    :Module: .... </span><span class="si">{}</span><span class="s2"> ....</span>
+<span class="s2">    :------</span>
+<span class="s2">    :File: ......</span>
+<span class="s2">    </span><span class="si">{}</span><span class="se">\n</span><span class="s2"></span>
+<span class="s2">    :Docs: ......</span>
+<span class="s2">    </span><span class="si">{}</span><span class="se">\n</span><span class="s2"></span>
+<span class="s2">    :Members: .....</span>
+<span class="s2">    </span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">frmt0</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    :</span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">    :-----------------------------------------------------------------</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">frmt1</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    :Source code: .....</span>
+<span class="s2">    </span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">    :</span>
+<span class="s2">    :-----------------------------------------------------------------</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">inspect</span>
+    <span class="c1"># from textwrap import dedent  # required if not immported initially</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">inspect</span><span class="o">.</span><span class="n">ismodule</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Error... `</span><span class="si">{}</span><span class="s2">` is not a module, but is of type... </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">obj</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">code</span><span class="p">:</span>
+        <span class="n">lines</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getsourcelines</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="n">frmt</span> <span class="o">=</span> <span class="n">frmt</span> <span class="o">+</span> <span class="n">frmt1</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;</span><span class="si">{:4d}</span><span class="s2">  </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">)])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">frmt</span> <span class="o">=</span> <span class="n">frmt</span> <span class="o">+</span> <span class="n">frmt0</span>
+    <span class="n">memb</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getmembers</span><span class="p">(</span><span class="n">obj</span><span class="p">)]</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">obj</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__file__</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">,</span> <span class="n">memb</span><span class="p">,</span> <span class="n">code</span><span class="p">]</span>
+    <span class="n">mod_mem</span> <span class="o">=</span> <span class="n">dedent</span><span class="p">(</span><span class="n">frmt</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">mod_mem</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">mod_mem</span></div>
+
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="c1"># ---- (4) dirr .... code section ----</span>
+<div class="viewcode-block" id="dirr"><a class="viewcode-back" href="../../arraytools_mods.html#arraytools.utils.dirr">[docs]</a><span class="k">def</span> <span class="nf">dirr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">colwise</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sub</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prn</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A formatted `dir` listing of an object, module, function... anything you</span>
+<span class="sd">    can get a listing for.</span>
+
+<span class="sd">    Source, arraytools.py_tools has a pure python equivalent</span>
+
+<span class="sd">    Also, arraytools `__init__._info()` has an abbreviated version</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    colwise : boolean</span>
+<span class="sd">        `True` or `1`, otherwise, `False` or `0`</span>
+<span class="sd">    cols : number</span>
+<span class="sd">      pick a size to suit</span>
+<span class="sd">    sub : text</span>
+<span class="sd">      sub array with wildcards</span>
+
+<span class="sd">    - `arr\*` : begin with `arr`</span>
+<span class="sd">    - `\*arr` : endswith `arr` or</span>
+<span class="sd">    - `\*arr\*`: contains `arr`</span>
+<span class="sd">    prn : boolean</span>
+<span class="sd">      `True` for print or `False` to return output as string</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A directory listing of a module&#39;s namespace or a part of it if the</span>
+<span class="sd">    `sub` option is specified.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    See the `inspect` module for possible additions like `isfunction`,</span>
+<span class="sd">    `ismethod`, `ismodule`</span>
+
+<span class="sd">    Examples::</span>
+
+<span class="sd">        dirr(art, colwise=True, cols=3, sub=None, prn=True)  # all columnwise</span>
+<span class="sd">        dirr(art, colwise=True, cols=3, sub=&#39;arr&#39;, prn=True) # just the `arr`s</span>
+
+<span class="sd">          (001)    _arr_common     arr2xyz         arr_json</span>
+<span class="sd">          (002)    arr_pnts        arr_polygon_fc  arr_polyline_fc</span>
+<span class="sd">          (003)    array2raster    array_fc</span>
+<span class="sd">          (004)    array_struct    arrays_cols</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">err</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    ...No matches found using substring .  `</span><span class="si">{0}</span><span class="s2">`</span>
+<span class="s2">    ...check with wildcards, *, ... `\*abc\*`, `\*abc`, `abc\*`</span>
+
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">d_arr</span> <span class="o">=</span> <span class="nb">dir</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">d_arr</span><span class="p">)</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">descr</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">sub</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">):</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">][</span><span class="n">sub</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span><span class="p">]</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">sub</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">start</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">end</span><span class="p">):</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">d_arr</span>
+                 <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">],</span> <span class="n">start</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">))]</span>
+        <span class="k">elif</span> <span class="n">start</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">end</span><span class="p">):</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">d_arr</span>
+                 <span class="k">if</span> <span class="n">sub</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="ow">in</span> <span class="n">i</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)]]</span>
+        <span class="k">elif</span> <span class="nb">abs</span><span class="p">(</span><span class="n">end</span><span class="p">):</span>
+            <span class="n">sub</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">d_arr</span>
+                 <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">sub</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">))]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">dedent</span><span class="p">(</span><span class="n">err</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sub</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">a</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">dt</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()]))</span>
+    <span class="n">frmt</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;{{!s:&lt;</span><span class="si">{}</span><span class="s2">}} &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span><span class="p">))</span> <span class="o">*</span> <span class="n">cols</span>
+    <span class="k">if</span> <span class="n">colwise</span><span class="p">:</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">cols</span><span class="p">)</span>
+        <span class="n">zl</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">z</span><span class="p">]</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">zl</span><span class="p">)</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">cols</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">zl</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">e</span><span class="p">[:</span><span class="n">n</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">csze</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="n">cols</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">csze</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">csze</span> <span class="o">%</span> <span class="mi">1</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">z</span><span class="p">),</span> <span class="n">cols</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="n">e</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">][:</span><span class="n">n</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;__name__&#39;</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;-&quot;</span><span class="o">*</span><span class="mi">70</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">obj</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;-&quot;</span><span class="o">*</span><span class="mi">70</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span> <span class="s2">&quot;np version&quot;</span><span class="p">]</span>
+    <span class="n">txt_out</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s2">| dir(</span><span class="si">{}</span><span class="s2">) ...</span><span class="se">\n</span><span class="s2">|    </span><span class="si">{}</span><span class="se">\n</span><span class="s2">-------&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">cnt</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">txt_out</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  (</span><span class="si">{:&gt;03.0f}</span><span class="s2">)    </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cnt</span><span class="p">,</span> <span class="n">frmt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">i</span><span class="p">))</span>
+        <span class="n">cnt</span> <span class="o">+=</span> <span class="n">cols</span>
+    <span class="k">if</span> <span class="n">prn</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">txt_out</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">txt_out</span></div>
+
+
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="c1"># ---- (5) wrapper .... code section ----</span>
+<span class="k">def</span> <span class="nf">_wrapper</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">wdth</span><span class="o">=</span><span class="mi">70</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrap stuff using textwrap.wrap</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">    -----</span>
+<span class="sd">    TextWrapper class</span>
+<span class="sd">    __init__(self, width=70, initial_indent=&#39;&#39;, subsequent_indent=&#39;&#39;,</span>
+<span class="sd">             expand_tabs=True, replace_whitespace=True,</span>
+<span class="sd">             fix_sentence_endings=False, break_long_words=True,</span>
+<span class="sd">             drop_whitespace=True, break_on_hyphens=True, tabsize=8,</span>
+<span class="sd">             *, max_lines=None, placeholder=&#39; [...]&#39;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">a</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">a</span><span class="p">])</span>
+    <span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">wrap</span><span class="p">(</span><span class="n">txt</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">wdth</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">txt</span>
+
+
+<span class="k">def</span> <span class="nf">_utils_help_</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;arraytools.utils help...</span>
+
+<span class="sd">    Function list follows:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_hf</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    :-------------------------------------------------------------------:</span>
+<span class="s2">    : ---- arrtools functions  (loaded as &#39;art&#39;) ----</span>
+<span class="s2">    : ---- from utils.py</span>
+<span class="s2">    (1)  doc_func(func=None)</span>
+<span class="s2">         documenting code using inspect</span>
+<span class="s2">    (2)  get_func(obj, line_nums=True, verbose=True)</span>
+<span class="s2">         pull in function code</span>
+<span class="s2">    (3)  get_modu(obj)</span>
+<span class="s2">         pull in module code</span>
+<span class="s2">    (4)  dirr(a)  object info</span>
+<span class="s2">    (5)  wrapper(a)  format objects as a string</span>
+<span class="s2">    :-------------------------------------------------------------------:</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">dedent</span><span class="p">(</span><span class="n">_hf</span><span class="p">))</span>
+
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="c1"># .... final code section producing the featureclass and extendtable</span>
+
+
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="c1"># __main__ .... code section</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># print the script source name.</span>
+    <span class="n">testing</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="si">{}</span><span class="s1"> in source script... </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">script</span><span class="p">))</span>
+    <span class="c1"># parameters here</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">testing</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="c1"># parameters here</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Dan Patterson
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
