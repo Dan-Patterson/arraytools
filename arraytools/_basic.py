@@ -1,56 +1,101 @@
 # -*- coding: utf-8 -*-
 """
+======
 _basic
 ======
 
-Script :   _basic.py
+Script : _basic.py
 
-Author :   Dan_Patterson@carleton.ca
+Author : Dan_Patterson@carleton.ca
 
 Modified : 2019-01-06
 
-Purpose:  tools for working with numpy arrays
-
-Useage :
---------
-`_base` : some functions
-::
-  arr_info, art_info, even_odd, n_largest, n_smallest, num_to_mask,
-  num_to_nan, pad_even_odd, pad_nan, pad_zero, reshape_options, shape_to2D
+Purpose : tools for working with numpy arrays
 
 References
 ----------
-
+see
 `<https://docs.python.org/3/library/itertools.html#itertools-recipes>`_.
 
-Functions
----------
-**n largest, n_smallest**
+Notes
+-----
+num_to_nan num_to_mask::
 
->>> a = np.arange(0, 9).reshape(3, 3)
->>> n_largest(a, num=2, by_row=True)
-array([[1, 2],
-       [4, 5],
-       [7, 8]])
->>> n_largest(a, num=2, by_row=False)
-array([[3, 4, 5],
-       [6, 7, 8]])
+    >>> a = np.arange(6)  # array([0, 1, 2, 3, 4, 5])
+    >>> num_to_nan(a, nums=[2, 3])
+    array([ 0.,  1., nan, nan,  4.,  5.])
+    >>> num_to_mask(a, nums=[2, 3])
+    masked_array(data = [0 1 - - 4 5],
+    ...          mask = [False False  True  True False False],
+    ...          fill_value = 999999)
 
-**num_to_nan, num_to_mask** : nan stuff
+shape_to2D::
 
->>> a = np.arange(6)  # array([0, 1, 2, 3, 4, 5])
->>> num_to_nan(a, nums=[2, 3])
-array([ 0.,  1., nan, nan,  4.,  5.])
->>> num_to_mask(a, nums=[2, 3]) ...
-masked_array(data = [0 1 - - 4 5],
-             mask = [False False  True  True False False],
-       fill_value = 999999)
+    >>> shp = (2, 2, 3)
+    >>> a = np.arange(np.prod(shp)).reshape(shp)
+    array([[[ 0,  1,  2],
+            [ 3,  4,  5]],
+           [[ 6,  7,  8],
+            [ 9, 10, 11]]])
 
----------------------------------------------------------------------
+2D stack by row::
+
+    >>> re_shape(a, stack2D=True,  by_column=False)  # np.hstack((a[0], a[1]))
+    array([[ 0,  1,  2,  6,  7,  8],
+           [ 3,  4,  5,  9, 10, 11]])
+
+2D stack raveled by row::
+
+    >>> re_shape(a, stack2D=False, by_column=False)
+    array([[ 0,  1,  2,  3,  4,  5],
+           [ 6,  7,  8,  9, 10, 11]])
+
+2D stack by column::
+
+    >>> re_shape(a, True, True)
+    array([[ 0,  3],
+           [ 1,  4],
+           [ 2,  5],  # note here a[0] is translated and stacked onto a[1]
+           [ 6,  9],
+           [ 7, 10],
+           [ 8, 11]])
+    >>>  re_shape(a, False, True)
+    array([[ 0,  6],
+           [ 1,  7],
+           [ 2,  8],  # note here a[0] becomes raveled and translated and
+           [ 3,  9],  # a[1] is stacked column-wise to it.
+           [ 4, 10],
+           [ 5, 11]])
+
+Some useful array reshaping::
+
+    >>> shape_to2D(a.swapaxes(0, 1), True, True)
+    array([[ 0,  6],
+           [ 1,  7],
+           [ 2,  8],
+           [ 3,  9],
+           [ 4, 10],
+           [ 5, 11]])
+    >>> shape_to2D(a.swapaxes(0,1), True, False)
+    array([[ 0,  1,  2,  3,  4,  5],
+           [ 6,  7,  8,  9, 10, 11]])
+
+For other shapes::
+
+    shp          re_shape(a).shape
+    (3, 4)       (4, 3)
+    (2, 3, 4)    (3, 8)
+    (2, 3, 4, 5) (3, 40)
+
+np.transpose and np.swapaxes are related::
+
+    >>> np.all(np.swapaxes(a, 0, 1) == np.transpose(a, (1, 0, 2)))
+
 """
-# pylint: disable=C0103
-# pylint: disable=R1710
-# pylint: disable=R0914
+# pylint: disable=C0103  # invalid-name
+# pylint: disable=R0914  # Too many local variables
+# pylint: disable=R1710  # inconsistent-return-statements
+# pylint: disable=W0105  # string statement has no effect
 
 import sys
 from textwrap import dedent, indent
@@ -76,9 +121,10 @@ type_keys = np.typecodes.keys()
 type_vals = np.typecodes.values()
 
 
-__all__ = ['arr_info',      # (1) info functions
-           'keep_ascii',    # (2) chararray
+__all__ = ['arr_info',      # (0) info functions
+           'is_finite',     # (1) numeric check
            'is_float',
+           'keep_ascii',    # (2) chararray
            'keep_nums',
            'del_punc',
            'n_largest',     # (3) ndarray... size-based
@@ -98,12 +144,12 @@ __all__ = ['arr_info',      # (1) info functions
            ]
 
 # ----------------------------------------------------------------------
-# ---- (1) info .... code section ----
+# ---- (0) info .... code section ----
 def arr_info(a=None, prn=True):
     """Returns basic information about an numpy array.
 
-    Requires:
-    --------
+    Parameters
+    ----------
     a : array
         An array to return basic information on.
     prn : Boolean
@@ -111,32 +157,36 @@ def arr_info(a=None, prn=True):
 
     Returns
     -------
-    Example array information.
+    Example array information
 
     >>> a = np.arange(2. * 3.).reshape(2, 3) # quick float64 array
     >>> arr_info(a)
+
+
+    Results returned::
+
         Array information....
-         OWNDATA: if 'False', data are a view
+        OWNDATA: if 'False', data are a view
         flags....
         ... snip ...
         array
-            |__shape (2, 3)
-            |__ndim  2
-            |__size  6
-            |__bytes
-            |__type  <class 'numpy.ndarray'>
-            |__strides  (24, 8)
+            | __shape (2, 3)
+            | __ndim  2
+            | __size  6
+            | __bytes
+            | __type  <class 'numpy.ndarray'>
+            | __strides  (24, 8)
         dtype      float64
-            |__kind  f
-            |__char  d
-            |__num   12
-            |__type  <class 'numpy.float64'>
-            |__name  float64
-            |__shape ()
-            |__description
-                 |__name, itemsize
-                 |__['', '<f8']
-    ---------------------
+            | __kind  f
+            | __char  d
+            | __num   12
+            | __type  <class 'numpy.float64'>
+            | __name  float64
+            | __shape ()
+            | __description
+                 | __name, itemsize
+                 | __['', '<f8']
+
     """
     if a is None:
         print(arr_info.__doc__)
@@ -159,6 +209,7 @@ def arr_info(a=None, prn=True):
     :  |__type  {}\n    :  |__name  {}\n    :  |__shape {}
     :  |__description
     :  |  |__name, itemsize"""
+
     dt = a.dtype
     flg = indent(a.flags.__str__(), prefix=':   ')
     info_ = [flg, a.shape, a.ndim, a.size,
@@ -174,6 +225,39 @@ def arr_info(a=None, prn=True):
     else:
         return out
 
+# ----------------------------------------------------------------------
+# ---- (1) numeric check section ----
+# ----------------------------------------------------------------------
+def is_finite(a, return_finite=False):
+    """Returns whether all the numbers in the array are finite.
+    np.nan, np.inf, np.NINF are not finite and should be excluded from
+    calculations
+
+    Example
+    -------
+    >>> a = np.array([1., np.nan, np.inf, np.NINF, 5, 6, np.nan, 8, 9, 10])
+    >>> t_f = np.isfinite(a)
+    >>> np.all(t_f)             # ---- False, not all are True
+    >>> np.sum(t_f))            # ---- 6 are
+    >>> np.size == np.sum(t_f)  # ---- False, if you just need a boolean check
+    >>> a[t_f]                  # ---- slice out that are finite
+    array([ 1.,  5.,  6.,  8.,  9., 10.])
+    """
+    is_f = np.isfinite(a)
+    check = np.size == np.sum(is_f)
+    if return_finite:
+        return check, a[is_f]
+    return check
+
+
+def is_float(a):
+    """float check"""
+    try:
+        np.asarray(a, np.float_)
+        return True
+    except ValueError:
+        return False
+
 
 # ----------------------------------------------------------------------
 # ---- (2) chararray section ----
@@ -186,15 +270,6 @@ def keep_ascii(s):
         u = "".join([['_', i][ord(i) < 128] for i in u])
         return u
     return s
-
-
-def is_float(a):
-    """float check"""
-    try:
-        np.asarray(a, np.float_)
-        return True
-    except ValueError:
-        return False
 
 
 def keep_nums(s):
@@ -237,14 +312,26 @@ def n_largest(a, num=1, by_row=True):
     """Return the`num` largest entries in an array by row sorted by column, or
     by column sorted by row.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     a : ndarray
         Array dimensions <=3 supported
     num : integer
         The number of elements to return
     by_row : boolean
         True for returns by row, False to determine by column
+
+    Examples
+    --------
+    >>> a = np.arange(0, 9).reshape(3, 3)
+    >>> n_largest(a, num=2, by_row=True)
+    array([[1, 2],
+           [4, 5],
+           [7, 8]])
+    >>> n_largest(a, num=2, by_row=False)
+    array([[3, 4, 5],
+           [6, 7, 8]])
+
     """
     assert a.ndim <= 3, 'Only arrays with ndim <=3 supported'
     if not by_row:
@@ -283,8 +370,8 @@ def n_smallest(a, num=1, by_row=True):
 def num_to_nan(a, nums=None):
     """Reverse of np.nan_to_num introduced in numpy 1.13
 
-    Example
-    -------
+    Notes
+    -----
     >>> a = np.arange(10)
     >>> num_to_nan(a, num=[2, 3])
     array([  0.,   1.,   nan,  nan,   4.,   5.,   6.,   7.,   8.,   9.])
@@ -303,13 +390,13 @@ def num_to_nan(a, nums=None):
 def num_to_mask(a, nums=None, hardmask=True):
     """Reverse of nan_to_num introduced in numpy 1.13
 
-    Example
-    -------
+    Notes
+    -----
     >>> a = np.arange(10)
     >>> art.num_to_mask(a, nums=[1, 2, 4])
-    masked_array(data = [0 - - 3 - 5 6 7 8 9],
-                mask = [False  True  True False  True False
-                        False False False False], fill_value = 999999)
+    ``masked_array(data = [0 - - 3 - 5 6 7 8 9],``
+    ``mask = [False  True  True False  True False``
+    ``False False False False], fill_value = 999999)``
     """
     if nums is None:
         ret = a
@@ -332,7 +419,9 @@ def even_odd(a):
 def pad_even_odd(a):
     """To use when padding a strided array for window construction
 
-    See also: art.num_to_nan, art.pad_nan, art.pan_zero
+    See Also
+    --------
+    art.num_to_nan, art.pad_nan, art.pan_zero
     """
     p = even_odd(a)
     ap = np.pad(a, pad_width=(1, p), mode='constant', constant_values=(0, 0))
@@ -342,7 +431,9 @@ def pad_even_odd(a):
 def pad_nan(a, nan_edge=True):
     """Pad a sliding array to allow for stats, padding uses np.nan
 
-    See also: art.num_to_nan, art.pan_zero, pad_even_odd
+    See Also
+    --------
+    art.num_to_nan, art.pan_zero, pad_even_odd
     """
     a = a.astype('float64')
     if nan_edge:
@@ -355,7 +446,9 @@ def pad_zero(a, n=1):
     """To use when padding a strided array for window construction. n = number
     of zeros to pad arround the array
 
-    See also: art.num_to_nan, art.pad_nan, pad_even_odd
+    See Also
+    --------
+    art.num_to_nan, art.pad_nan, pad_even_odd
     """
     ap = np.pad(a, pad_width=(n, n), mode='constant', constant_values=(0, 0))
     return ap
@@ -364,8 +457,8 @@ def pad_zero(a, n=1):
 def fill_diagonal(n=5, seq=None):
     """Fill the diagonal of a square array with a sequence
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     n : integer
         Rows and columns to create.
     seq : array-like
@@ -403,72 +496,37 @@ def strip_whitespace(a):
 
 # ---- (6) reshaping arrays ... shape_to2D, reshape_options
 #
-def shape_to2D(a, stack2D=True, by_column=False):
+def shape_to2D(a, to_col=False, as_stack=False, col_wise=False):
     """Reshape an ndim array to a 2D array for print formatting and other uses.
 
+    Parameters
+    ----------
     a : array
         array ndim >= 3
-    stack2D : boolean
-      True, swaps, then stacks the last two dimensions row-wise.
+    to_col : boolean
+        True, swaps axis 0 and 1 before determine the shape, this ravels the
+        last axis prior to stacking
+    as_stack : boolean
+        True, swaps, then stacks the last two dimensions row-wise.  If False,
+        the first two dimensions are raveled then vertically stacked
+    col_wise : boolean
+        True returns the output array as a column
 
-      False, the first two dimensions are raveled then vertically stacked
+    Notes
+    -----
+    See the script header for detailed examples.
 
-    >>> shp = (2, 2, 3)
-    >>> a = np.arange(np.prod(shp)).reshape(shp)
-    array([[[ 0,  1,  2],
-            [ 3,  4,  5]],
-           [[ 6,  7,  8],
-            [ 9, 10, 11]]])
-
-    2D stack by row
-
-    >>> re_shape(a, stack2D=True,  by_column=False)  # np.hstack((a[0], a[1]))
-    array([[ 0,  1,  2,  6,  7,  8],
-           [ 3,  4,  5,  9, 10, 11]])
-
-    2D stack raveled by row
-
-    >>> re_shape(a, stack2D=False, by_column=False)
-    array([[ 0,  1,  2,  3,  4,  5],
-           [ 6,  7,  8,  9, 10, 11]])
-
-    2D stack by column
-
-    >>> re_shape(a, True, True)
-    array([[ 0,  3],
-           [ 1,  4],
-           [ 2,  5],  # note here a[0] is translated and stacked onto a[1]
-           [ 6,  9],
-           [ 7, 10],
-           [ 8, 11]])
-
-    >>>  re_shape(a, False, True)
-    array([[ 0,  6],
-           [ 1,  7],
-           [ 2,  8],  # note here a[0] becomes raveled and translated and
-           [ 3,  9],  # a[1] is stacked column-wise to it.
-           [ 4, 10],
-           [ 5, 11]])
-
-    For other shapes::
-
-        shp          re_shape(a).shape
-        (3, 4)       (4, 3)
-        (2, 3, 4)    (3, 8)
-        (2, 3, 4, 5) (3, 40)
-
-    np.transpose and np.swapaxes are related
-
-    >>> np.all(np.swapaxes(a, 0, 1) == np.transpose(a, (1, 0, 2)))
     """
+    if to_col:
+        a = a.swapaxes(0, 1)
     shp = a.shape
-    if stack2D:
+    if as_stack:
         out = np.swapaxes(a, 0, 1).reshape(shp[1], np.prod((shp[0],) + shp[2:]))
     else:
         m = 2
         n = len(shp) - m
         out = a.reshape(np.prod(shp[:n], dtype='int'), np.prod(shp[-m:]))
-    if by_column:
+    if col_wise:
         out = out.T
     return out
 
@@ -476,31 +534,30 @@ def shape_to2D(a, stack2D=True, by_column=False):
 def reshape_options(a):
     """Alternative shapes for a numpy array.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     a : ndarray
         The ndarray with ndim >= 2
 
-    Returns:
-    --------
+    Returns
+    -------
     An object array containing the shapes of equal or lower dimension,
     excluding ndim=1
 
     >>> a.shape # => (3, 2, 4)
     array([(2, 12), (3, 8), (4, 6), (6, 4), (8, 3), (12, 2), (2, 3, 4),
-           (2, 4, 3), (3, 2, 4), (3, 4, 2), (4, 2, 3), (4, 3, 2)],
-          dtype=object)
+           (2, 4, 3), (3, 2, 4), (3, 4, 2), (4, 2, 3), (4, 3, 2)], dtype=object)
 
-    Notes:
-    ------
+    Notes
+    -----
     >>> s = list(a.shape)
     >>> case = np.array(list(chain.from_iterable(permutations(s, r)
                         for r in range(len(s)+1)))[1:])
     >>> prod = [np.prod(i) for i in case]
     >>> match = np.where(prod == size)[0]
 
-    References:
-    -----------
+    References
+    ----------
     `<https://docs.python.org/3/library/itertools.html#itertools-recipes>`_.
 
     """
@@ -545,8 +602,8 @@ def cartesian(arrays):
            [3, 4, 6],            ['b', 'b'],
            [3, 5, 6]])           ['b', 'c']], dtype='<U1')
 
-    References:
-    -----------
+    References
+    ----------
     `<https://stackoverflow.com/questions/11144513/numpy-cartesian-product-of-
     x-and-y-array-points-into-single-array-of-2d-points>`_.
 
@@ -557,10 +614,10 @@ def cartesian(arrays):
     ix = np.indices(shape)
     ix = ix.reshape(len(arrays), -1).T
     out = []
-    for n, arr in enumerate(arrays):
+    for n, _ in enumerate(arrays):
         sub = arrays[n][ix[:, n]]
         if sub.ndim == 1:
-            out.append(sub.reshape(sub.shape[0],1))
+            out.append(sub.reshape(sub.shape[0], 1))
         else:
             out.append(sub)
     return np.hstack(out) #, out
@@ -570,8 +627,8 @@ def all_pairs(a, to_3d=False):
     """Make pairs for all combinations in a 2D array.  It is a stacked array
     version of `ft_pairs`. More combinations without duplicates are returned
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     a : array-like
         A (N,2) array or list such as pairs of x,y coordinates.
     to_3d
@@ -579,12 +636,12 @@ def all_pairs(a, to_3d=False):
         If False, than a 2D array is created with each row representing a
         fromX, fromY, toX, toY sequence
 
-    References:
-    -----------
+    References
+    ----------
     `<https://stackoverflow.com/questions/46339926/finding-all-combinations
     -of-paired-numpy-arrays-via-meshgrid>`_.
 
-    Example:
+    Examples
     --------
 
     >>> a = np.arange(6).reshape(3,2)
@@ -608,12 +665,6 @@ def all_pairs(a, to_3d=False):
            [ 4,  5,  9, 10],
            [ 7,  8,  9, 10]])  ** within `b` pair
 
-    See also:
-    ---------
-    1. `ft_pairs` produces similar results but not the within group combinations
-       marked with ** above
-
-    2. `cartesian` one of the standard approaches
     """
     if a.ndim != 2:
         return "(N,2) array required"
@@ -628,8 +679,8 @@ def ft_pairs(a, b, to_2D=True):
     """Make pairs or coordinates from arrays of the same or different lengths.
     The current implementation is designed to pair coordinate data.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     a : array like
         Two (N, 2) arrays or lists such pairs of x,y coordinates.
     to_2d : boolean
@@ -638,8 +689,8 @@ def ft_pairs(a, b, to_2D=True):
         If False, than a 2D array is created with each row representing a
         fromX, fromY, toX, toY sequence
 
-    References:
-    -----------
+    References
+    ----------
     A couple
 
     `<https://stackoverflow.com/questions/11144513/numpy-cartesian-product-of-
@@ -648,7 +699,7 @@ def ft_pairs(a, b, to_2D=True):
     `<https://stackoverflow.com/questions/34502254/vectorizing-haversine-
     distance-calculation-in-python>`_.
 
-    Example:
+    Examples
     --------
 
     >>> a = np.arange(6).reshape(3,2)
@@ -665,8 +716,9 @@ def ft_pairs(a, b, to_2D=True):
            [ 4,  5,  7,  8],
            [ 4,  5,  9, 10]])
     >>> np.asarray([[*i, *j] for i in a for j in b]  # same as
+
     """
-    if (a.ndim!=b.ndim) and (a.ndim != 2):
+    if (a.ndim != b.ndim) and (a.ndim != 2):
         return "(N,2) arrays required"
     out = []
     for _, j in enumerate(a):
