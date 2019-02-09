@@ -26,6 +26,10 @@ print(", ".join([i.replace("'", "") for i in art.--module--.__all__]))
       - col_hdr, deline, in_by, redent, \_chunks, head_tail, \_check, \_slice_rows, \_slice_cols, \_slice_head_tail, \_col_format, prn_nd, prn_ma, prn_rec, pd_, prn_struct, make_row_format, prn_, prn
     - [geom.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geom.py)
       -  \_flat_, \_unpack, segment, stride, \_new_view_, \_view_, \_reshape_, \_min, \_max, \_extent, \_center, \_centroid, centers, centroids, e_area, e_dist, e_leng, areas, lengths, total_length, seg_lengths, radial_sort, dx_dy_np, angle_np, azim_np, angle_2pnts, angle_seq, angles_poly, dist_bearing, \_densify_2D, \_convert, densify, simplify, rotate, trans_rot, repeat, circle, ellipse, rectangle, hex_flat, hex_pointy
+    - [geom_common.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geom_common.py)
+      -  _new_view_, _reshape_, _view_
+    - [geom_properties.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geom_properties.py)
+      -  _new_view_, _reshape_, angle_2pnts, angle_between, angle_np, angle_seq, angles_poly, areas, azim_np, center_, centers, centroid_, centroids, dx_dy_np, e_area, e_dist, e_leng, extent_, ft, lengths, line_dir, max_, mean_, median_, min_, np, script, seg_lengths, sys, total_length
     - [grid.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/grid.py)
       - check_shapes, combine_, euc_dist, euc_alloc, expand_, shrink_, regions_, expand_zone, fill_arr, reclass_vals, reclass_ranges, scale_up
     - [image.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/image.py)
