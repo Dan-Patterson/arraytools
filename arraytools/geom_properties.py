@@ -625,5 +625,4 @@ def line_dir(orig, dest, fromNorth=False):
 #
 if __name__ == "__main__":
     """optional location for parameters"""
-    #msg = _demo_()
-
+    print("Script... {}".format(script))

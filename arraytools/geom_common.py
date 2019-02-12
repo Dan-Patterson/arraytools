@@ -8,7 +8,7 @@ Script :   geom_common.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2019-02-08
+Modified : 2019-02-11
 
 Purpose :  Common tools for working with arrays that represent geometry objects
 
@@ -76,26 +76,21 @@ def _reshape_(a):
     Returns
     -------
     The length of the dtype is checked. Only object ('O') and arrays with
-#    a uniform dtype return 0.  Structured, recarrays will yield 1 or more.
-#    Array dtypes are stripped and the array reshaped.
-#
-#    >>> a = np.array([(341000., 5021000.), (341000., 5022000.),
-#    ...               (342000., 5022000.), (341000., 5021000.)],
-#    ...              dtype=[('X', '<f8'), ('Y', '<f8')])
-#
-#    becomes:
-#
-#    >>> a = np.array([[  341000.,  5021000.], [  341000.,  5022000.],
-#                      [  342000.,  5022000.], [  341000.,  5021000.]])
-#    >>> a.dtype = dtype('float64')
-#
-#    3D arrays are collapsed to 2D
-#
-#    >>> a.shape = (2, 5, 2) => np.product(a.shape[:-1], 2) => (10, 2)
+    a uniform dtype return 0.  Structured, recarrays will yield 1 or more.
+    Array dtypes are stripped and the array reshaped.
+
+    >>> a = np.array([(341000., 5021000.), (341000., 5022000.),
+    ...               (342000., 5022000.), (341000., 5021000.)],
+    ...              dtype=[('X', '<f8'), ('Y', '<f8')])
+    |  # ---- becomes:
+    >>> a = np.array([[  341000.,  5021000.], [  341000.,  5022000.],
+                      [  342000.,  5022000.], [  341000.,  5021000.]])
+    >>> a.dtype = dtype('float64')
+    |  # ---- 3D arrays are collapsed to 2D
+    >>> a.shape = (2, 5, 2) => np.product(a.shape[:-1], 2) => (10, 2)
 
     Object arrays are processed object by object but assumed to be of a
     common dtype within, as would be expected from a gis package.
-
     """
     if not isinstance(a, np.ndarray):
         raise ValueError("\nAn array is required...")
