@@ -63,15 +63,15 @@ def plot_(pnts):
 def rot_matrix(angle=0, nm_3=False):
     """Return the rotation matrix given points and rotation angle
 
-    Requires:
-    --------
+    Parameters
+    ----------
       - rotation angle in degrees and whether the matrix will be used with
         homogenous coordinates
 
-    Returns:
+    Returns
     -------
-      - rot_m - rotation matrix for 2D transform
-      - rotate around  translate(-x, -y).rotate(theta).translate(x, y)
+    - rot_m - rotation matrix for 2D transform
+    - rotate around  translate(-x, -y).rotate(theta).translate(x, y)
     """
     rad = np.deg2rad(angle)
     c = np.cos(rad)
@@ -87,8 +87,8 @@ def rot_matrix(angle=0, nm_3=False):
 def _arc(radius=100, start=0, stop=1, step=0.1, xc=0.0, yc=0.0):
     """Create an arc from a specified radius, centre and start/stop angles
 
-    Requires:
-    ---------
+    Parameters
+    ----------
     `radius` : number
         cirle radius from which the arc is obtained
     `start`, `stop`, `step` : numbers
@@ -96,8 +96,8 @@ def _arc(radius=100, start=0, stop=1, step=0.1, xc=0.0, yc=0.0):
     `xc`, `yc` : number
         center coordinates in projected units
 
-    Returns:
-    --------
+    Returns
+    -------
       points on the arc
     """
     start, stop = sorted([start, stop])
@@ -114,8 +114,8 @@ def _circle(radius=100, clockwise=True, theta=1, rot=0.0, scale=1,
             xc=0.0, yc=0.0):
     """Produce a circle/ellipse depending on parameters.
 
-    Requires
-    --------
+    Parameters
+    ----------
     `radius` : number
         in projected units
     `clockwise` : boolean
@@ -130,8 +130,8 @@ def _circle(radius=100, clockwise=True, theta=1, rot=0.0, scale=1,
          For ellipses, change the scale to <1 or > 1. The resultant
          y-values will favour the x or y-axis depending on the scaling.
 
-    Returns:
-    -------
+    Returns
+    ------
       list of coordinates for the circle/ellipse
 
     Notes:
@@ -157,6 +157,8 @@ def _circle(radius=100, clockwise=True, theta=1, rot=0.0, scale=1,
 def arc_sector(outer=10, inner=9, start=1, stop=6, step=0.1):
     """Form an arc sector bounded by a distance specified by two radii
 
+    Parameters
+    ----------
     `outer` : number
         outer radius of the arc sector
     `inner` : number
@@ -188,9 +190,15 @@ def arc_sector(outer=10, inner=9, start=1, stop=6, step=0.1):
 
 def buffer_ring(outer=100, inner=0, theta=10, rot=0, scale=1, xc=0.0, yc=0.0):
     """Create a multi-ring buffer around a center point (xc, yc)
-     outer - outer radius
-     inner - inner radius
-     theta - angles to use to densify the circle...
+
+    Parameters
+    ----------
+    outer : number
+        outer radius
+    inner : number
+        inner radius
+    theta : number
+        Angles to use to densify the circle...
         - 360+ for circle
         - 120 for triangle
         - 90  for square
@@ -198,9 +206,10 @@ def buffer_ring(outer=100, inner=0, theta=10, rot=0, scale=1, xc=0.0, yc=0.0):
         - 60  for hexagon
         - 45  for octagon
         - etc
-     rot - rotation angle, used for non-circles
-     scale - used to scale the y-coordinates
-
+     rot : number
+         rotation angle, used for non-circles
+     scale : number
+         used to scale the y-coordinates
     """
     top = _circle(outer, clockwise=True, theta=theta, rot=rot,
                   scale=scale, xc=xc, yc=yc)

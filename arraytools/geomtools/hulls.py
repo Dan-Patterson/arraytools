@@ -1,21 +1,22 @@
 # -*- coding: UTF-8 -*-
 """
+========
 hulls.py
 ========
 
-Script:   hulls.py
+Script :  hulls.py
 
-Author:   Dan.Patterson@carleton.ca
+Author :  Dan.Patterson@carleton.ca
 
-Modified: 2018-11-11
+Modified : 2019-02-11
 
-Purpose:
---------
+Notes
+-----
 Determine convex and concave hulls for point data.  This is a part of the
-PointTools toolbox for use in ArcGIS Pro
+arraytools tools and is used in the PointTools toolbox for use in ArcGIS Pro
 
-References:
------------
+References
+----------
 concave/convex hulls
 
 `<https://www.researchgate.net/publication/220868874_Concave_hull_A_k-
@@ -28,29 +29,29 @@ shapes-with-pyqt-shapely-and-arcpy/>`_.
 `<https://repositorium.sdum.uminho.pt/handle/1822/6429?locale=en>`_.
 
 `<https://community.esri.com/blogs/dan_patterson/2018/03/11/
-concave-hulls-the-elusive-container>'_.
+concave-hulls-the-elusive-container>`_.
 
-`<https://github.com/jsmolka/hull/blob/master/hull.py>'_.
+`<https://github.com/jsmolka/hull/blob/master/hull.py>`_.
 
 `<https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-
-line-segments-intersect#565282>'_.
+line-segments-intersect#565282>`_.
 
 `<http://www.codeproject.com/Tips/862988/Find-the-intersection-
-point-of-two-line-segments>'_.
-:
-:---------------------------------------------------------------------:
+point-of-two-line-segments>`_.
+
 """
-# pylint: disable=C0103
-# pylint: disable=R1710
-# pylint: disable=R0914
+# pylint: disable=C0103  # invalid-name
+# pylint: disable=R0914  # Too many local variables
+# pylint: disable=R1710  # inconsistent-return-statements
+# pylint: disable=W0105  # string statement has no effect
 
 # ---- imports, formats, constants ----
 import sys
-import warnings
-warnings.simplefilter('ignore', FutureWarning)
-import numpy as np
 import math
+import warnings
+import numpy as np
 
+warnings.simplefilter('ignore', FutureWarning)
 
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
       'float_kind': '{: 0.3f}'.format}
@@ -73,8 +74,8 @@ def pnt_in_list(pnt, pnts_list):
 def intersects(*args):
     """Line intersection check.  Two lines or 4 points that form the lines.
 
-    Requires:
-    --------
+    Parameters
+    ----------
       intersects(line0, line1) or intersects(p0, p1, p2, p3)
         p0, p1 -> line 1
         p2, p3 -> line 2
@@ -173,8 +174,8 @@ def knn(p, pnts, k=1, return_dist=True):
     k : integer
         The `k` in k-nearest neighbours
 
-    Returns:
-    --------
+    Returns
+    -------
     Array of k-nearest points and optionally their distance from the source.
     """
     def _remove_self_(p, pnts):
@@ -200,17 +201,20 @@ def knn(p, pnts, k=1, return_dist=True):
 
 
 def knn0(pnts, p, k):
-    """
-    Calculates k nearest neighbours for a given point.
+    """Calculates `k` nearest neighbours for a given point, `p`, relative to
+     otherpoints.
 
+    Parameters
+    ----------
     points : array
         list of points
-    p : two number array-like
-        reference point
+    p : array-like
+        reference point, two numbers representing x, y
     k : integer
-        amount of neighbours
-    Returns:
-    --------
+        number of neighbours
+
+    Returns
+    -------
     list of the k nearest neighbours, based on squared distance
     """
     p = np.asarray(p)
@@ -221,35 +225,40 @@ def knn0(pnts, p, k):
 #    s = [i.tolist() for i in pnts[idx]]
     return pnts[idx].tolist()
 
+
 def find_a_in_b(a, b, a_fields=None, b_fields=None):
-    """ Find the indices of the elements in a smaller 2d array contained in
+    """Find the indices of the elements in a smaller 2d array contained in
     a larger 2d array. If the arrays are stuctured with field names,then these
     need to be specified.  It should go without saying that the dtypes need to
     be the same.
 
-    a, b : 1D and 2D, ndarray or structured/record arrays
-        The arrays are arranged so that a is the smallest and b is the largest.
-        If the arrays are stuctured with field names, then these
-        need to be specified.  It should go without saying that the dtypes need to
-        be the same.
+    Parameters
+    ----------
+    a, b : 1D or 2D, ndarray or structured/record arrays
+        The arrays are arranged so that `a` is the smallest and `b` is the
+        largest.  If the arrays are stuctured with field names, then these
+        need to be specified.  It should go without saying that the dtypes
+        need to be the same.
     a_fields, b_fields : list of field names
         If the dtype has names, specify these in a list.  Both do not need
         names.
 
-    Example:
+    Examples
     --------
     To demonstrate, a small array was made from the last 10 records of a larger
     array to check that they could be found.
 
-    >>> a.dtype # ([('ID', '<i4'), ('X', '<f8'), ('Y', '<f8'), ('Z', '<f8')])
-    >>> b.dtype # ([('X', '<f8'), ('Y', '<f8')])
+    >>> a.dtype
+    ``([('ID', '<i4'), ('X', '<f8'), ('Y', '<f8'), ('Z', '<f8')])``
+    >>> b.dtype ``([('X', '<f8'), ('Y', '<f8')])``
     >>> a.shape, b.shape # ((69688,), (10,))
     >>> find_a_in_b(a, b, flds, flds)
     array([69678, 69679, 69680, 69681, 69682,
-           69683, 69684,69685, 69686, 69687], dtype=int64)
+           69683, 69684, 69685, 69686, 69687], dtype=int64)
 
-    References:
-    -----------
+    References
+    ----------
+    This is a function from the arraytools.tbl module
     `<https://stackoverflow.com/questions/38674027/find-the-row-indexes-of-
     several-values-in-a-numpy-array/38674038#38674038>`_.
     """
@@ -267,18 +276,15 @@ def find_a_in_b(a, b, a_fields=None, b_fields=None):
         big = big[b_fields]
         big = _view_(big)
     if a.ndim >= 1:  # last slice, if  [:2] instead, it returns both indices
-        indices = np.where((big == small[:,None]).all(-1))[1]
-#       indices = np.where(big == small[:,None])[1]
-#    elif a.ndim == 2:
-#        indices = np.where((big == small[:,None]).all(-1))[1]
+        indices = np.where((big == small[:, None]).all(-1))[1]
     return indices
 
 
 def concave(points, k, pip_check=False):
     """Calculates the concave hull for given points
 
-    Requires:
-    --------
+    Parameters
+    ----------
     points : array-like
         initially the input set of points with duplicates removes and
         sorted on the Y value first, lowest Y at the top (?)
@@ -289,7 +295,7 @@ def concave(points, k, pip_check=False):
         Whether to do the final point in polygon check.  Not needed for closely
         spaced dense point patterns.
     knn0, intersects, angle, point_in_polygon : functions
-        functions used by concave
+        Functions used by `concave`
 
     Notes:
     ------
@@ -410,3 +416,4 @@ if __name__ == "__main__":
     : - print the script source name.
     : - run the _demo
     """
+    print(script)

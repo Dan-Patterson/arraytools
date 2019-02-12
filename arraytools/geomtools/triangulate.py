@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """
+===========
 triangulate
 ===========
 
@@ -85,15 +86,15 @@ def Vor_pnts(pnts, testing=True, plot=True):
 def Del_pnts(pnts, testing=False, plot=True):
     """Triangulate the points and return the triangles
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     pnts : np.array
         Points in array format.
     out : array
         an array of triangle points
 
-    Notes:
-    ------
+    Notes
+    -----
     >>> pnts = pnts.reshape((1,) + pnts.shape)  # a 3D set of points (ndim=3)
     >>> [pnts]  # or pass in as a list
     """

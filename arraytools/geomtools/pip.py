@@ -119,31 +119,24 @@ def pnts_in_extent(pnts, ext, in_out=True):
     pnts = np.atleast_2d(pnts)  # account for single point
     outside = None
     LB, RT = ext
-    comp = np.logical_and((LB <= pnts), (pnts <= RT))
-    case = comp[..., 0] * comp[..., 1]
-    idx_in = np.where(case)[0]
+    comp = np.logical_and((LB < pnts), (pnts <= RT))
+    idx_in = np.logical_and(comp[..., 0], comp[..., 1])
     inside = pnts[idx_in]
     if in_out:
-        idx_out = np.where(~case)[0]  # invert case
-        outside = pnts[idx_out]
+        outside = pnts[~idx_in]  # invert case
     return inside, outside
 
 
 def p_in_ext(pnts, ext):
-    """a different version of pnts_in_extent, but faster
+    """Same as pnts_in_ext without the `outside` check and return.
 
-    Example:
-    --------
-    ::
+    Example
+    -------
+    >>> ext = np.array([[400, 400], [600, 600]])
+    >>> pnts = np.random.randint(0, `N`, size=(1000,2))
 
-      pnts = np.random.randint(0, 10000, size=(1000,2))
-      ext = np.array([[400, 400], [600, 600]])
-
-      %timeit pnts_in_extent(pnts, ext, False)
-      25.3 µs ± 3.32 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
-
-      %timeit p_in_ext(pnts, ext)
-      15 µs ± 75 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+    time, `N` : 20 µs 1,000, 135 µs for 10,000, 640 µs for 50,000
+    1.28 ms for 100,000
     """
     LB, RT = ext
     comp = np.logical_and(LB < pnts, pnts <= RT)
@@ -154,12 +147,30 @@ def p_in_ext(pnts, ext):
 def _crossing_num_(pnts, poly, in_out=False):
     """Used by `pnts_in_poly`.  The implementation of pnply
 
-    Requires : functions
-        pnts_in_ext, ext_poly
+    Parameters
+    ----------
+    pnts : array
+        A numpy array of points (x,y pairs)
+    poly : array
+        Same as `pnts`, but a duplicate point representing the first and last
+        to ensure close of the polygon.  Polygons are ordered clockwise for
+        outer rings and counter-clockwise for inner rings.  The polygons are
+        assumed to be single-part polgons.
+    in_out : boolean
+        True, retains both sets of points (inside and outside the polygon).
+        False retains the outside points
 
-    u = ys[i] <= y < ys[i+1]
-    d = ys[i] >= y > ys[i+1]
-    np.logical_or(u, d)
+    Returns
+    -------
+    The points inside the polygon
+    Notes
+    -----
+    The functions, ``pnts_in_ext``, and  ``ext_poly`` are required
+
+    Base logical check in parts
+    >>> u = ys[i] <= y < ys[i+1]
+    >>> d = ys[i] >= y > ys[i+1]
+    >>> np.logical_or(u, d)
     """
     xs = poly[:, 0]
     ys = poly[:, 1]
@@ -219,16 +230,6 @@ def _demo():
     pnts = np.random.randint(0, 1000, size=(1000, 2))
     inside, outside = pnts_in_poly(pnts, poly=ext, in_out=True)
     return pnts, ext, c, inside, outside
-
-
-def _demo1():
-    """Simple check for known points"""
-    ext = np.array([[0, 0.], [1000, 1000.]])
-    poly = extent_poly(ext)
-    p0 = np.array([500, 500])
-    p1 = np.mean(poly, axis=0)
-    pnts = np.array([p0, p1])
-    return pnts, ext, poly, p0, p1
 
 
 if __name__ == "__main__":

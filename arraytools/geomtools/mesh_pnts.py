@@ -32,8 +32,8 @@ script = sys.argv[0]  # print this should you need to locate the script
 def mesh_xy(L=0, B=0, R=5, T=5, dx=1, dy=1, as_rec=True):
     """Create a mesh of coordinates within the specified X, Y ranges
 
-    Requires:
-    --------
+    Parameters
+    ----------
     L(eft), R(ight), dx : number
         coordinate min, max and delta x for X axis
     B(ott), T(op), dy  : number
@@ -41,11 +41,10 @@ def mesh_xy(L=0, B=0, R=5, T=5, dx=1, dy=1, as_rec=True):
     as_rec : boolean
         Produce a structured array (or convert to a record array)
 
-    Returns:
+    Returns
     -------
     -  A list of coordinates of X,Y pairs and an ID if as_rec is True.
     -  A mesh grid X and Y coordinates is also produced.
-    :-------------
     """
     dt = [('Pnt_num', '<i4'), ('X', '<f8'), ('Y', '<f8')]
     x = np.arange(L, R + dx, dx, dtype='float64')

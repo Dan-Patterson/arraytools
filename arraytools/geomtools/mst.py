@@ -1,36 +1,35 @@
 # -*- coding: UTF-8 -*-
 """
+===
 mst
 ===
 
-Script:   mst.py
+Script : mst.py
 
-Author:   Dan.Patterson@carleton.ca
+Author : Dan.Patterson@carleton.ca
 
-Modified: 2018-04-09
+Modified : 2019-02-10
 
-Purpose:
---------
-  Produce a spanning tree from a point set.  I have yet to confirm
-  whether it constitutes a minimum spanning tree, since the implementation
-  doesn't specify whether Prim's algorithm is being used (see ref. 2)
+Purpose :
 
-References:
------------
-[1]
-http://stackoverflow.com/questions/41903502/sort-two-dimensional-list-python
+Produce a spanning tree from a point set.  I have yet to confirm whether it
+constitutes a minimum spanning tree, since the implementation doesn't specify
+whether Prim's algorithm is being used (see the second ref.)
 
-[2]
-http://peekaboo-vision.blogspot.ca/2012/02/simplistic-minimum-spanning-
-tree-in.html
+References
+----------
+`<http://stackoverflow.com/questions/41903502/sort-two-dimensional
+-list-python>`_.
+
+`<http://peekaboo-vision.blogspot.ca/2012/02/simplistic-minimum-spanning-
+tree-in.html>`_.
 
 also referenced here...
 
-[3]
-http://stackoverflow.com/questions/34374839/minimum-spanning-tree-distance-
-and-graph
+`<http://stackoverflow.com/questions/34374839/minimum-spanning-tree-distance-
+and-graph>`_.
 
-Notes:
+Notes
 -----
 
 >>> a
@@ -103,11 +102,11 @@ array([[ 5.0,  8.0,  8.1,  10.0,  12.8],
        [ 5.0,  8.0,  8.1,  10.0,  12.8]])
 
 Back to the original distance and sorted array, a_srt.
-  The distances are determined using the sorted points, the diagonal
-  distances are set to np.inf so that they have the maximal distance.
-  The distance values can be sorted to get their indices in the array
-  Then the array can be sliced to retrieve the points coordinates and the
-  distance array can be sliced to get the distances.
+The distances are determined using the sorted points, the diagonal
+distances are set to np.inf so that they have the maximal distance.
+The distance values can be sorted to get their indices in the array
+Then the array can be sliced to retrieve the points coordinates and the
+distance array can be sliced to get the distances.
 
 >>> dix = np.arange(d.shape[0])
 >>> d[dix, dix] = np.inf
@@ -137,7 +136,7 @@ array([[3, 4], [ 0, 8], [7, 4], [10, 0], [10, 8], [0, 0]])
 #
 
 import sys
-from textwrap import dedent, indent
+from textwrap import dedent
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -179,19 +178,27 @@ def _e_dist(a):
     return d
 
 
-def mst(W, copy_W=True):
+def mst(W, calc_dist=True):
     """Determine the minimum spanning tree for a set of points represented
-    :  by their inter-point distances... ie their 'W'eights
-    :Requires:
-    :--------
-    :  W - edge weights (distance, time) for a set of points. W needs to be
-    :      a square array or a np.triu perhaps
-    :Returns:
-    :-------
-    :  pairs - the pair of nodes that form the edges
+    by their inter-point distances. ie their `W`eights
+
+    Parameters
+    ----------
+    W : array, normally an interpoint distance array
+        Edge weights for example, distance, time, for a set of points.
+        W needs to be a square array or a np.triu perhaps
+
+    calc_dist : boolean
+        True, if W is a points array, calculate W as the interpoint distance.
+        False means that W is not a points array, but some other `weight`
+        representing the interpoint relationship
+
+    Returns
+    -------
+    pairs - the pair of nodes that form the edges
     """
-    if copy_W:
-        W = W.copy()
+    if calc_dist:
+        W = _e_dist(W)
     if W.shape[0] != W.shape[1]:
         raise ValueError("W needs to be square matrix of edge weights")
     Np = W.shape[0]
@@ -233,9 +240,15 @@ def plot_mst(a, pairs):
 
 def connect(a, dist_arr, edges):
     """Return the full spanning tree, with points, connections and distance
-    : a - point array
-    : dist - distance array, from _e_dist
-    : edge - edges, from mst
+
+    Parameters
+    ----------
+    a : array
+        A point array
+    dist : array
+        The distance array, from _e_dist
+    edge : array
+        The edges derived from mst
     """
     p_f = edges[:, 0]
     p_t = edges[:, 1]
@@ -252,8 +265,8 @@ def connect(a, dist_arr, edges):
 # ---------------------------------------------------------------------
 if __name__ == "__main__":
     """Main section...   """
-    # print("Script... {}".format(script))
-    #    a = np.random.randint(1, 10, size=(10,2))
+    print("Script... {}".format(script))
+#    a = np.random.randint(1, 10, size=(10,2))
 #    a = np.array([[0, 0], [0, 8], [10, 8], [10, 0], [3, 4], [7, 4]])
 #    idx, a_srt, d = dist_arr(a)     # return distance array and sorted pnts
 #    pairs = mst(d)                  # the orig-dest pairs for the mst
