@@ -8,27 +8,28 @@ Script :   geom.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2019-02-09
+Modified : 2019-02-19
 
 Purpose :  tools for working with numpy arrays and geometry
 
 Notes
 -----
-  Do not rely on the OBJECTID field for anything
-  http://support.esri.com/en/technical-article/000010834
+Do not rely on the OBJECTID field for anything
 
-  When working with large coordinates, you should check to see whether a
-  translation about the origin (array - centre) produces different results.
-  This has been noted when calculating area using projected coordinates for the
-  Ontario.npy file.  The difference isn't huge, but subtracting the centre or
-  minimum from the coordinates produces area values which are equal but differ
-  slightly from those using the unaltered coordinates.
+`<http://support.esri.com/en/technical-article/000010834>`_.
+
+When working with large coordinates, you should check to see whether a
+translation about the origin (array - centre) produces different results.
+This has been noted when calculating area using projected coordinates for the
+Ontario.npy file.  The difference isn't huge, but subtracting the centre or
+minimum from the coordinates produces area values which are equal but differ
+slightly from those using the unaltered coordinates.
 
 Included in this module::
 
     'EPSILON', '__all__', '__builtins__', '__cached__', '__doc__', '__file__',
     '__loader__', '__name__', '__package__', '__spec__', '_arrs_', '_convert',
-    '_demo', '_densify_2D', '_new_view_', '_test', 'adjacency_edge', 'affine_',
+    '_demo', 'densify_by_factor', '_new_view_', '_test', 'adjacency_edge', 'affine_',
     'angles_poly', 'as_strided', 'cartesian', 'cartesian_dist', 'center_',
     'close_arr', 'cross', 'dedent', 'densify', 'dist_bearing_sort', 'e_2d',
     'e_area', 'e_dist', 'e_leng', 'ft', 'intersect_pnt', 'intersects', 'knn',
@@ -41,19 +42,19 @@ References
 ----------
 See ein_geom.py for full details and examples
 
-`<https://www.redblobgames.com/grids/hexagons/>`_
+`<https://www.redblobgames.com/grids/hexagons/>`_.
 
-`<https://en.wikipedia.org/wiki/Centroid#Centroid_of_polygon>`_
+`<https://en.wikipedia.org/wiki/Centroid#Centroid_of_polygon>`_.
 
-`<https://iliauk.com/2016/03/02/centroids-and-centres-numpy-r/>`_
+`<https://iliauk.com/2016/03/02/centroids-and-centres-numpy-r/>`_.
 
 *includes KDTree as well*
 
 `<https://stackoverflow.com/questions/50751135/iterating-operation-with-two-
-arrays-using-numpy>`_
+arrays-using-numpy>`_.
 
 `<https://stackoverflow.com/questions/21483999/using-atan2-to-find-angle-
-between-two-vectors>`_
+between-two-vectors>`_.
 
 point in/on segment
 
@@ -96,7 +97,7 @@ import numpy as np
 from numpy.lib.stride_tricks import as_strided
 from _basic import cartesian
 from geom_common import (_new_view_)
-from geom_properties import (angles_poly, center_, e_dist, e_area, e_leng)
+from geom_properties import (angles_poly, e_area, e_leng)
 
 EPSILON = sys.float_info.epsilon  # note! for checking
 
@@ -111,25 +112,25 @@ script = sys.argv[0]  # print this should you need to locate the script
 
 # ---- order by appearance ----
 #
-__all__ = ['poly2segments', 'stride',
+__all__ = ['close_arr', 'stride',
+           'poly2segments', 
            'intersect_pnt', 'intersects',     # intersection
            'cartesian_dist',
-           'radial_sort',                     # sorting
-           'dist_bearing_sort',
-           '_densify_2D', '_convert',         # densify simplify
+           'densify_by_factor', '_convert',   # densify simplify
            'densify', 'simplify',
            'rotate', 'trans_rot',             # translation, rotation
            'pnt_in_list',                     # spatial queries and analysis
-           'pnt_on_seg', 'pnt_on_poly',
+           'pnt_on_seg', 'pnts_on_line',
+           'pnt_on_poly',
            'point_in_polygon',
-           'knn', 'nn_kdtree', 'cross', 'remove_self',
+           'knn', 'nn_kdtree', 'cross',
+           'remove_self',
            'adjacency_edge'
            ]
 
 
 # ---- array functions -------------------------------------------------------
 #
-
 def close_arr(a):
     """Close an array representing a sequence of points, so that the
     first and last point are identical.  These arrays are used to construct
@@ -138,26 +139,6 @@ def close_arr(a):
     a = np.atleast_2d(a)
     ax = 0 if a.ndim <= 2 else a.ndim-2
     return np.concatenate((a, a[..., :1, :]), axis=ax)
-
-
-def poly2segments(a):
-    """Segment poly* structures into o-d pairs from start to finish
-
-    Parameters
-    ----------
-    a : array
-        A 2D array of x,y coordinates representing polyline or polygons.
-    fr_to : array
-        Returns a 3D array of point pairs.
-    """
-    a = _new_view_(a)
-    if a.shape[0] == 1:     # squeeze (1, n, m), (n, 1, m) (n, m, 1) arrays
-        a = a.squeeze()
-    s0, s1 = a.shape
-    fr_to = np.zeros((s0-1, s1, 2), dtype=a.dtype)
-    fr_to[..., 0] = a[:-1]
-    fr_to[..., 1] = a[1:]
-    return fr_to
 
 
 def stride(a, win=(3, 3), stepby=(1, 1)):
@@ -182,6 +163,26 @@ def stride(a, win=(3, 3), stepby=(1, 1)):
     newstrides = tuple(np.array(a.strides) * ss) + a.strides
     a_s = as_strided(a, shape=newshape, strides=newstrides, subok=True).squeeze()
     return a_s
+
+
+def poly2segments(a):
+    """Segment poly* structures into o-d pairs from start to finish
+
+    Parameters
+    ----------
+    a : array
+        A 2D array of x,y coordinates representing polyline or polygons.
+    fr_to : array
+        Returns a 3D array of point pairs.
+    """
+    a = _new_view_(a)
+    if a.shape[0] == 1:     # squeeze (1, n, m), (n, 1, m) (n, m, 1) arrays
+        a = a.squeeze()
+    s0, s1 = a.shape
+    fr_to = np.zeros((s0-1, s1, 2), dtype=a.dtype)
+    fr_to[..., 0] = a[:-1]
+    fr_to[..., 1] = a[1:]
+    return fr_to
 
 
 # ---- point functions ------------------------------------------------------
@@ -355,103 +356,9 @@ def cartesian_dist(a, b):
     d = d.reshape(len(d), 1)
     return np.concatenate((c, d), axis=1)
 
-
-# ---- sorting based on geometry --------------------------------------------
-#
-def radial_sort(pnts, cent=None, distance=True, as_azimuth=False):
-    """Sort about the point cloud center or from a given point
-
-    Parameters
-    ----------
-    pnts : points
-        An array of points (x,y) as array or list
-    cent : array-like
-        - A list, tuple, array of the center's x,y coordinates.
-        - None, the center's coordinate is calculated from the values with
-          duplicates removed
-    distance : boolean
-        True returns the distance from the center to each point
-    as_azimuth : boolean
-        True returns the angles relative to North, otherwise, conventional
-        angle.
-    >>> cent = [0, 0] or np.array([0, 0])
-
-    Returns
-    -------
-    - The angles in the range -180, 180 x-axis oriented
-    - The pnts are NOT returned sorted, you will have to use the sort_order to
-      complete the sorting.
-
-    >>> pnts_sorted = pnts[sort_order]
-    """
-    pnts = _new_view_(pnts)
-    if cent is None:
-        cent = center_(pnts, remove_dup=False)
-    ba = pnts - cent
-    ang_ab = np.arctan2(ba[:, 1], ba[:, 0])
-    ang_ab = np.degrees(ang_ab)
-    sort_order = np.argsort(ang_ab)
-    if as_azimuth:
-        ang_ab = np.where(ang_ab > 90, 450.0 - ang_ab, 90.0 - ang_ab)
-    if distance:
-        dist = e_dist(np.array([0, 0]), ba)
-        return ang_ab, sort_order, dist
-    return ang_ab, sort_order
-
-
-# ---- angle related functions ----------------------------------------------
-# ---- ndarrays and structured arrays ----
-#
-def dist_bearing_sort(pnts, cent=None, as_struct=False):
-    """Sorts points based on a radial sort of a point set (X, Y) relative to
-    the center of the points.  The sort is done using the bearing, then the
-    distance of a point to the center.
-
-    *** Note done *** move to arraytools.wars when complete
-
-    xy = a0[0][['X', 'Y']]
-    pnts = _view_(xy) or....
-    s = dist_bearing_sort(a0[0][['X', 'Y']])
-    s.shape # (69688, 2)
-    11.4 ms ± 272 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
-    """
-    def _xy_struct_(a):
-        """construct a structured array from x,y data in an N-2 array assuming
-        X is first column and Y follows
-        """
-        shp = a.shape
-        dt = [('X', '<f8'), ('Y', '<f8'), ('angle', '<f8'), ('dist', '<f8')]
-        z = np.zeros((shp[0],), dtype=dt)
-        z['X'] = a[:, 0]
-        z['Y'] = a[:, 1]
-        z['angle'] = a[:, 2]
-        z['dist'] = a[:, 3]
-        return z
-    #
-    ang, order, dist = radial_sort(pnts, cent=cent, distance=True)
-    s = np.stack((pnts[:, 0], pnts[:, 1], ang, dist), axis=1)
-    s = s[order]
-    h = np.arange(-180, 180.5, 0.5, dtype='float')
-    hist = np.histogram(s[:, 3], bins=h)  # on distance
-    cnts, low = hist
-    out = []
-    for i in range(1, len(low)):
-        s0 = s[np.logical_and(s[:, 2] > low[i-1], s[:, 2] <= low[i])]
-        d_max = s0[:, 3].max()
-        delta = d_max*0.1
-        w = s0[np.logical_and(s0[:, 3] > d_max-delta, s0[:, 3] <= d_max)]
-        if len(w) < 5:
-            w = s0
-        out.append(w)
-    out = np.vstack((out))
-    if as_struct:
-        out = _xy_struct_(out)
-    return s, cnts, low, out
-
-
 # ---- densify functions -----------------------------------------------------
 #
-def _densify_2D(a, fact=2):
+def densify_by_factor(a, fact=2):
     """Densify a 2D array using np.interp.
 
     Parameters
@@ -461,14 +368,20 @@ def _densify_2D(a, fact=2):
     fact : number
         The factor to density the line segments by
 
+    See Also
+    --------
+    ``densify_by_distance``
+        This option used an absolute distance separation along the segments
+        making up the line feature
+
     Notes
     -----
-        Original construction of c rather than the zero's approach.
-    Example
-    ::
-          c0 = c0.reshape(n, -1)
-          c1 = c1.reshape(n, -1)
-          c = np.concatenate((c0, c1), 1)
+    This is the original construction of c rather than the zero's approach
+    outlined in the code which constructs and adds to a zeros array::
+
+        c0 = c0.reshape(n, -1)
+        c1 = c1.reshape(n, -1)
+        c = np.concatenate((c0, c1), 1)
     """
     # Y = a changed all the y's to a
     a = _new_view_(a)
@@ -485,8 +398,59 @@ def _densify_2D(a, fact=2):
     return c
 
 
+def densify_by_distance(a, spacing=1):
+    """Densify a 2D array by adding points with a specified distance between
+    them.  Only appropriate for data representing planar coordinates.
+
+    Parameters
+    ----------
+    a : array
+        A sequence of `points`, x,y pairs, representing the bounds of a polygon
+        or polyline object
+    spacing : number
+        Spacing between the points to be added to the line.
+
+    See Also
+    --------
+    ``densify_by_factor`` and ``pnts_on_line``
+        Factor is used to represent percentages as well.  A factor of 2x will
+        densify with 50% more points on the segment
+
+    References
+    ----------
+    `<https://stackoverflow.com/questions/54665326/adding-points-per-pixel-
+    along-some-axis-for-2d-polygon>`_.
+
+    `<https://stackoverflow.com/questions/51512197/python-equidistant-points
+    -along-a-line-joining-set-of-points/51514725>`_.
+
+    >>> a = np.array([[0,0], [3, 3], [3, 0], [0,0]])  # 3, 3 triangle
+    >>> a = np.array([[0,0], [4, 3], [4, 0], [0,0]])  # 3, 4, 5 rule
+    >>> a = np.array([[0,0], [3, 4], [3, 0], [0,0]])  # 3, 4, 5 rule
+    """
+    # ----
+    a = _new_view_(a)
+    a = np.squeeze(a)
+    pnts = []
+    for i, e in enumerate(a[1:]):
+        s = a[i]
+        dxdy = (e - s)
+        d = np.sqrt(np.sum(dxdy**2))  # end - start distance   
+        N = int(d/spacing)
+        if N < 1:
+            pnts.append([s])
+        else:
+            delta = dxdy/N
+            num = np.arange(N)
+            delta = np.where(np.isfinite(delta), delta, 0 )
+            nn = np.array([num, num]).T
+            pnts.append(nn*delta + s)
+    pnts.append(a[-1])
+    return np.vstack(pnts)
+
+
 def _convert(a, fact=2, check_arcpy=True):
-    """Do the shape conversion for the array parts.  Calls _densify_2D
+    """Do the shape conversion for the array parts.  Calls densify_by_factor
 
     # import arcpy  # uncomment the first line below if using _convert
     """
@@ -499,13 +463,13 @@ def _convert(a, fact=2, check_arcpy=True):
         sub_out = []
         p = np.asarray(a[i]).squeeze()
         if p.ndim == 2:
-            shp = _densify_2D(p, fact=fact)  # call _densify_2D
+            shp = densify_by_factor(p, fact=fact)  # call densify_by_factor
             arc_pnts = [Point(*p) for p in shp]
             sub_out.append(arc_pnts)
             out.extend(sub_out)
         else:
             for pp in p:
-                shp = _densify_2D(pp, fact=fact)
+                shp = densify_by_factor(pp, fact=fact)
                 arc_pnts = [Point(*ps) for ps in shp]
                 sub_out.append(arc_pnts)
             out.append(sub_out)
@@ -517,7 +481,7 @@ def densify(polys, fact=2):
 
     Parameters
     ----------
-    `_densify_2D` : function
+    `densify_by_factor` : function
         the function that is called for each shape part
     `_unpack` : function
         unpack objects
@@ -670,24 +634,6 @@ def pnt_in_list(pnt, pnts_list):
     return is_in
 
 
-def point_in_polygon(pnt, poly):  # pnt_in_poly(pnt, poly):  #
-    """Point is in polygon. ## fix this and use pip from arraytools
-    """
-    x, y = pnt
-    N = len(poly)
-    for i in range(N):
-        x0, y0, xy = [poly[i][0], poly[i][1], poly[(i + 1) % N]]
-        c_min = min([x0, xy[0]])
-        c_max = max([x0, xy[0]])
-        if c_min < x <= c_max:
-            p = y0 - xy[1]
-            q = x0 - xy[0]
-            y_cal = (x - x0) * p / q + y0
-            if y_cal < y:
-                return True
-    return False
-
-
 def pnt_on_seg(pnt, seg):
     """Orthogonal projection of a point onto a 2 point line segment.
     Returns the intersection point, if the point is between the segment end
@@ -718,6 +664,56 @@ def pnt_on_seg(pnt, seg):
     xy = np.array([dx, dy])*u + [x1, y1]
     d = xy - pnt
     return xy, np.hypot(d[0], d[1])
+
+
+def pnts_on_line(a, spacing=1):
+    """Add points, at a fixed spacing, to an array representing a line.
+    This is analogous to ``densification``.
+
+    Parameters
+    ----------
+    a : array
+        A sequence of `points`, x,y pairs, representing the bounds of a polygon
+        or polyline object
+    spacing : number
+        Spacing between the points to be added to the line.
+
+    Example
+    -------
+    >>> a = np.array([[0., 0.], [3., 4.], [3., 0.], [0., 0.]])  # 3x4x5 rule
+    >>> a.T
+    array([[0., 3., 3., 0.],
+           [0., 4., 0., 0.]])
+    >>> pnts_on_line(a, spacing=2).T  # take the transpose to facilitate view
+    ... array([[0. , 1.2, 2.4, 3. , 3. , 3. , 1. , 0. ],
+    ...        [0. , 1.6, 3.2, 4. , 2. , 0. , 0. , 0. ]])
+    ... array([[0.,  . . . .   3., . .   3., . . . 0. ],    
+    ...        [0.,  . . . .   4., . .   0., . . . 0. ]])
+
+    >>> # letter ``C`` and skinny ``C``
+    >>> a = np.array([[ 0, 0], [ 0, 100], [100, 100], [100,  80],
+                      [ 20,  80], [ 20, 20], [100, 20], [100, 0], [ 0, 0]])
+    >>> b = np.array([[ 0.,  0.], [ 0., 10.], [10., 10.], [10.,  8.],
+                      [ 2.,  8.], [ 2.,  2.], [10.,  2.], [10.,  0.],
+                      [ 0.,  0.]])
+    Notes
+    -----
+    The return value could be np.vstack((*pnts, a[-1])) using the last point
+    directly, but np.concatenate with a reshaped a[-1] is somewhat faster.
+    All entries to the stacking must be ndim=2.
+    """
+    N = len(a) - 1                                    # segments
+    dxdy = a[1:, :] - a[:-1, :]                       # coordinate differences
+    leng = np.sqrt(np.einsum('ij,ij->i', dxdy, dxdy)) # segment lengths
+    steps = leng/spacing                              # step distance
+    deltas = dxdy/(steps.reshape(-1, 1))              # coordinate steps
+    pnts = np.empty((N,), dtype='O')                  # construct an `O` array
+#    xy = np.empty((N,), dtype='O') 
+    for i in range(N):              # cycle through the segments and make
+        num = np.arange(steps[i])   # the new points, add the final point
+        pnts[i] = np.array((num, num)).T * deltas[i] + a[i]
+    a0 = a[-1].reshape(1,-1)
+    return np.concatenate((*pnts, a0), axis=0)
 
 
 def pnt_on_poly(pnt, poly):
@@ -797,6 +793,24 @@ def pnt_on_poly(pnt, poly):
         ang = _line_dir_(pnt, dest)
         ang = np.mod((450.0 - ang), 360.)
         return [n2[0], n2[1], np.asscalar(d2), np.asscalar(ang)]
+
+
+def point_in_polygon(pnt, poly):  # pnt_in_poly(pnt, poly):  #
+    """Point is in polygon. ## fix this and use pip from arraytools
+    """
+    x, y = pnt
+    N = len(poly)
+    for i in range(N):
+        x0, y0, xy = [poly[i][0], poly[i][1], poly[(i + 1) % N]]
+        c_min = min([x0, xy[0]])
+        c_max = max([x0, xy[0]])
+        if c_min < x <= c_max:
+            p = y0 - xy[1]
+            q = x0 - xy[0]
+            y_cal = (x - x0) * p / q + y0
+            if y_cal < y:
+                return True
+    return False
 
 
 def p_o_p(pnt, polys):
@@ -1054,7 +1068,9 @@ def _demo(prn=True):
     x = "/".join(script.split("/")[:-1]) + "/Data/Ontario.npy"
     a = np.load(x)
     fact = 2
-    b = _densify_2D(a, fact=fact)
+    b = densify_by_distance(a, spacing=100)
+    fact = 100
+#    b = densify_by_factor(a, fact=fact)
     t0, avl = e_leng(a)  # first is total, 2nd is all lengths
     t1 = t0/1000.
     min_l = avl.min()

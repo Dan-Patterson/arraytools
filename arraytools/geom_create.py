@@ -8,7 +8,7 @@ Script :   create.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2019-01-15
+Modified : 2019-02-18
 
 Purpose :  Tools for creating arrays of various geometric shapes
 
@@ -84,25 +84,25 @@ def arc_(radius=100, start=0, stop=1, step=0.1, xc=0.0, yc=0.0):
 
     Parameters
     ----------
-    `radius` : number
+    radius : number
         cirle radius from which the arc is obtained
-    `start`, `stop`, `step` : numbers
+    start, `stop`, `step` : numbers
         angles in degrees
-    `xc`, `yc` : number
+    xc, yc : number
         center coordinates in projected units
-
+    as_list : boolean
+        False, returns an array.  True yields a list
+   
     Returns
     -------
-      points on the arc
+      Points on the arc as either a list or array
     """
     start, stop = sorted([start, stop])
     angle = np.deg2rad(np.arange(start, stop, step))
     x_s = radius*np.cos(angle)         # X values
     y_s = radius*np.sin(angle)         # Y values
-    pnts = np.c_[x_s, y_s]
-    pnts = pnts + [xc, yc]
-    p_lst = pnts.tolist()
-    return p_lst
+    pnts = np.array([x_s, y_s]).T + [xc, yc]
+    return pnts
 
 
 def arc_sector(outer=10, inner=9, start=1, stop=6, step=0.1):
@@ -110,18 +110,18 @@ def arc_sector(outer=10, inner=9, start=1, stop=6, step=0.1):
 
     Parameters
     ----------
-    `outer` : number
+    outer : number
         outer radius of the arc sector
-    `inner` : number
+    inner : number
         inner radius
-    `start` : number
+   `start : number
         start angle of the arc
-    `stop` : number
+    stop : number
         end angle of the arc
-    `step` : number
+    step : number
         the angle densification step
 
-    Requires:
+    Requires
     --------
       `arc_` is used to produce the arcs, the top arc is rotated clockwise and
       the bottom remains in the order produced to help form closed-polygons.
@@ -130,12 +130,10 @@ def arc_sector(outer=10, inner=9, start=1, stop=6, step=0.1):
     s_s.sort()
     start, stop = s_s
     top = arc_(outer, start, stop, step, 0.0, 0.0)
-    top.reverse()
+    top = top[::-1]
     bott = arc_(inner, start, stop, step, 0.0, 0.0)
-    top = np.array(top)
-    bott = np.array(bott)
     close = top[0]
-    pnts = np.asarray([i for i in [*top, *bott, close]])
+    pnts = np.concatenate((top, bott, [close]), axis=0)
     return pnts
 
 
@@ -145,26 +143,26 @@ def circle(radius=100, clockwise=True, theta=1, rot=0.0, scale=1,
 
     Parameters
     ----------
-    `radius` : number
+    radius : number
         in projected units
-    `clockwise` : boolean
+    clockwise : boolean
         True for clockwise (outer rings), False for counter-clockwise
         (for inner rings)
-    `theta` : number
+    theta : number
         Angle spacing. If theta=1, angles between -180 to 180, are returned
         in 1 degree increments. The endpoint is excluded.
-    `rot` : number
+    rot : number
          rotation angle in degrees... used if scaling is not equal to 1
-    `scale` : number
+    scale : number
          For ellipses, change the scale to <1 or > 1. The resultant
          y-values will favour the x or y-axis depending on the scaling.
 
     Returns
-    ------
+    -------
       list of coordinates for the circle/ellipse
 
-    Notes:
-    ------
+    Notes
+    -----
      You can also use np.linspace if you want to specify point numbers.
      np.linspace(start, stop, num=50, endpoint=True, retstep=False)
      np.linspace(-180, 180, num=720, endpoint=True, retstep=False)
@@ -175,7 +173,7 @@ def circle(radius=100, clockwise=True, theta=1, rot=0.0, scale=1,
         angles = np.deg2rad(np.arange(-180.0, 180.0+theta, step=theta))
     x_s = radius*np.cos(angles)            # X values
     y_s = radius*np.sin(angles) * scale    # Y values
-    pnts = np.c_[x_s, y_s]
+    pnts = np.array([x_s, y_s]).T
     if rot != 0:
         rot_mat = rot_matrix(angle=rot)
         pnts = (np.dot(rot_mat, pnts.T)).T
@@ -197,7 +195,7 @@ def circle_mini(radius=1.0, theta=10.0, xc=0.0, yc=0.0):
     angles = np.deg2rad(np.arange(180.0, -180.0-theta, step=-theta))
     x_s = radius*np.cos(angles) + xc    # X values
     y_s = radius*np.sin(angles) + yc    # Y values
-    pnts = np.c_[x_s, y_s]
+    pnts = np.array([x_s, y_s]).T
     return pnts
 
 
@@ -211,28 +209,31 @@ def circle_ring(outer=100, inner=0, theta=10, rot=0, scale=1, xc=0.0, yc=0.0):
     inner : number
         inner radius
     theta : number
-        Angles to use to densify the circle...
-        - 360+ for circle
-        - 120 for triangle
-        - 90  for square
-        - 72  for pentagon
-        - 60  for hexagon
-        - 45  for octagon
-        - etc
-     rot : number
-         rotation angle, used for non-circles
-     scale : number
+        See below
+    rot : number
+        rotation angle, used for non-circles
+    scale : number
          used to scale the y-coordinates
+
+    Notes
+    -----
+    Angles to use to densify the circle::
+
+    - 360+ for circle
+    - 120 for triangle
+    - 90  for square
+    - 72  for pentagon
+    - 60  for hexagon
+    - 45  for octagon
+    - etc
     """
     top = circle(outer, clockwise=True, theta=theta, rot=rot,
                  scale=scale, xc=xc, yc=yc)
-    if inner != 0.0:
-        bott = circle(inner, clockwise=False, theta=theta, rot=rot,
-                      scale=scale, xc=xc, yc=yc)
-        pnts = np.asarray([i for i in [*top, *bott]])
-    else:
-        pnts = top
-    return pnts
+    if inner == 0.0:
+        return top    
+    bott = circle(inner, clockwise=False, theta=theta, rot=rot,
+                  scale=scale, xc=xc, yc=yc)
+    return np.concatenate((top, bott), axis=0)
 
 
 def ellipse(x_radius=1.0, y_radius=1.0, theta=10., xc=0.0, yc=0.0):
@@ -244,12 +245,11 @@ def ellipse(x_radius=1.0, y_radius=1.0, theta=10., xc=0.0, yc=0.0):
         Distance from centre in the X and Y directions
     theta : number
         Angle of densification of the shape around 360 degrees
-
     """
     angles = np.deg2rad(np.arange(180.0, -180.0-theta, step=-theta))
     x_s = x_radius*np.cos(angles) + xc    # X values
     y_s = y_radius*np.sin(angles) + yc    # Y values
-    pnts = np.c_[x_s, y_s]
+    pnts = np.concatenate((x_s, y_s), axis=0)
     return pnts
 
 
@@ -264,7 +264,6 @@ def hex_flat(dx=1, dy=1, cols=1, rows=1):
         Increment in x direction, +ve moves west to east, left/right
     dy : number
         Increment in y direction, -ve moves north to south, top/bottom
-
     """
     f_rad = np.deg2rad([180., 120., 60., 0., -60., -120., -180.])
     X = np.cos(f_rad) * dy
@@ -280,7 +279,8 @@ def hex_flat(dx=1, dy=1, cols=1, rows=1):
 
 
 def hex_pointy(dx=1, dy=1, cols=1, rows=1):
-    """Pointy hex angles, convert to sin, cos, zip and send
+    """Pointy hex angles, convert to sin, cos, zip and send.  Also called
+    ``traverse hexagons`` by some.
 
     Parameters
     ----------
@@ -290,7 +290,6 @@ def hex_pointy(dx=1, dy=1, cols=1, rows=1):
         Increment in x direction, +ve moves west to east, left/right
     dy : number
         Increment in y direction, -ve moves north to south, top/bottom
-
     """
     p_rad = np.deg2rad([150., 90, 30., -30., -90., -150., 150.])
     X = np.cos(p_rad) * dx
@@ -345,9 +344,9 @@ def mesh_xy(L=0, B=0, R=5, T=5, dx=1, dy=1, as_rec=True):
     Parameters
     ----------
     L(eft), R(ight), dx : number
-        coordinate min, max and delta x for X axis
+        Coordinate min, max and delta x for X axis
     B(ott), T(op), dy  : number
-        same as above for Y axis
+        Same as above for Y axis
     as_rec : boolean
         Produce a structured array (or convert to a record array)
 
@@ -388,7 +387,7 @@ def pyramid(core=9, steps=10, incr=(1, 1), posi=True):
 
 
 def rectangle(dx=1, dy=1, cols=1, rows=1):
-    """Create the array of pnts to pass on to arcpy using numpy magic
+    """Create the array of pnts to construct a rectangle.
 
     Parameters
     ----------
@@ -397,7 +396,7 @@ def rectangle(dx=1, dy=1, cols=1, rows=1):
     dy : number
         Increment in y direction, -ve moves north to south, top/bottom
     rows, cols : ints
-        Row and columns to produce
+        The number of rows and columns to produce
     """
     X = [0.0, 0.0, dx, dx, 0.0]       # X, Y values for a unit square
     Y = [0.0, dy, dy, 0.0, 0.0]
@@ -410,11 +409,16 @@ def rectangle(dx=1, dy=1, cols=1, rows=1):
 
 
 def triangle(dx=1, dy=1, cols=1, rows=1):
-    """Create a row of meshed triangles
+    """Create a row of meshed triangles.
 
     Parameters
     ----------
-    see rectangle
+    dx : number
+        Increment in x direction, +ve moves west to east, left/right
+    dy : number
+        Increment in y direction, -ve moves north to south, top/bottom
+    rows, cols : ints
+        The number of rows and columns to produce
     """
     grid_type = 'triangle'
     a, dx, b = dx/2.0, dx, dx*1.5
@@ -422,8 +426,8 @@ def triangle(dx=1, dy=1, cols=1, rows=1):
     Yu = [0.0, dy, 0.0, 0.0]
     Xd = [a, b, dx, a]       # X, Y values for a unit triangle, point down
     Yd = [dy, dy, 0.0, dy]   # shifted by dx
-    seedU = np.array(list(zip(Xu, Yu)))
-    seedD = np.array(list(zip(Xd, Yd)))
+    seedU = np.vstack((Xu, Yu)).T  # np.array(list(zip(Xu, Yu)))
+    seedD = np.vstack((Xd, Yd)).T  # np.array(list(zip(Xd, Yd)))
     seed = np.array([seedU, seedD])
     a = [seed + [j * dx, i * dy]       # make the shapes
          for i in range(0, rows)       # cycle through the rows
@@ -465,7 +469,6 @@ def pnt_from_dist_bearing(orig=(0, 0), bearings=None, dists=None, prn=False):
                                           out_table=fc_name,
                                           shape_fields=shapeXY,
                                           spatial_reference=SR)
-
     """
     if bearings is None and dists is None:
         return "origin with distances and bearings required"
@@ -508,7 +511,6 @@ def xy_grid(x, y=None, top_left=True):
     References
     ----------
     `<https://github.com/numpy/numpy/blob/master/numpy/lib/function_base.py>`_.
-
     """
     if y is None:
         y = x
@@ -606,7 +608,6 @@ def transect_lines(N=5, orig=None, dist=1, x_offset=0, y_offset=0,
 
     `<http://pro.arcgis.com/en/pro-app/tool-reference/data-management
     /xy-to-line.htm>`_.
-
     """
     def _array_struct_(a, fld_names=['X', 'Y'], kinds=['<f8', '<f8']):
         """Convert an array to a structured array"""

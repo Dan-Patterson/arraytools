@@ -8,14 +8,20 @@ Script :   geom_common.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2019-02-11
+Modified : 2019-02-19
 
 Purpose :  Common tools for working with arrays that represent geometry objects
 
 Notes
+-----
+Sample array data, 2000 points with ID, X and Y::
 
-References
-
+    v = 'C:/Git_Dan/arraytools/Data/pnts_2K_id_x_y.npy'
+    a = np.load(v)
+    a0 = a[['Xs', 'Ys']]
+    xy = _new_view_(a0)
+    %timeit _new_view_(a0)
+    # 1.96 µs ± 28 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
 """
 # pylint: disable=C0103  # invalid-name
 # pylint: disable=R0914  # Too many local variables
@@ -23,8 +29,10 @@ References
 # pylint: disable=W0105  # string statement has no effect
 
 import sys
+import warnings
 import numpy as np
 
+warnings.simplefilter('ignore', FutureWarning)
 
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
       'float_kind': '{: 0.3f}'.format}
@@ -49,7 +57,6 @@ def _new_view_(a):
     some array calculations.
 
     NOTE,  see _view_ for the same functionality
-
     """
     a = np.asanyarray(a)
     if len(a.dtype) > 1:
@@ -76,7 +83,7 @@ def _reshape_(a):
     Returns
     -------
     The length of the dtype is checked. Only object ('O') and arrays with
-    a uniform dtype return 0.  Structured, recarrays will yield 1 or more.
+    a uniform dtype return 0.  Structured and recarrays will yield 1 or more.
     Array dtypes are stripped and the array reshaped.
 
     >>> a = np.array([(341000., 5021000.), (341000., 5022000.),
@@ -100,7 +107,6 @@ def _reshape_(a):
         if len(a[0].shape) == 1:
             return np.asarray([_view_(i) for i in a])
         return _view_(a)
-    #
     if _len == 0:
         if shp <= 2:
             return a

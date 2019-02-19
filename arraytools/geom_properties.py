@@ -8,7 +8,7 @@ Script :   geom_properties.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2019-02-08
+Modified : 2019-02-18
 
 Purpose :  Properties for geometry objects represented as arrays
 
@@ -21,8 +21,8 @@ Included in this module::
     '_new_view_', '_reshape_', 'angle_2pnts', 'angle_between', 'angle_np',
     'angle_seq', 'angles_poly', 'areas', 'azim_np', 'center_', 'centers',
     'centroid_', 'centroids', 'dx_dy_np', 'e_area', 'e_dist', 'e_leng',
-    'extent_', 'ft', 'lengths', 'line_dir', 'max_', 'mean_', 'median_',
-    'min_', 'np', 'seg_lengths', 'sys', 'total_length'
+    'extent_', 'ft', 'lengths', 'orig_dest_angle', 'line_dir', 'max_',
+    'mean_', 'median_', 'min_', 'np', 'seg_lengths', 'sys', 'total_length'
 
 
 """
@@ -32,9 +32,11 @@ Included in this module::
 # pylint: disable=W0105  # string statement has no effect
 
 import sys
+import warnings
 import numpy as np
 from geom_common import (_new_view_, _reshape_)
 
+warnings.simplefilter('ignore', FutureWarning)
 
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
       'float_kind': '{: 0.3f}'.format}
@@ -55,7 +57,8 @@ __all__ = ['max_', 'median_', 'min_',      # max, mean, median, min
            'dx_dy_np', 'angle_np',         # angles, direction
            'azim_np',  'angle_between',
            'angle_2pnts', 'angle_seq',
-           'angles_poly', 'line_dir',       
+           'angles_poly',
+           'orig_dest_angle', 'line_dir'       
            ]
 # ===========================================================================
 # Note:
@@ -64,9 +67,9 @@ __all__ = ['max_', 'median_', 'min_',      # max, mean, median, min
 #  _view_ or _new_view_ could also be used but are only suited for x,y
 #  structured/recarrays
 #
-# ---- stats related ---------------------------------------------------------
+# ---- stats/descriptive related ---------------------------------------------
 def max_(a):
-    """Array maximums.  No `finite_check`.
+    """Array maximums.  No `finite_check`. See Note above
     """
     a = _reshape_(a)
     if (a.dtype.kind == 'O') or (len(a.shape) > 2):
@@ -77,7 +80,7 @@ def max_(a):
 
 
 def mean_(a):
-    """Array mean. No `finite_check`.
+    """Array mean. No `finite_check`. See Note above
     """
     a = _reshape_(a)
     if (a.dtype.kind == 'O') or (len(a.shape) > 2):
@@ -88,18 +91,18 @@ def mean_(a):
 
 
 def median_(a):
-    """Array median. No `finite_check`.
+    """Array median. No `finite_check`. See Note above
     """
     a = _reshape_(a)
     if (a.dtype.kind == 'O') or (len(a.shape) > 2):
-        meds = np.asanyarray([i.median(axis=0) for i in a])
+        meds = np.asanyarray([np.median(i, axis=0) for i in a])
     else:
-        meds = a.median(axis=0)
+        meds = np.median(a, axis=0)
     return meds
 
 
 def min_(a):
-    """Array minimums. No `finite_check`.
+    """Array minimums. No `finite_check`. See Note above
     """
     a = _reshape_(a)
     if (a.dtype.kind == 'O') or (len(a.shape) > 2):
@@ -111,7 +114,7 @@ def min_(a):
 
 # ---- bounds ---------------------------------------------------------------
 def extent_(a):
-    """Array extent values
+    """Array extent values. See Note above
     """
     a = _reshape_(a)
     if isinstance(a, (list, tuple)):
@@ -131,6 +134,8 @@ def extent_(a):
 def center_(a, remove_dup=True):
     """Return the center of an array. If the array represents a polygon, then
     a check is made for the duplicate first and last point to remove one.
+
+    See Note above
     """
     if a.dtype.kind in ('V', 'O'):
         a = _new_view_(a)
@@ -317,6 +322,7 @@ def e_leng(a, close=False):
         d_leng = np.sqrt(np.einsum('ijk,ijk->ij', diff, diff)).squeeze()
         length = np.sum(d_leng.flatten())
         return length, d_leng
+    # ----
     def _close_ply(a):
         """close an open polyline"""
         if not np.all(a[0] ==  a[-1]):
@@ -444,7 +450,7 @@ def seg_lengths(a):
 
     Returns
     -------
-        List of array(s) containing the segment lengths for each object
+    List of array(s) containing the segment lengths for each object
     """
     a_s = lengths(a)
     result = [i[1] for i in a_s]
@@ -592,8 +598,16 @@ def angles_poly(a=None, inside=True, in_deg=True):
     return angles
 
 
+def orig_dest_angle(orig, dest, fromNorth=False):
+    """Direction of lines formed from an origin to multiple destination points.
+    This simply is a shell for `line_dir` in this module.  See the docs there.
+    """
+    return line_dir(orig, dest, fromNorth)
+
+
 def line_dir(orig, dest, fromNorth=False):
-    """Direction of a line given 2 points
+    """Direction of a line given 2 points, or an origin and multiple
+    destinations.
 
     Parameters
     ----------
