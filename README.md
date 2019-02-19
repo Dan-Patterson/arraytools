@@ -25,11 +25,13 @@ print(", ".join([i.replace("'", "") for i in art.--module--.__all__]))
     - [frmts.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/frmts.py)
       - col_hdr, deline, in_by, redent, \_chunks, head_tail, \_check, \_slice_rows, \_slice_cols, \_slice_head_tail, \_col_format, prn_nd, prn_ma, prn_rec, pd_, prn_struct, make_row_format, prn_, prn
     - [geom.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geom.py)
-      -  \_flat_, \_unpack, segment, stride, \_new_view_, \_view_, \_reshape_, \_min, \_max, \_extent, \_center, \_centroid, centers, centroids, e_area, e_dist, e_leng, areas, lengths, total_length, seg_lengths, radial_sort, dx_dy_np, angle_np, azim_np, angle_2pnts, angle_seq, angles_poly, dist_bearing, \_densify_2D, \_convert, densify, simplify, rotate, trans_rot, repeat, circle, ellipse, rectangle, hex_flat, hex_pointy
+      -  close_arr, stride, poly2segments, intersect_pnt, intersects, cartesian_dist, densify_by_factor, \_convert, densify, simplify, rotate, trans_rot, pnt_in_list, pnt_on_seg, pnts_on_line, pnt_on_poly, point_in_polygon, knn, nn_kdtree, cross, remove_self, adjacency_edge
     - [geom_common.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geom_common.py)
-      -  _new_view_, _reshape_, _view_
+      -  \_new_view_, \_reshape_, \_view_
+    - [geom_create.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geom_create.py)
+      - arc_, arc_sector, circle, circle_mini, circle_ring, ellipse, hex_flat, hex_pointy, convex, mesh_xy, pyramid, rectangle, triangle, pnt_from_dist_bearing, xy_grid, transect_lines
     - [geom_properties.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/geom_properties.py)
-      -  _new_view_, _reshape_, angle_2pnts, angle_between, angle_np, angle_seq, angles_poly, areas, azim_np, center_, centers, centroid_, centroids, dx_dy_np, e_area, e_dist, e_leng, extent_, ft, lengths, line_dir, max_, mean_, median_, min_, np, script, seg_lengths, sys, total_length
+      -  max_, median_, min_, extent_, center_, centers, centroid_, centroids, e_area, e_dist, e_leng, areas, lengths, total_length, seg_lengths, dx_dy_np, angle_np, azim_np, angle_between, angle_2pnts, angle_seq, angles_poly, orig_dest_angle, line_dir
     - [grid.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/grid.py)
       - check_shapes, combine_, euc_dist, euc_alloc, expand_, shrink_, regions_, expand_zone, fill_arr, reclass_vals, reclass_ranges, scale_up
     - [image.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/image.py)
