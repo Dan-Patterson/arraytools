@@ -127,3 +127,29 @@ array([[ 0,  0,  0,  0,  0,  0],
        [ 0,  8,  9, 10, 11,  0],
        [ 0,  0,  0,  0,  0,  0]])
 ```
+
+**ft_pairs**
+
+Make from-to pairs from what is assumed to be coordinates.
+
+```
+a = np.arange(6).reshape(3,2); b = np.arange(7, 11).reshape(2,2)
+
+  a                 b
+array([[0, 1],    array([[ 7,  8],
+       [2, 3],           [ 9, 10]])
+       [4, 5]])
+
+ft_pairs(a, b, to_2D=True)
+
+array([[ 0,  1,  7,  8],
+       [ 0,  1,  9, 10],
+       [ 2,  3,  7,  8],
+       [ 2,  3,  9, 10],
+       [ 4,  5,  7,  8],
+       [ 4,  5,  9, 10]])
+
+ft_pairs(a, b, to_2D=False)
+
+[(0, 1, 7, 8), (0, 1, 9, 10), (2, 3, 7, 8), (2, 3, 9, 10), (4, 5, 7, 8), (4, 5, 9, 10)]
+```
