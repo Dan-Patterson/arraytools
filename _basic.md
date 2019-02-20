@@ -55,3 +55,22 @@ is_finite(a0, return_finite=True)  # optional return of finite values
 
 (False, array([1., 5.]))           # overall, the array contains elements which are not finite
 ```
+
+**n_largest and n_smallest**
+
+```
+a = np.array([[ 0,  1,  2,  3],
+              [ 4,  5,  6,  7],
+              [ 8,  9, 10, 11]])
+
+n_largest(a, num=1, by_row=True)
+
+array([[ 3],
+       [ 7],
+       [11]])
+
+n_largest(a, num=1, by_row=False)
+
+array([[ 8,  9, 10, 11]])
+
+```
