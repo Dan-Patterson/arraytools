@@ -18,7 +18,7 @@ print(", ".join([i.replace("'", "") for i in art.--module--.__all__]))
 
 ----
 - **arraytools**  **...Tools for working with numpy arrays**
-    - [`_base_functions.py`](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/_base_functions.py)
+    - [`_basic.py`](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/_basic.py)
       - arr_info, keep_ascii, is_float, keep_nums, del_punc, n_largest, n_smallest, num_to_nan, num_to_mask, even_odd, pad_even_odd, pad_nan, pad_zero, shape_to2D, reshape_options
     - [_io.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/_io.py)
       - load_npy, save_npy, load_txt, save_txt, arr_json, dict_arrays, iterable_dict, dict_struct, struct_dict, excel_np
