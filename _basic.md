@@ -74,3 +74,56 @@ n_largest(a, num=1, by_row=False)
 array([[ 8,  9, 10, 11]])
 
 ```
+
+**num_to_nan and num_to_mask**
+
+```
+a = np.array([[ 0,  1,  2,  3],
+              [ 4,  5,  6,  7],
+              [ 8,  9, 10, 11]])
+
+num_to_nan(a, nums=[1,6,9])
+
+array([[ 0., nan,  2.,  3.],
+       [ 4.,  5., nan,  7.],
+       [ 8., nan, 10., 11.]])
+
+num_to_mask(a, nums=[1,6,9])
+
+masked_array(
+  data=[[0, -, 2, 3],
+        [4, 5, -, 7],
+        [8, -, 10, 11]],
+  mask=[[False,  True, False, False],
+        [False, False,  True, False],
+        [False,  True, False, False]],
+  fill_value=999999)
+```
+
+**pad_even_odd, pad_nan and pad_zero**
+
+```
+pad_even_odd(a)
+ 
+array([[ 0,  0,  0,  0,  0,  0],
+       [ 0,  0,  1,  2,  3,  0],
+       [ 0,  4,  5,  6,  7,  0],
+       [ 0,  8,  9, 10, 11,  0],
+       [ 0,  0,  0,  0,  0,  0]])
+
+pad_nan(a, nan_edge=True)
+
+array([[nan, nan, nan, nan, nan, nan],
+       [nan,  0.,  1.,  2.,  3., nan],
+       [nan,  4.,  5.,  6.,  7., nan],
+       [nan,  8.,  9., 10., 11., nan],
+       [nan, nan, nan, nan, nan, nan]])
+
+pad_zero(a, n=1)
+
+array([[ 0,  0,  0,  0,  0,  0],
+       [ 0,  0,  1,  2,  3,  0],
+       [ 0,  4,  5,  6,  7,  0],
+       [ 0,  8,  9, 10, 11,  0],
+       [ 0,  0,  0,  0,  0,  0]])
+```
