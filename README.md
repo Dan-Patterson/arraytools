@@ -20,7 +20,7 @@ print(", ".join([i.replace("'", "") for i in art.--module--.__all__]))
 - **arraytools**  **...Tools for working with numpy arrays**
     - [`_base_functions.py`](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/_base_functions.py)
       - arr_info, keep_ascii, is_float, keep_nums, del_punc, n_largest, n_smallest, num_to_nan, num_to_mask, even_odd, pad_even_odd, pad_nan, pad_zero, shape_to2D, reshape_options
-    - [aio.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/aio.py)
+    - [_io.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/_io.py)
       - load_npy, save_npy, load_txt, save_txt, arr_json, dict_arrays, iterable_dict, dict_struct, struct_dict, excel_np
     - [frmts.py](https://github.com/Dan-Patterson/arraytools/blob/master/arraytools/frmts.py)
       - col_hdr, deline, in_by, redent, \_chunks, head_tail, \_check, \_slice_rows, \_slice_cols, \_slice_head_tail, \_col_format, prn_nd, prn_ma, prn_rec, pd_, prn_struct, make_row_format, prn_, prn
