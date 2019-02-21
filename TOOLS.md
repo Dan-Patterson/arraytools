@@ -126,51 +126,11 @@ array([(0, 0,  0), (1, 0,  1), (2, 0,  2), (0, 1,  3), (1, 1,  4), (2, 1,  5), (
 
 ```
 
-
------
-
-The arrays that are used in the following examples are defined below
-
-```
-: ----- _demo --------------------------------------------------------------
-:
-:Input ndarray, 'a' ...
-array([[ 0,  1,  2,  3],
-       [ 4,  5,  6,  7],
-       [ 8,  9, 10, 11]])
-
-:Input ndarray, 'b' ...
-array([(0, 1,  2,  3), (4, 5,  6,  7), (8, 9, 10, 11)],
-      dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')])
-
-:Input ndarray, 'c' ...
-array([[[ 0,  1,  2,  3],
-        [ 4,  5,  6,  7],
-        [ 8,  9, 10, 11]],
-
-       [[12, 13, 14, 15],
-        [16, 17, 18, 19],
-        [20, 21, 22, 23]]])
-
-:Input ndarray, 'd' ...
-array([[ 0,  1,  2,  3,  4,  5],
-       [ 6,  7,  8,  9, 10, 11],
-       [12, 13, 14, 15, 16, 17],
-       [18, 19, 20, 21, 22, 23],
-       [24, 25, 26, 27, 28, 29],
-       [30, 31, 32, 33, 34, 35],
-       [36, 37, 38, 39, 40, 41],
-       [42, 43, 44, 45, 46, 47],
-       [48, 49, 50, 51, 52, 53]])
-
-```
-
 **block_arr**
 
 Similar to stride but using a jumping window rather than a moving window.
 
 ```
-
 a = np.array([[ 0,  1,  2,  3],
               [ 4,  5,  6,  7],
               [ 8,  9, 10, 11]])
@@ -192,6 +152,10 @@ block_arr(a, win=[2, 2], nodata=-1)
 **stride**
 Stride array with a specified window size.
 ```
+a = np.array([[ 0,  1,  2,  3],
+              [ 4,  5,  6,  7],
+              [ 8,  9, 10, 11]])
+
 stride(a, (3, 3))  # ... stride an array ....
 [[[ 0  1  2]
   [ 4  5  6]
@@ -207,7 +171,7 @@ Change a structured array including reordering and/or dropping fields.
 
 ```
 b = np.array([(0, 1,  2,  3), (4, 5,  6,  7), (8, 9, 10, 11)],
-      dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')])
+             dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')])
 
 change_arr(b, order=['B', 'C', 'A'], prn=False)  # Array 'b', reordered with 2 fields dropped...
 
@@ -221,6 +185,10 @@ array([[(1,  2, 0)],
 Scale the elements of an array by a factor
 
 ```
+a = np.array([[ 0,  1,  2,  3],
+              [ 4,  5,  6,  7],
+              [ 8,  9, 10, 11]])
+
 scale(a, x=2, y=2, num_z=None)
 
 [[ 0  0  1  1  2  2  3  3]
@@ -233,11 +201,16 @@ scale(a, x=2, y=2, num_z=None)
 
 **split_array**
 ```
-:(13) split_array() ... split an array according to an index field
-[array([(0, 1, 2, 3)],
-      dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')]), array([(4, 5, 6, 7)],
-      dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')]), array([(8, 9, 10, 11)],
-      dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')])]
+b =np.array([(0, 1,  2,  3), (4, 5,  6,  7), (8, 9, 10, 11)],
+           dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')])
+
+split_array(b, 'A', False)
+ 
+[
+  array([(0, 1, 2, 3)], dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')]),
+  array([(4, 5, 6, 7)], dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')]),
+  array([(8, 9, 10, 11)], dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')])
+  ]
 ```
 
 **rolling_stats**
