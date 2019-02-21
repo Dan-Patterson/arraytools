@@ -126,40 +126,6 @@ array([(0, 0,  0), (1, 0,  1), (2, 0,  2), (0, 1,  3), (1, 1,  4), (2, 1,  5), (
 
 ```
 
-```
-_demo_tools()
-
-:----------------------------------------------------------------------
-:---- doc_func(func) ----
-:Code for a function on line...2075...
-:
-2075  def pyramid(core=9, steps=10, incr=(1, 1), posi=True):
-2076      """Create a pyramid see pyramid_demo.py"""
-2077      a = np.array([core])
-2078      a = np.atleast_2d(a)
-2079      for i in range(1, steps):
-2080          val = core - i
-2081          if posi and (val <= 0):
-2082              val = 0
-2083          a = np.lib.pad(a, incr, "constant", constant_values=(val, val))
-2084      return a
-
-Comments preceeding function
-None
-function?... True ... or method? False
-Module name... None
-Full specs....
-('args', ['core', 'steps', 'incr', 'posi'])
-('varargs', None)
-('varkw', None)
-('defaults', (9, 10, (1, 1), True))
-('kwonlyargs', [])
-('kwonlydefaults', None)
-('annotations', {})
-----------------------------------------------------------------------
-```
-```
-
 
 -----
 
@@ -198,12 +164,18 @@ array([[ 0,  1,  2,  3,  4,  5],
        [48, 49, 50, 51, 52, 53]])
 
 ```
------
 
-The sample functions are listed by number below.
+**block_arr**
 
+Similar to stride but using a jumping window rather than a moving window.
 
-:(17)  block_arr(a, win=[2, 2], nodata=-1)
+```
+
+a = np.array([[ 0,  1,  2,  3],
+              [ 4,  5,  6,  7],
+              [ 8,  9, 10, 11]])
+
+block_arr(a, win=[2, 2], nodata=-1)
 [[[ 0  1]
   [ 4  5]]
 
@@ -215,68 +187,12 @@ The sample functions are listed by number below.
 
  [[10 11]
   [-1 -1]]]
+```
 
-:(10) change_arr(b, order=['B', 'C', 'A'], prn=False
-:    Array 'b', reordered with 2 fields dropped...
-array([[(1,  2, 0)],
-       [(5,  6, 4)],
-       [(9, 10, 8)]],
-      dtype=[('B', '<i4'), ('C', '<i4'), ('A', '<i4')])
-
-
-:(5) scale() ... scale an array up by an integer factor...
-[[ 0  0  1  1  2  2  3  3]
- [ 0  0  1  1  2  2  3  3]
- [ 4  4  5  5  6  6  7  7]
- [ 4  4  5  5  6  6  7  7]
- [ 8  8  9  9 10 10 11 11]
- [ 8  8  9  9 10 10 11 11]]
-
-
-:(4) array info ... info(a)
-
-:---------------------
-:Array information....
-: OWNDATA: if 'False', data are a view
-:flags....
-:     C_CONTIGUOUS : True
-:     F_CONTIGUOUS : False
-:     OWNDATA : False
-:     WRITEABLE : True
-:     ALIGNED : True
-:     UPDATEIFCOPY : False
-:array
-:  |__shape (9, 6)
-:  |__ndim  2
-:  |__size  54
-:  |__bytes 216
-:  |__type  <class 'numpy.ndarray'>
-:  |__strides  (24, 4)
-:dtype      int32
-:  |__kind  i
-:  |__char  l
-:  |__num   7
-:  |__type  <class 'numpy.int32'>
-:  |__name  int32
-:  |__shape ()
-:  |__description
-:  |  |__name, itemsize
-:     |__['', '<i4']
-:---------------------
-
-
-:(7) make_flds() ... create default field names ...
-[('A', '<i8'), ('B', '<i8'), ('C', '<i8')]
-
-
-:(13) split_array() ... split an array according to an index field
-[array([(0, 1, 2, 3)],
-      dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')]), array([(4, 5, 6, 7)],
-      dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')]), array([(8, 9, 10, 11)],
-      dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')])]
-
-
-:(15) stride(a, (3, 3)) ... stride an array ....
+**stride**
+Stride array with a specified window size.
+```
+stride(a, (3, 3))  # ... stride an array ....
 [[[ 0  1  2]
   [ 4  5  6]
   [ 8  9 10]]
@@ -284,25 +200,51 @@ array([[(1,  2, 0)],
  [[ 1  2  3]
   [ 5  6  7]
   [ 9 10 11]]]
+```
 
+**change_arr**
+Change a structured array including reordering and/or dropping fields.
 
-:(16) make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
-[[0 0 1 1 2 2]
- [0 0 1 1 2 2]
- [3 3 4 4 5 5]
- [3 3 4 4 5 5]
- [6 6 7 7 8 8]
- [6 6 7 7 8 8]]
-
-
-:(11) nd2struct() ... make a structured array from another array ...
-array([(0, 1,  2,  3), (4, 5,  6,  7), (8, 9, 10, 11)],
+```
+b = np.array([(0, 1,  2,  3), (4, 5,  6,  7), (8, 9, 10, 11)],
       dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')])
 
+change_arr(b, order=['B', 'C', 'A'], prn=False)  # Array 'b', reordered with 2 fields dropped...
 
-:(22) rolling_stats()... stats for a strided array ...
-:    min, max, mean, sum, std, var, ptp
+array([[(1,  2, 0)],
+       [(5,  6, 4)],
+       [(9, 10, 8)]],
+      dtype=[('B', '<i4'), ('C', '<i4'), ('A', '<i4')])
+
+```
+**scale**
+Scale the elements of an array by a factor
+
+```
+scale(a, x=2, y=2, num_z=None)
+
+[[ 0  0  1  1  2  2  3  3]
+ [ 0  0  1  1  2  2  3  3]
+ [ 4  4  5  5  6  6  7  7]
+ [ 4  4  5  5  6  6  7  7]
+ [ 8  8  9  9 10 10 11 11]
+ [ 8  8  9  9 10 10 11 11]]
+```
+
+**split_array**
+```
+:(13) split_array() ... split an array according to an index field
+[array([(0, 1, 2, 3)],
+      dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')]), array([(4, 5, 6, 7)],
+      dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')]), array([(8, 9, 10, 11)],
+      dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4'), ('D', '<i4')])]
+```
+
+**rolling_stats**
+Statistics for a strided arrays
+```
+rolling_stats(a, no_null=True, prn=True)
+
+min, max, mean, sum, std, var, ptp
 (0, 53, 26.5, 26.5, 1431, 15.58578412100805, 242.91666666666666, 53)
-
-
 ```
