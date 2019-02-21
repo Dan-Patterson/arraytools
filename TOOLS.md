@@ -8,64 +8,78 @@ Not all are.
 Let's get started with hopefully a complete list
 
 ```
-_help()
+__all__ = ['arr2xyz', 'make_blocks',     # (1-6) ndarrays ... make arrays,
+           'group_vals', 'reclass',      #     change shape, arangement
+           'scale', 'split_array',
+           'make_flds', 'nd_rec',        # (7-14) structured/recdarray
+           'nd_struct', 'nd2struct',
+           'nd2rec', 'rc_vals', 'xy_vals',
+           'arrays_struct',
+           'change_arr', 'concat_arrs',  # (15-16) change/modify arrays
+           'pad_', 'stride', 'block',    # (17-22) stride, block and pad
+           'sliding_window_view',
+           'block_arr', 'rolling_stats',
+           '_func', 'find', 'find_closest',  # (23-28) querying, analysis
+           'group_pnts',
+           'uniq', 'is_in',
+           'running_count', 'sequences',
+           'pack_last_axis'  # extras -------
+           ]
+```
 
-:-------------------------------------------------------------------:
-: ---- arrtools functions  (loaded as 'art') ----
-: ---- from tools.py
-(1)  doc_func(func=None)
-     documenting code using inspect
-(2)  get_func(obj, line_nums=True, verbose=True)
-     pull in function code
-(3)  get_modu(obj)
-     pull in module code
-(4)  info(a)  array info
-(5a, b) num_to_nan, num_to_mask
-(6)  make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
-     make arrays consisting of blocks
-(7)  make_flds(n=1, as_type='float', names=None, def_name='col')
-     make structured/recarray fields
-(8)  rec_arr(a, flds=None, types=None)
-(9)  arr2xyz(a, verbose=False)
-     array (col, rows) to (x, y) and array values for z.
-(10) change_arr(a, order=[], prn=False)
-     reorder and/or drop columns
-(11) nd2struct(a)
-     convert an ndarray to a structured array with fields
-(12) scale(a, x=2, y=2, num_z=None)
-     scale an array up in size by repeating values
-(13) split_array(a, fld='ID')
-     split an array using an index field
-(14) _pad_
-(15) stride(a, r_c=(3, 3))
-     stride an array for moving window functions
-(16) make_blocks
-(17) block_arr(a, win=[3, 3], nodata=-1)
-     break an array up into blocks
-(18)  find(a, func, this=None, count=0, keep=[], prn=False, r_lim=2)
-     find elements in an array using...
-     func - (cumsum, eq, neq, ls, lseq, gt, gteq, btwn, btwni, byond)
-           (      , ==,  !=,  <,   <=,  >,   >=,  >a<, =>a<=,  <a> )
-(19)  group_pnts(a, key_fld='ID', keep_flds=['X', 'Y', 'Z'])
-(20)  group_vals(seq, delta=1, oper='!=')
-(21) reclass(a, bins=[], new_bins=[], mask=False, mask_val=None)
-     reclass an array
-(22) rolling_stats((a0, no_null=True, prn=True))
-(23) uniq(ar, return_index=False, return_inverse=False,
-          return_counts=False, axis=0)
-(24) is_in
-(25) n_largest(a, num=1, by_row=True)
-(26) n_smallest(a, num=1, by_row=True)
-(27) rc_vals
-(28) xy_vals
-(29) sort_rows_by_col
-(30) sort_cols_by_row
-(31) radial_sort
- ---  _help  this function
-:-------------------------------------------------------------------:
+**arr2xyz**
+
+Converts an array to xyz values.  The x, y values are derived from the row-column locations.
+```
+a = np.arange(12).reshape(3,4)
+
+arr2xyz(a, keep_masked=False, verbose=False)  # verbose option False
+ 
+array([[ 0,  0,  0],
+       [ 1,  0,  1],
+       [ 2,  0,  2],
+       [ 3,  0,  3],
+       [ 0,  1,  4],
+       [ 1,  1,  5],
+       [ 2,  1,  6],
+       [ 3,  1,  7],
+       [ 0,  2,  8],
+       [ 1,  2,  9],
+       [ 2,  2, 10],
+       [ 3,  2, 11]])
+
+arr2xyz(a, keep_masked=False, verbose=True)  # verbose option True
+
+----------------------------
+Meshgrid demo: array to x,y,z table
+:Formulation...
+:  XX,YY = np.meshgrid(np.arange(x.shape[1]),np.arange(x.shape[0]))
+:Input table
+array([[ 0,  1,  2,  3],
+       [ 4,  5,  6,  7],
+       [ 8,  9, 10, 11]])
+:Raveled array, using x.ravel()
+array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11])
+:XX in mesh: columns shape[1]
+array([0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3])
+:YY in mesh: rows shape[0]
+array([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2])
+:Output:
+array([[ 0,  0,  0],
+       [ 1,  0,  1],
+       [ 2,  0,  2],
+       [ 3,  0,  3],
+       [ 0,  1,  4],
+       [ 1,  1,  5],
+       [ 2,  1,  6],
+       [ 3,  1,  7],
+       [ 0,  2,  8],
+       [ 1,  2,  9],
+       [ 2,  2, 10],
+       [ 3,  2, 11]])
+:-----------------------------
 
 ```
------
 
 ```
 _demo_tools()
@@ -99,6 +113,8 @@ Full specs....
 ('annotations', {})
 ----------------------------------------------------------------------
 ```
+```
+
 
 -----
 
@@ -141,21 +157,6 @@ array([[ 0,  1,  2,  3,  4,  5],
 
 The sample functions are listed by number below.
 
-```
-:---- Functions by number  ---------------------------------------------
-:(9)  arr2xyz(a, verbose=False)
-[[ 0  0  0]
- [ 1  0  1]
- [ 2  0  2]
- [ 3  0  3]
- [ 0  1  4]
- [ 1  1  5]
- [ 2  1  6]
- [ 3  1  7]
- [ 0  2  8]
- [ 1  2  9]
- [ 2  2 10]
- [ 3  2 11]]
 
 :(17)  block_arr(a, win=[2, 2], nodata=-1)
 [[[ 0  1]
