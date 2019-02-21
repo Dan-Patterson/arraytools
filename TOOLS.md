@@ -80,6 +80,51 @@ array([[ 0,  0,  0],
 :-----------------------------
 
 ```
+**make_blocks**
+
+Construct an array of patterns, with rows-columns, repeats and dtype,.
+
+```
+make_blocks(rows=3, cols=3, r=2, c=2, dt='int')
+
+array([[0, 0, 1, 1, 2, 2],
+       [0, 0, 1, 1, 2, 2],
+       [3, 3, 4, 4, 5, 5],
+       [3, 3, 4, 4, 5, 5],
+       [6, 6, 7, 7, 8, 8],
+       [6, 6, 7, 7, 8, 8]])
+
+```
+**make_flds**
+Construct fields of a uniform dtype and column names.
+```
+make_flds(n=2, as_type='float', names=None, def_name="col")
+Out[88]: dtype([('col_00', '<f8'), ('col_01', '<f8')])
+```
+
+**nd_struct**
+Create a named array from an ndarray.  There are several other variants within the tools.py script.
+```
+nd_struct(a)
+Out[89]: 
+array([( 0,  1,  2), ( 3,  4,  5), ( 6,  7,  8), ( 9, 10, 11), (12, 13, 14)],
+      dtype=[('A', '<i4'), ('B', '<i4'), ('C', '<i4')])
+```
+
+**rc_vals**
+
+Make an array of row/column/values from an ndarray.
+
+```
+a = np.arange(5*3).reshape(5,3)
+
+rc_vals(a)
+
+array([(0, 0,  0), (1, 0,  1), (2, 0,  2), (0, 1,  3), (1, 1,  4), (2, 1,  5), (0, 2,  6),
+       (1, 2,  7), (2, 2,  8), (0, 3,  9), (1, 3, 10), (2, 3, 11), (0, 4, 12), (1, 4, 13),
+       (2, 4, 14)], dtype=[('Row', '<i8'), ('Col', '<i8'), ('Val', '<i4')])
+
+```
 
 ```
 _demo_tools()
