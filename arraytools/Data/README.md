@@ -14,3 +14,13 @@ array([(1, 0, 'B', 'B_', 'Hall', 11),
              ('Town', '<U6'), ('Facility', '<U8'), ('Time', '<i4')])
 ```
 Useful for testing purposes.
+
+xyz.npy  58, 3D points on a transect line
+```
+a[:3]
+ 
+array([(1,  7.47, 1016.11, 1.98),
+       (2, 19.02, 1008.64, 3.96),
+       (3, 31.92,  999.13, 6.14)],
+      dtype=[('OBJECTID', '<i4'), ('POINT_X', '<f8'), ('POINT_Y', '<f8'), ('POINT_Z', '<f8')])
+```
