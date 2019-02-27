@@ -52,8 +52,41 @@ array([[ 341000., 5021000.],
    'transect_lines',                 # lines
    'spiral_archim'                   # esoterica
  ```
- 
- **geom**
+ rectangles... 3 columns, 2 rows with 1 unit x, y spacing
+ ```
+    r = rectangle(dx=1, dy=1, cols=3, rows=2)
+
+    prn(r)
+
+    Array info...
+    shape... (6, 5, 2)  ndim... 3  dtype... float64 
+    ╔═══6
+    ║ ╔═2
+      5
+     => (6, 5, 2)
+     .. 0.00 0.00   1.00 0.00   2.00 0.00   0.00 1.00   1.00 1.00   2.00 1.00 
+     .. 0.00 1.00   1.00 1.00   2.00 1.00   0.00 2.00   1.00 2.00   2.00 2.00 
+     .. 1.00 1.00   2.00 1.00   3.00 1.00   1.00 2.00   2.00 2.00   3.00 2.00 
+     .. 1.00 0.00   2.00 0.00   3.00 0.00   1.00 1.00   2.00 1.00   3.00 1.00 
+     .. 0.00 0.00   1.00 0.00   2.00 0.00   0.00 1.00   1.00 1.00   2.00 1.00 
+    Array shape (6, 5, 2)
+```
+triangles... a single row and column of triangles
+```
+    triangle(dx=1, dy=1, cols=1, rows=1)
+
+    (array([[[0. , 0. ],
+            [0.5, 1. ],
+            [1. , 0. ],
+            [0. , 0. ]],
+
+           [[0.5, 1. ],
+            [1.5, 1. ],
+            [1. , 0. ],
+            [0.5, 1. ]]]), 'triangle')
+```
+
+**geom**
  
  ```
    'close_arr', 'stride',             # utilities
