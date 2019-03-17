@@ -27,16 +27,13 @@ slightly from those using the unaltered coordinates.
 
 Included in this module::
 
-    'EPSILON', '__all__', '__builtins__', '__cached__', '__doc__', '__file__',
-    '__loader__', '__name__', '__package__', '__spec__', '_arrs_', '_convert',
-    '_demo', 'densify_by_factor', '_new_view_', '_test', 'adjacency_edge', 'affine_',
-    'angles_poly', 'as_strided', 'cartesian', 'cartesian_dist', 'center_',
-    'close_arr', 'cross', 'dedent', 'densify', 'dist_bearing_sort', 'e_2d',
-    'e_area', 'e_dist', 'e_leng', 'ft', 'intersect_pnt', 'intersects', 'knn',
+    'EPSILON', '_arrs_', '_convert', '_new_view_', 'adjacency_edge', 'affine_',
+    'angles_poly', 'as_strided', 'cartesian', 'cartesian_dist', 'close_arr',
+    'cross', 'dedent', 'densify', 'densify_by_distance', 'densify_by_factor',
+    'e_2d', 'e_area', 'e_leng', 'intersect_pnt', 'intersects', 'knn',
     'nn_kdtree', 'np', 'p_o_p', 'pnt_', 'pnt_in_list', 'pnt_on_poly',
-    'pnt_on_seg', 'point_in_polygon', 'poly2segments', 'radial_sort',
-    'remove_self', 'rotate', 'script', 'simplify', 'stride', 'sys',
-    'trans_rot'
+    'pnt_on_seg', 'pnts_on_line', 'point_in_polygon', 'poly2segments',
+    'remove_self', 'rotate', 'simplify', 'stride', 'trans_rot'
 
 References
 ----------
@@ -48,7 +45,7 @@ See ein_geom.py for full details and examples
 
 `<https://iliauk.com/2016/03/02/centroids-and-centres-numpy-r/>`_.
 
-*includes KDTree as well*
+**includes KDTree as well**
 
 `<https://stackoverflow.com/questions/50751135/iterating-operation-with-two-
 arrays-using-numpy>`_.
@@ -56,12 +53,15 @@ arrays-using-numpy>`_.
 `<https://stackoverflow.com/questions/21483999/using-atan2-to-find-angle-
 between-two-vectors>`_.
 
-point in/on segment
+**point in/on segment**
 
 `<https://stackoverflow.com/questions/328107/how-can-you-determine-a-point
 -is-between-two-other-points-on-a-line-segment>`_.
 
-benchmarking KDTree
+`<https://stackoverflow.com/questions/54442057/calculate-the-euclidian-
+distance-between-an-array-of-points-to-a-line-segment-in>`_.
+
+**benchmarking KDTree**
 
 `<https://www.ibm.com/developerworks/community/blogs/jfp/entry/
 Python_Is_Not_C_Take_Two?lang=en>`_.
@@ -103,9 +103,9 @@ EPSILON = sys.float_info.epsilon  # note! for checking
 
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
       'float_kind': '{: 0.2f}'.format}
-np.set_printoptions(edgeitems=3, linewidth=120, precision=2, suppress=True,
+np.set_printoptions(edgeitems=5, linewidth=160, precision=2, suppress=True,
                     nanstr='nan', infstr='inf',
-                    threshold=50, formatter=ft)
+                    threshold=200, formatter=ft)
 np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
@@ -116,6 +116,7 @@ __all__ = ['close_arr', 'stride',
            'poly2segments', 
            'intersect_pnt', 'intersects',     # intersection
            'cartesian_dist',
+           'densify_by_distance',
            'densify_by_factor', '_convert',   # densify simplify
            'densify', 'simplify',
            'rotate', 'trans_rot',             # translation, rotation
@@ -197,16 +198,17 @@ def intersect_pnt(a, b=None):
     Parameters
     ----------
     a : array-like
-        1 segment  [p0, p1]
-        2 segments [p0, p1], [p2, p3] or
-        1 array-like np.array([p0, p1, p2, p3])
+      - 1 segment  [p0, p1]
+      - 2 segments [p0, p1], [p2, p3] or
+      - 1 array-like np.array([p0, p1, p2, p3])
     b : None or array-like
-        1 segment [p2, p3]  if `a` is [p0, p1], or ``None``
+        1 segment [p2, p3]  if ``a`` is [p0, p1], or ``None``
 
     Notes
     -----
+    Homogenous coordinates are constructed by adding a z/m column equal to 1.
     >>> s = np.array([[ 0,  0], [10, 10], [ 0,  5], [ 5,  0]])
-     s: array([[ 0,  0],    h: array([[  0.,   0.,   1.],
+    s:  array([[ 0,  0],    h: array([[  0.,   0.,   1.],
                [10, 10],              [ 10.,  10.,   1.],
                [ 0,  5],              [  0.,   5.,   1.],
                [ 5,  0]])             [  5.,   0.,   1.]])
@@ -370,18 +372,17 @@ def densify_by_factor(a, fact=2):
 
     See Also
     --------
-    ``densify_by_distance``
-        This option used an absolute distance separation along the segments
-        making up the line feature
+    densify_by_distance. This option used an absolute distance separation
+    along the segments making up the line feature.
 
     Notes
     -----
     This is the original construction of c rather than the zero's approach
-    outlined in the code which constructs and adds to a zeros array::
+    outlined in the code which constructs and adds to a zeros array
 
-        c0 = c0.reshape(n, -1)
-        c1 = c1.reshape(n, -1)
-        c = np.concatenate((c0, c1), 1)
+    >>> c0 = c0.reshape(n, -1)
+    >>> c1 = c1.reshape(n, -1)
+    >>> c = np.concatenate((c0, c1), 1)
     """
     # Y = a changed all the y's to a
     a = _new_view_(a)
@@ -398,7 +399,7 @@ def densify_by_factor(a, fact=2):
     return c
 
 
-def densify_by_distance(a, spacing=1):
+def densify_by_distance_old(a, spacing=1):
     """Densify a 2D array by adding points with a specified distance between
     them.  Only appropriate for data representing planar coordinates.
 
@@ -412,9 +413,7 @@ def densify_by_distance(a, spacing=1):
 
     See Also
     --------
-    ``densify_by_factor`` and ``pnts_on_line``
-        Factor is used to represent percentages as well.  A factor of 2x will
-        densify with 50% more points on the segment
+    densify_by_factor, insert_pnts and pnts_on_line
 
     References
     ----------
@@ -425,18 +424,18 @@ def densify_by_distance(a, spacing=1):
     -along-a-line-joining-set-of-points/51514725>`_.
 
     >>> a = np.array([[0,0], [3, 3], [3, 0], [0,0]])  # 3, 3 triangle
-    >>> a = np.array([[0,0], [4, 3], [4, 0], [0,0]])  # 3, 4, 5 rule
-    >>> a = np.array([[0,0], [3, 4], [3, 0], [0,0]])  # 3, 4, 5 rule
+    >>> a = np.array([[0,0], [4, 3], [4, 0], [0,0]])  # 3-4-5 rule
+    >>> a = np.array([[0,0], [3, 4], [3, 0], [0,0]])  # 3-4-5 rule
     """
     # ----
     a = _new_view_(a)
     a = np.squeeze(a)
     pnts = []
     for i, e in enumerate(a[1:]):
-        s = a[i]
-        dxdy = (e - s)
+        s = a[i]                      # 1st point, s
+        dxdy = (e - s)                # end - start
         d = np.sqrt(np.sum(dxdy**2))  # end - start distance   
-        N = int(d/spacing)
+        N = (d/spacing)
         if N < 1:
             pnts.append([s])
         else:
@@ -447,6 +446,70 @@ def densify_by_distance(a, spacing=1):
             pnts.append(nn*delta + s)
     pnts.append(a[-1])
     return np.vstack(pnts)
+
+
+def densify_by_distance(a, spacing):
+    """wrapper for `pnts_on_line`
+
+    Example
+    -------
+    >>> a = np.array([[0., 0.], [3., 4.], [3., 0.], [0., 0.]])  # 3x4x5 rule
+    >>> a.T
+    array([[0., 3., 3., 0.],
+           [0., 4., 0., 0.]])
+    >>> pnts_on_line(a, spacing=2).T  # take the transpose to facilitate view
+    ... array([[0. , 1.2, 2.4, 3. , 3. , 3. , 1. , 0. ],
+    ...        [0. , 1.6, 3.2, 4. , 2. , 0. , 0. , 0. ]])
+    ... array([[0.,  . . . .   3., . .   3., . . . 0. ],    
+    ...        [0.,  . . . .   4., . .   0., . . . 0. ]])
+
+    >>> letter ``C`` and skinny ``C``
+    >>> a = np.array([[ 0, 0], [ 0, 100], [100, 100], [100,  80],
+                      [ 20,  80], [ 20, 20], [100, 20], [100, 0], [ 0, 0]])
+    >>> b = np.array([[ 0., 0.], [ 0., 10.], [10., 10.], [10.,  8.],
+                      [ 2., 8.], [ 2., 2.], [10., 2.], [10., 0.], [ 0., 0.]])
+    Notes
+    -----
+    The return value could be np.vstack((\*pnts, a[-1])) using the last point
+    directly, but np.concatenate with a reshaped a[-1] is somewhat faster.
+    All entries to the stacking must be ndim=2.
+
+    References
+    ----------
+    `<https://stackoverflow.com/questions/54665326/adding-points-per-pixel-
+    along-some-axis-for-2d-polygon>`_.
+
+    `<https://stackoverflow.com/questions/51512197/python-equidistant-points
+    -along-a-line-joining-set-of-points/51514725>`_.
+    """
+    return pnts_on_line(a, spacing)
+
+
+def pnts_on_line(a, spacing=1):
+    """Add points, at a fixed spacing, to an array representing a line.
+    The function ``densify_by_distance`` is a wrapper to this one.
+
+    **See** ``densify_by_distance`` for documentation
+
+    Parameters
+    ----------
+    a : array
+        A sequence of `points`, x,y pairs, representing the bounds of a polygon
+        or polyline object
+    spacing : number
+        Spacing between the points to be added to the line.
+    """
+    N = len(a) - 1                                    # segments
+    dxdy = a[1:, :] - a[:-1, :]                       # coordinate differences
+    leng = np.sqrt(np.einsum('ij,ij->i', dxdy, dxdy)) # segment lengths
+    steps = leng/spacing                              # step distance
+    deltas = dxdy/(steps.reshape(-1, 1))              # coordinate steps
+    pnts = np.empty((N,), dtype='O')                  # construct an `O` array
+    for i in range(N):              # cycle through the segments and make
+        num = np.arange(steps[i])   # the new points
+        pnts[i] = np.array((num, num)).T * deltas[i] + a[i]
+    a0 = a[-1].reshape(1,-1)        # add the final point and concatenate
+    return np.concatenate((*pnts, a0), axis=0)
 
 
 def _convert(a, fact=2, check_arcpy=True):
@@ -481,9 +544,9 @@ def densify(polys, fact=2):
 
     Parameters
     ----------
-    `densify_by_factor` : function
+    densify_by_factor : function
         the function that is called for each shape part
-    `_unpack` : function
+    _unpack : function
         unpack objects
     """
     # ---- main section ----
@@ -664,56 +727,6 @@ def pnt_on_seg(pnt, seg):
     xy = np.array([dx, dy])*u + [x1, y1]
     d = xy - pnt
     return xy, np.hypot(d[0], d[1])
-
-
-def pnts_on_line(a, spacing=1):
-    """Add points, at a fixed spacing, to an array representing a line.
-    This is analogous to ``densification``.
-
-    Parameters
-    ----------
-    a : array
-        A sequence of `points`, x,y pairs, representing the bounds of a polygon
-        or polyline object
-    spacing : number
-        Spacing between the points to be added to the line.
-
-    Example
-    -------
-    >>> a = np.array([[0., 0.], [3., 4.], [3., 0.], [0., 0.]])  # 3x4x5 rule
-    >>> a.T
-    array([[0., 3., 3., 0.],
-           [0., 4., 0., 0.]])
-    >>> pnts_on_line(a, spacing=2).T  # take the transpose to facilitate view
-    ... array([[0. , 1.2, 2.4, 3. , 3. , 3. , 1. , 0. ],
-    ...        [0. , 1.6, 3.2, 4. , 2. , 0. , 0. , 0. ]])
-    ... array([[0.,  . . . .   3., . .   3., . . . 0. ],    
-    ...        [0.,  . . . .   4., . .   0., . . . 0. ]])
-
-    >>> # letter ``C`` and skinny ``C``
-    >>> a = np.array([[ 0, 0], [ 0, 100], [100, 100], [100,  80],
-                      [ 20,  80], [ 20, 20], [100, 20], [100, 0], [ 0, 0]])
-    >>> b = np.array([[ 0.,  0.], [ 0., 10.], [10., 10.], [10.,  8.],
-                      [ 2.,  8.], [ 2.,  2.], [10.,  2.], [10.,  0.],
-                      [ 0.,  0.]])
-    Notes
-    -----
-    The return value could be np.vstack((*pnts, a[-1])) using the last point
-    directly, but np.concatenate with a reshaped a[-1] is somewhat faster.
-    All entries to the stacking must be ndim=2.
-    """
-    N = len(a) - 1                                    # segments
-    dxdy = a[1:, :] - a[:-1, :]                       # coordinate differences
-    leng = np.sqrt(np.einsum('ij,ij->i', dxdy, dxdy)) # segment lengths
-    steps = leng/spacing                              # step distance
-    deltas = dxdy/(steps.reshape(-1, 1))              # coordinate steps
-    pnts = np.empty((N,), dtype='O')                  # construct an `O` array
-#    xy = np.empty((N,), dtype='O') 
-    for i in range(N):              # cycle through the segments and make
-        num = np.arange(steps[i])   # the new points, add the final point
-        pnts[i] = np.array((num, num)).T * deltas[i] + a[i]
-    a0 = a[-1].reshape(1,-1)
-    return np.concatenate((*pnts, a0), axis=0)
 
 
 def pnt_on_poly(pnt, poly):

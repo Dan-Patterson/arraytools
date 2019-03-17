@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-r"""
+u"""
 =====
 frmts
 =====
@@ -43,15 +43,16 @@ Notes
 -----
 
 The prn2d function is used to provide a side-by-side view of 2, 3, and 4D
-arrays.  Specifically, 3D and 4D arrays are useful and for testing
-purposes, seeing the dimensions in a different view can facilitate
+arrays.  Specifically, 3D and 4D arrays are useful and for testing purposes,
+seeing the dimensions in a different view can facilitate
 understanding.  For the best effect, the array shapes should be carefully
-considered. Some guidelines follow.  The middle 'r' part of the shape is
-not as affected as the combination of the 'd' and 'c' parts.  The array is
-trimmed beyond the 'width' parameter in prn2d.
+considered. Some guidelines follow.  The middle `r` part of the shape is
+not as affected as the combination of the `d` and `c` parts.  The array is
+trimmed beyond the `width` parameter in prn2d.
     
 Sample the 3D array shape so that the format (d, r, c)
 is within the 20-21 range for d*c ... for example::
+
     integers          floats
     2, r, 10  = 20    2, r, 8 = 16
     3, r,  7  = 21    3, 4, 5 = 15
@@ -98,106 +99,111 @@ help(<function name>) for help::
     ``.........1.........2.........3.........4.........5.........6.........
     123456789012345678901234567890123456789012345678901234567890123456789``
 
-1(b)  deline(a)::
+1(b)  deline(a)
     
-     shp = (2,3,4)
-     a = np.arange(np.prod(shp)).reshape(shp)
-     deline(a)
+>>> shp = (2,3,4)
+>>> a = np.arange(np.prod(shp)).reshape(shp)
+>>> deline(a)
 
-     Main array...
-     ndim: 3 size: 24
-     shape: (2, 3, 4)
-     [[[ 0  1  2  3]
-       [ 4  5  6  7]
-       [ 8  9 10 11]]
-     a[1]....
-      [[12 13 14 15]
-       [16 17 18 19]
-       [20 21 22 23]]]
+Main array::
+
+| ndim: 3 size: 24
+| shape: (2, 3, 4)
+| [[[ 0  1  2  3]
+|   [ 4  5  6  7]
+|   [ 8  9 10 11]]
+| a[1]....
+|  [[12 13 14 15]
+|   [16 17 18 19]
+|   [20 21 22 23]]]
     
 (1c) in_by
 
 indent objects, automatic support for arrays and optional line numbers::
 
-     >>> a = np.arange(2*3*4).reshape(2,3,4)
-     >>> print(art.in_by(a, hdr='---- header ----', nums=True, prefix =".."))
-     ---- header ----
-     00..[[[ 0  1  2  3]
-     01..  [ 4  5  6  7]
-     02..  [ 8  9 10 11]]
-     03..
-     04.. [[12 13 14 15]
-     05..  [16 17 18 19]
-     06..  [20 21 22 23]]]
+>>> a = np.arange(2*3*4).reshape(2,3,4)
+>>> print(art.in_by(a, hdr=`---- header ----`, nums=True, prefix =`..`))
+
+output::
+
+| ---- header ----
+| 00..[[[ 0  1  2  3]
+| 01..  [ 4  5  6  7]
+| 02..  [ 8  9 10 11]]
+| 03..
+| 04.. [[12 13 14 15]
+| 05..  [16 17 18 19]
+| 06..  [20 21 22 23]]]
     
-(1d)  redent(lines, spaces=4)::
+(1d)  redent(lines, spaces=4)
 
-     >>> a = np.arange(3*5).reshape(3,5)
-     >>> print(redent(a))
-     |    [[ 0  1  2  3  4]
-     |     [ 5  6  7  8  9]
-     |     [10 11 12 13 14]]
+>>> a = np.arange(3*5).reshape(3, 5)
+>>> print(redent(a))
+| [[ 0  1  2  3  4]
+|  [ 5  6  7  8  9]
+|  [10 11 12 13 14]]
 
-(2) prn2d(a)::
+(2)  prn2d(a)::
 
-    >>> ``a = np.arange(2*3*3).reshape(2, 3, 3)``
-    array([[[ 0,  1,  2],
-    ...     [ 3,  4,  5],
-    ...     [ 6,  7,  8]],
-    ...    [[ 9, 10, 11],
-    ...     [12, 13, 14],
-    ...     [15, 16, 17]]])
-   >>> prn2d(a)
-   Array... shape (2, 3, 3), ndim 3, not masked
-    0,  1,  2     9, 10, 11
-    3,  4,  5    12, 13, 14
-    6,  7,  8    15, 16, 17
-   sub (0)       sub (1)
+>>> a = np.arange(2*3*3).reshape(2, 3, 3)
+| array([[[ 0,  1,  2],
+|        [ 3,  4,  5],
+|        [ 6,  7,  8]],
+|       [[ 9, 10, 11],
+|        [12, 13, 14],
+|        [15, 16, 17]]])
+>>> prn2d(a)
+| Array... shape (2, 3, 3), ndim 3, not masked
+| 0,  1,  2     9, 10, 11
+| 3,  4,  5    12, 13, 14
+| 6,  7,  8    15, 16, 17
+| sub (0)       sub (1)
 
-(3) prn_ma::
+(3) prn_ma
 
-    :--------------------
-    :Masked array........
-    :  ndim: 2 size: 20
-    :  shape: (5, 4)
-    :
-    :... a[:5, :4] ...
-    :    -  1  2  3
-    :    4  5  6  7
-    :    8  -  -  -
-    :   12 13 14 15
-    :   16 17 18  -
+>>> output
+| --------------------
+| Masked array........
+|  ndim: 2 size: 20
+|  shape: (5, 4)
+|
+| ... a[:5, :4] ...
+|     -  1  2  3
+|     4  5  6  7
+|     8  -  -  -
+|    12 13 14 15
+|   16 17 18  -
 
 (4) pd and quick_prn
     see code
 
 (5) prn_struct and prn_rec
 
-    main functions,  _col_kind_width, _col_format,subsample
+main functions,  _col_kind_width, _col_format,subsample
 
-    prn_struct(b, edges=3, max_lines=10, width=100, deci=2)::
-    
-        OBJECTID   f0   County  Town  Facility  Time
-        ----------------------------------------------
-                 1    0 B       A_    Hall          26
-                 2    1 C       C_    Hall          60
-                 3    2 D       A_    Hall          42
-               ...  ...     ...   ...       ...
-                18   17 A       C_    Hall          59
-                19   18 C       C_    Hosp          37
-                20   19 B       B_    Hall          52
-    
-        Array... shape: (20,)
-    
-    prn_rec(a, edges=5, max_rows=25, deci=2)::
-    
-        Format ... C:/Git_Dan/arraytools/Data/sample_20.npy
-        record/structured array, with and without field names.
-        --n-- OBJECTID   f0  County  Town  Facility  Time``
-        -------------------------------------------------
-        000         1    0       B    A_      Hall    26
-        001         2    1       C    C_      Hall    60
-        002         3    2       D    A_      Hall    42
+prn_struct(b, edges=3, max_lines=10, width=100, deci=2)::
+
+    OBJECTID   f0   County  Town  Facility  Time
+    ----------------------------------------------
+             1    0 B       A_    Hall          26
+             2    1 C       C_    Hall          60
+             3    2 D       A_    Hall          42
+           ...  ...     ...   ...       ...
+            18   17 A       C_    Hall          59
+            19   18 C       C_    Hosp          37
+            20   19 B       B_    Hall          52
+
+    Array... shape: (20,)
+
+prn_rec(a, edges=5, max_rows=25, deci=2)::
+
+    Format ... C:/Git_Dan/arraytools/Data/sample_20.npy
+    record/structured array, with and without field names.
+    --n-- OBJECTID   f0  County  Town  Facility  Time``
+    -------------------------------------------------
+    000         1    0       B    A_      Hall    26
+    001         2    1       C    C_      Hall    60
+    002         3    2       D    A_      Hall    42
 
 (6) make_row_format::
 

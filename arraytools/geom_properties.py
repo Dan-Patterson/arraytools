@@ -34,7 +34,7 @@ Included in this module::
 import sys
 import warnings
 import numpy as np
-from geom_common import (_new_view_, _reshape_)
+from geom_common import (_new_view_, _view_, _reshape_)
 
 warnings.simplefilter('ignore', FutureWarning)
 
@@ -48,7 +48,7 @@ script = sys.argv[0]  # print this should you need to locate the script
 
 
 __all__ = ['max_', 'median_', 'min_',      # max, mean, median, min
-           'extent_',
+           'extent_', 'extent_poly',       # extents
            'center_', 'centers',           # centers, centroids
            'centroid_', 'centroids',
            'e_area', 'e_dist', 'e_leng',   # areas, distances, lengths
@@ -114,7 +114,7 @@ def min_(a):
 
 # ---- bounds ---------------------------------------------------------------
 def extent_(a):
-    """Array extent values. See Note above
+    """Array extent values. Only 2D extent is returned, Z extent not covered.
     """
     a = _reshape_(a)
     if isinstance(a, (list, tuple)):
@@ -124,10 +124,25 @@ def extent_(a):
         maxs = max_(a)
         ret = np.hstack((mins, maxs))
     else:
-        L, B = min_(a)
-        R, T = max_(a)
+        L, B = min_(a)[:2]
+        R, T = max_(a)[:2]
         ret = np.asarray([L, B, R, T])
     return ret
+
+
+def extent_poly(a):
+    """Return an extent polygon from an extent. The points are ordered
+    clockwise from the bottom left, with the first and last points the same.
+
+    If you have an object array you will have to call this successively to get
+    the polygon bounds for each geometry's bounds.
+
+    >>> ap.dtype # dtype('O')
+    >>> ps = [extent_poly(i) for i in ap]  # a list of extent arrays
+    """
+    L, B, R, T = extent_(a)
+    poly = np.array([[L, B], [L, T], [R, T], [R, B], [L, B]])
+    return poly
 
 
 # ---- centers --------------------------------------------------------------
@@ -151,7 +166,7 @@ def centroid_(a, a_6=None):
     Parameters
     ----------
     a : array
-        A 2D or more of point coordinates.  You need to keep the duplicate
+        A 2D array of point coordinates.  You need to keep the duplicate
         first and last point.
     a_6 : number
         If area has been precalculated, you can use its value.
@@ -615,15 +630,14 @@ def line_dir(orig, dest, fromNorth=False):
         2D arrays of representing the start and end coordinates of two point
         lines.
     fromNorth : boolean
-        True or False gives angle relative to North or the x-axis.
+        True, angles relative to North. False, angles relative to x-axis.
 
     Example
     -------
     >>> orig = np.array([0, 0])
-    >>> xy_s = array([[-1,  0,  1,  1,  1,  0, -1, -1],
-                      [ 1,  1,  1,  0, -1, -1, -1,  0]])
-    >>> dest - xy_s.T
-    >>> dir_ = ["From x-axis", "From N."][fromNorth]
+    >>> xy_s = np.array([[-1, -1,  0,  1,  1,  1,  0, -1, -1],
+                         [ 0, 1,  1,  1,  0, -1, -1, -1,  0]])
+    >>> dest = xy_s.T
     >>> ang = line_dir(orig, dest, fromNorth=False)
     """
     orig = np.atleast_2d(orig)
@@ -640,3 +654,8 @@ def line_dir(orig, dest, fromNorth=False):
 if __name__ == "__main__":
     """optional location for parameters"""
     print("Script... {}".format(script))
+"""
+fc = np.load(r"C:\Arc_projects\Polygon_lineTools\Data\profile01.npy")
+a = fc[['POINT_X', 'POINT_Y', 'Z_cal']]
+p = _view_(a)
+"""

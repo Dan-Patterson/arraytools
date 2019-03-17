@@ -16,8 +16,8 @@ Notes
 -----
 Sample array data, 2000 points with ID, X and Y::
 
-    v = 'C:/Git_Dan/arraytools/Data/pnts_2K_id_x_y.npy'
-    a = np.load(v)
+    data = 'C:/Git_Dan/arraytools/Data/pnts_2K_id_x_y.npy'
+    a = np.load(data)
     a0 = a[['Xs', 'Ys']]
     xy = _new_view_(a0)
     %timeit _new_view_(a0)
@@ -50,8 +50,6 @@ __all__ = ['_new_view_',
 # ---- def section: def code blocks go here ---------------------------------
 # ---- _view and _reshape_ are helper functions -----------------------------
 #
-# ---- _view and _reshape_ are helper functions -----------------------------
-#
 def _new_view_(a):
     """View a structured array x,y coordinates as an ndarray to facilitate
     some array calculations.
@@ -59,10 +57,11 @@ def _new_view_(a):
     NOTE,  see _view_ for the same functionality
     """
     a = np.asanyarray(a)
-    if len(a.dtype) > 1:
+    dt_len = len(a.dtype)
+    if dt_len > 1:
         shp = a.shape[0]
         a = a.view(dtype='float64')
-        a = a.reshape(shp, 2)
+        a = a.reshape(shp, dt_len)
     return a
 
 
@@ -72,7 +71,9 @@ def _view_(a):
     Notes
     -----
     The is a quick function.  The expectation is that they are coordinate
-    values in the form  dtype([('X', '<f8'), ('Y', '<f8')])
+    values in the form  dtype([('X', '<f8'), ('Y', '<f8')]) maybe with a Z
+
+    See ``structured_to_unstructured`` in np.lib.recfunctions
     """
     return a.view((a.dtype[0], len(a.dtype.names)))
 
@@ -86,9 +87,9 @@ def _reshape_(a):
     a uniform dtype return 0.  Structured and recarrays will yield 1 or more.
     Array dtypes are stripped and the array reshaped.
 
-    >>> a = np.array([(341000., 5021000.), (341000., 5022000.),
-    ...               (342000., 5022000.), (341000., 5021000.)],
-    ...              dtype=[('X', '<f8'), ('Y', '<f8')])
+    >>> a = np.array([(341000., 5021000., 10), (341000., 5022000., 20.),
+    ...               (342000., 5022000., 30.), (341000., 5021000., 40)],
+    ...             dtype=[('X', '<f8'), ('Y', '<f8'), ('Z', '<f8')])
     |  # ---- becomes:
     >>> a = np.array([[  341000.,  5021000.], [  341000.,  5022000.],
                       [  342000.,  5022000.], [  341000.,  5021000.]])

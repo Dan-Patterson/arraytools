@@ -28,7 +28,7 @@ import numpy as np
 
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
       'float_kind': '{: 0.3f}'.format}
-np.set_printoptions(edgeitems=10, linewidth=80, precision=2, suppress=True,
+np.set_printoptions(edgeitems=10, linewidth=80, precision=3, suppress=True,
                     threshold=100, formatter=ft)
 np.ma.masked_print_option.set_display('-')  # change to a single -
 
@@ -222,6 +222,103 @@ out['Count'] = cnts
 out['Percent'] = per
 
 """
+#xyz = np.load(r"c:\git_dan\arraytools\data\xyz.npy")
+#a = _view_(xyz[['POINT_X', 'POINT_Y', 'POINT_Z']])
+#len_3d = e_leng(a)
+'''
+def spiral_archim(N, n, clockwise=True, reverse=False):
+    """Create an Archimedes spiral in the range 0 to N points with 'n' steps
+    : between each incrementstep.  You could use np.linspace
+    :Notes: When n is small relative to N, then you begin to form rectangular
+    :  spirals, like rotated rectangles
+    :Tried:  N = 1000, n = 30
+    """
+    rnge = np.arange(0.0, N+1.0)
+    if clockwise:
+        rnge = rnge[::-1]
+    phi = rnge/n * np.pi
+    xs = phi * np.cos(phi)
+    ys = phi * np.sin(phi)
+    if reverse:
+        tmp = np.copy(xs)
+        xs = ys
+        ys = tmp
+    xy = np.c_[xs, ys]
+    wdth, hght = np.ptp(xy, axis=0)
+    return xs, ys, xy 
+'''
+#arcpy.management.SelectLayerByAttribute("pnts_2000", "NEW_SELECTION", "Text01 = 'C'", None)
+#import arcpy
+#import time
+#gdb = r"C:\Git_Dan\arraytools\array_tools_testing\array_tools.gdb"
+#fc = gdb + r"\pnts_2000"
+#lyr = r"C:\Arc_projects\Polygon_lineTools\pnts_2000_lyr.lyrx"
+#qry = "Text01 = 'C'"
+#uniq = ['A', 'Aa', 'Aaa', 'B', 'Bbbbb', 'C', 'Ccccc', 'D', 'Dddd', 'None']
+#def test(lyr, uniq):
+#    """ """
+#    start = time.time()
+#    qry = "Text01 = '{}'".format(uniq)
+#    r = arcpy.management.SelectLayerByAttribute(lyr, "NEW_SELECTION", qry, None)
+#    stop = time.time()
+##    arcpy.management.SelectLayerByAttribute(lyr, "CLEAR_SELECTION") #, qry, None)
+#    return (stop - start)
+
+#gdb = r"C:\Git_Dan\arraytools\array_tools_testing\array_tools.gdb"
+#fc = gdb + r"\pnts_2000"
+#fld = 'Text01'
+#flds = arcpy.ListFields(fc)
+#fld_info = np.array([[f.name, f.type] for f in flds])
+#txt_flds = fld_info[fld_info[:, 1] == 'String']
+#num_flds = []
+#for i, n in enumerate(fld_info[:, 1]):
+#    if n in ('Integer', 'SmallInteger', 'Double', 'Single'):
+#        num_flds.append(fld_info[i])
+#num_flds = np.array(num_flds)
+#
+#
+#def summary(fc, fld):
+#    """ """
+#    a = arcpy.da.TableToNumPyArray(fc, fld)
+#    uniq = np.unique(a[fld])
+#    result =  np.array([[u, a[a[fld] == u].size] for u in uniq])
+#    out = np.zeros(len(result), dtype=[('Class', 'U8'), ('Count', '<i4')])
+#    out['Class'] = result[:, 0]
+#    out['Count'] = result[:, 1]
+#    return out
+
+#results = [[f, summary(fc, f)] for f in txt_flds[:,0]]
+#for i in results:
+#    print("Field ... {}".format(i[0]))
+#    prn_struct(i[1])
+   
+# cool  # symmetric matrix
+#k = np.arange(0, 11)[:, np.newaxis] + np.arange(0, -11, -1)
+
+#abs(k)
+#Out[3]: 
+#array([[ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10],
+#       [ 1,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9],
+#       [ 2,  1,  0,  1,  2,  3,  4,  5,  6,  7,  8],
+#       [ 3,  2,  1,  0,  1,  2,  3,  4,  5,  6,  7],
+#       [ 4,  3,  2,  1,  0,  1,  2,  3,  4,  5,  6],
+#       [ 5,  4,  3,  2,  1,  0,  1,  2,  3,  4,  5],
+#       [ 6,  5,  4,  3,  2,  1,  0,  1,  2,  3,  4],
+#       [ 7,  6,  5,  4,  3,  2,  1,  0,  1,  2,  3],
+#       [ 8,  7,  6,  5,  4,  3,  2,  1,  0,  1,  2],
+#       [ 9,  8,  7,  6,  5,  4,  3,  2,  1,  0,  1],
+#       [10,  9,  8,  7,  6,  5,  4,  3,  2,  1,  0]])
+
+import arcpy
+in_fc = r'C:\Arc_projects\profile_maker\profiler.gdb\transect'
+desc = arcpy.da.Describe(in_fc)
+SR = desc['spatialReference']
+out_fc = r'C:\Arc_projects\profile_maker\profiler.gdb\transect_split'
+shps = []
 
 
-     
+
+#line = arcpy.da.SearchCursor(in_fc, ("SHAPE@",)).next()[0]
+#arcpy.CopyFeatures_management(
+#        [line.segmentAlongLine(i/float(out_count),
+#           ((i+1)/float(out_count)),  True) for i in range(0, out_count)], out_fc)

@@ -32,12 +32,13 @@ import numpy as np
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
       'float_kind': '{: 0.3f}'.format}
 np.set_printoptions(edgeitems=10, linewidth=80, precision=2, suppress=True,
-                    threshold=100, formatter=ft)
+                    threshold=500, formatter=ft)
 np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
 
-__all__ = ['arc_', 'arc_sector',
+__all__ = ['rot_matrix',
+           'arc_', 'arc_sector',
            'circle', 'circle_mini', 'circle_ring',
            'ellipse',
            'hex_flat', 'hex_pointy',
@@ -48,7 +49,8 @@ __all__ = ['arc_', 'arc_sector',
            'triangle',
            'pnt_from_dist_bearing',
            'xy_grid',
-           'transect_lines'
+           'transect_lines',
+           'spiral_archim'
            ]
 # ---- helpers ---- rot_matrix -----------------------------------------------
 #
@@ -86,7 +88,7 @@ def arc_(radius=100, start=0, stop=1, step=0.1, xc=0.0, yc=0.0):
     ----------
     radius : number
         cirle radius from which the arc is obtained
-    start, `stop`, `step` : numbers
+    start, stop, step : numbers
         angles in degrees
     xc, yc : number
         center coordinates in projected units
@@ -95,7 +97,10 @@ def arc_(radius=100, start=0, stop=1, step=0.1, xc=0.0, yc=0.0):
    
     Returns
     -------
-      Points on the arc as either a list or array
+      Points on the arc as an array
+
+    >>> # arc from 0 to 90 in 5 degree increments with radius 2 at (0, 0) 
+    >>> a0 = arc_(radius=2, start=0, stop=90, step=5, xc=0.0, yc=0.0)
     """
     start, stop = sorted([start, stop])
     angle = np.deg2rad(np.arange(start, stop, step))
@@ -114,7 +119,7 @@ def arc_sector(outer=10, inner=9, start=1, stop=6, step=0.1):
         outer radius of the arc sector
     inner : number
         inner radius
-   `start : number
+    start : number
         start angle of the arc
     stop : number
         end angle of the arc
@@ -354,10 +359,6 @@ def mesh_xy(L=0, B=0, R=5, T=5, dx=1, dy=1, as_rec=True):
     -------
     -  A list of coordinates of X,Y pairs and an ID if as_rec is True.
     -  A mesh grid X and Y coordinates is also produced.
-
-    See Also
-    --------
-    `mesh_pnts.py` in arraytools.geomtools
     """
     dt = [('Pnt_num', '<i4'), ('X', '<f8'), ('Y', '<f8')]
     x = np.arange(L, R + dx, dx, dtype='float64')
@@ -451,6 +452,9 @@ def pnt_from_dist_bearing(orig=(0, 0), bearings=None, dists=None, prn=False):
 
     Notes
     -----
+    Planar coordinates are assumed.  Use Vincenty if you wish to work with
+    geographic coordinates.
+
     Sample calculation::
 
         bearings = np.arange(0, 361, 22.5)  # 17 bearings
@@ -470,9 +474,17 @@ def pnt_from_dist_bearing(orig=(0, 0), bearings=None, dists=None, prn=False):
                                           shape_fields=shapeXY,
                                           spatial_reference=SR)
     """
-    if bearings is None and dists is None:
-        return "origin with distances and bearings required"
+    error = "A origin with distances and bearings of equal size required"
     orig = np.array(orig)
+    if bearings is None or dists is None:
+        raise ValueError(error)
+    iterable = np.all([isinstance(i, (list, tuple, np.ndarray))
+                       for i in [dists, bearings]])
+    if iterable:
+        if not (len(dists) == len(bearings)):
+            raise ValueError(error)
+    else:
+        raise ValueError(error)
     rads = np.deg2rad(bearings)
     dx = np.sin(rads) * dists
     dy = np.cos(rads) * dists
@@ -496,6 +508,7 @@ def pnt_from_dist_bearing(orig=(0, 0), bearings=None, dists=None, prn=False):
     out = data.transpose()
     out = np.core.records.fromarrays(out, names=names, formats=kind)
     return out
+
 
 def xy_grid(x, y=None, top_left=True):
     """Create a 2D array of locations from x, y values.  The values need not
@@ -645,6 +658,66 @@ def transect_lines(N=5, orig=None, dist=1, x_offset=0, y_offset=0,
         out = data.transpose()
         out = np.core.records.fromarrays(out, names=names, formats=kind)
     return out, data
+
+
+def spiral_archim(pnts, n, inward=False, clockwise=True):
+    """Create an Archimedes spiral in the range 0 to N points with 'n' steps
+    between each incrementstep.  You could use np.linspace
+
+    Parameters
+    ----------
+    N : integer
+        The range of the spiral
+    n : integer
+        the number of points between steps
+    scale : number
+        The size between points
+    outward : boolean
+        Radiate the spiral from the center
+
+    Notes
+    -----
+    When n is small relative to N, then you begin to form rectangular
+    spirals, like rotated rectangles.
+
+    With N = 360, n = 20 yields 360 points with 2n points (40) to complete each
+    360 degree loop of the spiral
+    """
+    rnge = np.arange(0.0, pnts)
+    if inward:
+        rnge = rnge[::-1]
+    phi = rnge/n * np.pi
+    xs = phi * np.cos(phi)
+    ys = phi * np.sin(phi)
+    if clockwise:
+        xy = np.c_[ys, xs]
+    else:
+        xy = np.c_[xs, ys]
+    #wdth, hght = np.ptp(xy, axis=0)
+    return xs, ys, xy
+
+def mini_weave(n):
+    """ 
+    n : segments
+       z is sliced to ensure compliance
+
+    >>> a = mini_weave(11)
+    >>> e_leng(a)
+    | total 14.142135623730953, 
+    | segment [1.41, 1.41, 1.41, 1.41, 1.41, 1.41, 1.41, 1.41, 1.41, 1.41]
+    """
+    root2 = np.full(n, np.sqrt(2.))
+    one_s = np.ones(n)
+    zero_s = np.zeros(n)
+#    x = np.arange(n)
+#    y = np.arange(n)
+#    z = np.asarray([*sum(zip(zero_s, root2), ())])  
+    x = np.arange(n)
+    y = np.zeros(n)
+    z = np.asarray([*sum(zip(zero_s, one_s), ())])[:n]
+    a = np.vstack((x, y, z)).T
+    return a
+
 # ----------------------------------------------------------------------
 # __main__ .... code section
 if __name__ == "__main__":

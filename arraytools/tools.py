@@ -4,13 +4,13 @@
 tools
 =====
 
-Script :   tools.py
+Script : tools.py
 
-Author :   Dan_Patterson@carleton.ca
+Author : Dan_Patterson@carleton.ca
 
 Modified : 2019-01-06
 
-Purpose :  tools for working with numpy arrays
+Purpose : tools for working with numpy arrays
 
 
 `tools.py` and other scripts are part of the arraytools package.
@@ -212,9 +212,8 @@ shortcuts :
 >>> e = a[[0, 1, 3], [1, 2, 3]]  # keep [0, 1], [1, 2], [3, 3]
 |                                   => ([ 1, 7, 18])
 
-concat_arr
-
-pad__(a, pad_with=None, size=(1, 1))
+concat_arr : function
+    concatenate arrays
 
 stride(a, r_c=(3, 3)) : function
     Produce a strided array using a window of r_c shape.
@@ -1552,7 +1551,7 @@ def group_pnts(a, key_fld='IDs', shp_flds=['Xs', 'Ys']):
 
 
 # ---- (6) analysis .... code section ----
-# ---- uniq, is_in
+# ---- uniq, is_in, running_count, sequences
 #
 def uniq(ar, key_flds=None, return_index=False, return_inverse=False,
          return_counts=False, axis=None):
@@ -1730,7 +1729,6 @@ def sequences(data, stepsize=0):
     -----------
     `<https://stackoverflow.com/questions/7352684/how-to-find-the-groups-of-
     sequences-elements-from-an-array-in-numpy>`__.
-
     """
     #
     a = np.array(data)
@@ -1751,6 +1749,19 @@ def sequences(data, stepsize=0):
     out = np.array(list(zip(seq_num, frum, too, vals, cnts)), dtype=dt)
     return out
 
+
+def remove_seq_dupl(a):
+    """Remove sequential duplicates from an array.  The array is stacked with
+    the first value in the sequence to retain it.  Designed to removed
+    sequential duplicates in point arrays.
+    """
+    uni = a[np.where(a[:-1] != a[1:])[0] + 1]
+    if a.ndim == 1:
+        uni = np.hstack((a[0], uni))
+    else:
+        uni = np.vstack((a[0], uni))
+    uni= np.ascontiguousarray(uni)
+    return uni
 
 # ---- extras *****
 

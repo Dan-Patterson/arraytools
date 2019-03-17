@@ -111,16 +111,16 @@ utils::
 
 
 
-from . import (_basic, _io, create, frmts, geom, geom_common, geom_properties,
-               grid, image, ndset, py_tools, saws, stackstats, surface,
-               tbl, tblstats, tools, utils)
+from . import (_basic, _io, frmts, geom, geom_common, geom_create,
+               geom_properties, grid, image, ndset, py_tools, saws,
+               stackstats, surface, tbl, tblstats, tools, utils)
 
 from ._basic import *
 from ._io import load_npy, save_npy, load_txt, save_txt
-from .create import *
 from .frmts import prn
 from .geom import *
 from .geom_common import *
+from .geom_create import *
 from .geom_properties import *
 from .grid import *
 from .ndset import *
@@ -131,16 +131,18 @@ from .tools import *
 from .utils import dirr
 
 from .analysis import near
+#from .geomtools import (haversine, hulls, mst, n_spaced, pntinply,
+#                        split_polys, triangulate, vincenty)
 
 __art_version__ = "Arraytools version 1.0"
 __art_all__ = ['__art_version__']
 __art_dict__ = {
         '_basic': _basic.__all__,
         '_io': _io.__all__,
-        'create': create.__all__,
         'frmts': frmts.__all__,
         'geom': geom.__all__,
         'geom_common': geom_common.__all__,
+        'geom_create': geom_create.__all__,
         'geom_properties': geom_properties.__all__,
         'grid': grid.__all__,
         'image': image.__all__,
@@ -157,24 +159,23 @@ __art_dict__ = {
 #__all__mods__ = __art_modules__
 #
 #
-#def __info__():
-#    """information on the package.
-#    To use, enter
-#
-#    >>> art.__info__()
-#    """
-#    from textwrap import wrap
-#    d = __art_modules__
-#    for k in d.keys():
-#        vals = d[k]
-#        vals.sort()
-#        v = ", ".join([v for v in vals])
-#        vl = wrap(v, 75)
-#        vl = ["  " + v for v in vl]
-#        print("\n{}::\n".format(k))
-#        for i in range(len(vl)):
-#            print("{}".format(vl[i]))
-#    #return vl
+def __info__():
+    """information on the package.
+    To use, enter
+
+    >>> art.__info__()
+    """
+    from textwrap import wrap
+    d = __art_dict__
+    for k, vals in d.items():
+        vals.sort()
+        v = ", ".join([v for v in vals])
+        vl = wrap(v, 75)
+        vl = ["  " + v for v in vl]
+        print("\n{}::\n".format(k))
+        for i, v in enumerate(vl):
+            print("{}".format(v))
+    #return vl
 print("arraytools imported")
 if __name__ == '__main__':
     print('arraytools.__init__ ...')
