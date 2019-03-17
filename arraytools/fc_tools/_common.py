@@ -12,14 +12,24 @@ Modified : 2018-09-13
 Purpose :
     Common tools for working with numpy arrays and featureclasses
 
+Requires:
+---------
+numpy and arcpy
+
 Tools :
+-------
     '_describe', '_flatten', 'fc_info', 'flatten_shape', 'fld_info',\
     'pack', 'tweet', 'unpack'
 
 References :
 
----------------------------------------------------------------------
+
 """
+# pylint: disable=C0103  # invalid-name
+# pylint: disable=R0914  # Too many local variables
+# pylint: disable=R1710  # inconsistent-return-statements
+# pylint: disable=W0105  # string statement has no effect
+
 # ---- imports, formats, constants ----
 import sys
 import numpy as np
@@ -33,8 +43,46 @@ np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
 
-__all__ = ['_describe', 'fc_info', 'fld_info', 'tweet']
+__all__ = ['tweet',
+           'de_punc',
+           '_describe',
+           'fc_info',
+           'fld_info',
+           'null_dict',
+           ]
 
+
+def tweet(msg):
+    """Print a message for both arcpy and python.
+
+    msg - a text message
+    """
+    m = "\n{}\n".format(msg)
+    arcpy.AddMessage(m)
+    print(m)
+
+
+def de_punc(s, punc=None, no_spaces=True, char='_'):
+    """Remove punctuation and/or spaces in strings and replace with
+    underscores or nothing
+
+    Parameters
+    ----------
+    s : string
+        input string to parse
+    punc : string
+        A string of characters to replace ie. '@ "!\'\\[]'
+    no_spaces : boolean
+        True, replaces spaces with underscore.  False, leaves spaces
+    char : string
+        Replacement character
+    """
+    if (punc is None) or not isinstance(punc, str):
+        punc = '!"#$%&\'()*+,-./:;<=>?@[\\]^`{|}~'  # _ removed
+    if no_spaces:
+        punc = " " + punc
+    s = "".join([[i, char][i in punc] for i in s])
+    return s
 
 # ----------------------------------------------------------------------------
 # ---- Geometry objects and generic geometry/featureclass functions ----------
@@ -120,10 +168,13 @@ def fld_info(in_fc, prn=False):
 
 
 def null_dict(flds):
-    """ produce a null dictionary"""
-    fld_names = [f.name for f in flds
-                 if f.name not in ["Shape_Length", "Shape_Area", "Shape"]]
-    oid_geom = ['OBJECTID', 'SHAPE@X', 'SHAPE@Y']
+    """Produce a null dictionary from a list of fields
+    These must be field objects and not just their name.
+    """
+    dump_flds = ["OBJECTID","Shape_Length", "Shape_Area", "Shape"]
+    flds_oth = [f for f in flds
+                if f.name not in dump_flds]
+#    oid_geom = ['OBJECTID', 'SHAPE@X', 'SHAPE@Y']
     nulls = {'Double':np.nan,
              'Single':np.nan,
              'Short':np.iinfo(np.int16).min,
@@ -134,19 +185,44 @@ def null_dict(flds):
              'String':str(None),
              'Text':str(None)}
     fld_dict = {i.name: i.type for i in flds_oth}
-    null_dict = {f:nulls[fld_dict[f]] for f in fld_names}
+    nulls = {f.name:nulls[fld_dict[f.name]] for f in flds_oth}
+    return nulls
 
 
-def tweet(msg):
-    """Print a message for both arcpy and python.
+def tbl_arr(pth):
+    """Convert featureclass/table to a structured ndarray
 
-    msg - a text message
+    Requires
+    --------
+    pth : string
+        path to input featureclass or table
+
     """
-    m = "\n{}\n".format(msg)
-    arcpy.AddMessage(m)
-    print(m)
+    flds = arcpy.ListFields(pth)
+    nulls = null_dict(flds)
+    bad = ['OID', 'Geometry', 'Shape_Length', 'Shape_Area']
+    f0 = ["OID@"]
+    f1 = [i.name for i in flds if i.type not in bad]
+    flds = f0 + f1
+    a = arcpy.da.TableToNumPyArray(pth,
+                          field_names=flds,
+                          skip_nulls=False,
+                          null_value=nulls)
+    dt = np.array(a.dtype.descr)
+    nmes = dt[:, 0]
+    sze = dt[:, 1]
+    cleaned = []
+    for i in nmes:
+        i = de_punc(i)  # run de_punc to remove punctuation
+        cleaned.append(i)
+    a.dtype = list(zip(cleaned, sze))
+    return a
 
 
+def arr_csv(a):
+    """Format a structured/recarray to csv format
+    """
+    pass
 # ---- extras ----------------------------------------------------------------
 
 

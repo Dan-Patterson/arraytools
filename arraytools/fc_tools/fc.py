@@ -1,27 +1,28 @@
 # -*- coding: UTF-8 -*-
 """
-fc.py  featureclass.py
-======================
+==
+fc
+==
 
-Script   :   fc.py  (featureclass.py)
+Script : fc.py  (featureclass.py)
 
-Author   :   Dan_Patterson@carleton.ca
+Author : Dan_Patterson@carleton.ca
 
-Modified : 2018-09-02
+Modified : 2019-03-13
 
-Purpose  :
+Purpose :
     Tools for working with featureclass arcpy geometry objects and conversion
     to numpy arrays.
 
-Notes:
-------
+Notes
+-----
 - do not rely on the OBJECTID field for anything
 
-  http://support.esri.com/en/technical-article/000010834
+`<http://support.esri.com/en/technical-article/000010834>`_.
 
 See ... /arcpytools/Notes_etc/fc_py_output.txt
 
-for sample output for the functions below
+For sample output for the functions below
 
 -  _describe,  : arcpy describe object
 -  _get_shapes,  : actual arc* geometry
@@ -154,7 +155,8 @@ For example....
 Other examples:
 --------------
 
-The following returned objects for each approach are:
+The following returned objects for each approach are::
+
     p0 - list
     p1 - ndarray
     p2a, p2b = tuple of ndarrays
@@ -170,7 +172,7 @@ The following returned objects for each approach are:
                                            explode_to_points=True,
                                            spatial_reference=SR)
 
-geometry is a square one of 5 shapes
+geometry is a square, one of 5 shapes
 
 >>> p0[2]  # __geo_interface__
 [[[(307500.0, 5029300.0),
@@ -203,18 +205,20 @@ array([(3, 307500.   , 5029300.), (3, 308786.782, 5029300.),
        (3, 307500.   , 5029300.)],
       dtype=[('OID@', '<i4'), ('Shape@X', '<f8'), ('Shape@Y', '<f8')])
 
-Timing
+Timing::
+
   p0  2.31 ms ± 27.2 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
   p1  5 ms ± 42.5 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
   p2  4.88 ms ± 143 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
   p3  4.93 ms ± 135 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
   p4  4.85 ms ± 110 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
-References:
+
+References
 ----------
 
 arcpy.da.SearchCursor
 
-http://pro.arcgis.com/en/pro-app/arcpy/data-access/searchcursor-class.htm
+`<http://pro.arcgis.com/en/pro-app/arcpy/data-access/searchcursor-class.htm>`_.
   ---------------------------------------------------------------------
 """
 # ---- imports, formats, constants ----
@@ -237,8 +241,7 @@ np.ma.masked_print_option.set_display('-')  # change to a single -
 script = sys.argv[0]  # print this should you need to locate the script
 
 
-__all__ = ['_cursor_array',
-           '_geo_array',
+__all__ = ['_cursor_array',           
            '_get_shapes',
            '_ndarray',
            '_two_arrays',
@@ -247,6 +250,7 @@ __all__ = ['_cursor_array',
            'obj_array',
            'change_fld',
            '_props',
+           '_geo_array',
            'join_arr_fc'
            ]
 
@@ -262,7 +266,7 @@ def _cursor_array(in_fc, full=True):
     in_fc :
         the featureclass
     full :
-        True: 'SHAPE@', False: ['SHAPE@X', 'SHAPE@Y' ]
+        True, use 'SHAPE@'. False, use ['SHAPE@X', 'SHAPE@Y' ]
     """
     shp = [['SHAPE@X', 'SHAPE@Y'], 'SHAPE@'][full]
     if full:
@@ -273,15 +277,6 @@ def _cursor_array(in_fc, full=True):
                                                   explode_to_points=True)]
     a = np.asarray(a).squeeze()
     return a
-
-
-def _geo_array(polys):
-    """Convert polygon objects to arrays
-    """
-    arrays = [np.asarray(pt.__geo_interface__['coordinates']).squeeze()
-              for pt in polys]  # for p in pt]
-    return arrays
-
 
 def _get_shapes(in_fc):
     """Get shapes from a featureclass, in_fc, using SHAPE@ returning
@@ -299,27 +294,31 @@ def _ndarray(in_fc, to_pnts=True, flds=None, SR=None):
     Requires
     --------
     in_fc : string
-        input featureclass
+        Input featureclass
     to_pnts : boolean
-        True, convert the shape to points. False, centroid returned.
+        True, convert the shape to points. False, the centroid is returned.
     flds : string or list of strings
-      - '*' for all
-      - others : 'OID@', 'Shape',  ['SHAPE@X', 'SHAPE@Y'], or specify
-    Note:
+      - use '\*' for all
+      - others : ``'OID@'``, ``'Shape'``,  [``'SHAPE@X'``, ``'SHAPE@Y'``],
+      or specify
+
+    Notes
     -----
-    You cannot use the 'SHAPE@' field
-    Example:
+    You cannot use the ``'SHAPE@'`` field
+
+    Examples
     --------
-    a = _ndarray(in_fc, True, ['OID@',' SHAPE@X', 'SHAPE@Y', None]
+    >>> a = _ndarray(in_fc, True,
+    ...              [``'OID@'``,``'SHAPE@X'``, ``'SHAPE@Y'``, None]
     """
+    desc = arcpy.da.Describe(in_fc)
     if flds is None:
-        bad = ['OID', 'Geometry', 'Shape_Length', 'Shape_Area']
-        f0 = ["OID@", "SHAPE@X", "SHAPE@Y"]
-        f1 = [i.name for i in arcpy.ListFields(in_fc)
-              if i.type not in bad]
-        flds = f0 + f1
-    if SR is None:
-        desc = arcpy.da.Describe(in_fc)
+        bad = ['OID', 'OBJECTID', 'FID', 'Shape', 'Geometry',
+               'Shape_Length', 'Shape_Area']
+        f0 = [f for f in arcpy.ListFields(in_fc) if f.type not in bad]
+        f1 = [f.name for f in f0 if f.name not in bad]
+        flds = ['OID@', 'SHAPE@X', 'SHAPE@Y'] + f1
+    if SR is None:        
         SR = desc['spatialReference']
     args = [in_fc, flds, "", SR, to_pnts, (None, None)]
     cur = arcpy.da.SearchCursor(*args)
@@ -329,40 +328,33 @@ def _ndarray(in_fc, to_pnts=True, flds=None, SR=None):
 
 
 def _two_arrays(in_fc, both=True, split=True):
-    """Send to a numpy structured/array and split it into a geometry array
-    and an attribute array.  They can be joined back later if needed.
+    """Create structured/arrays split into a geometry and an attribute array.
+    They can be joined back later if needed. The geometry array is returned as
+    an object array.  See the main documentation.
 
-    Note
-    ----
-        The geometry array is returned as an object array.  See the
-        main documentation
+    Parameters
+    ----------
+    both : boolean
+        True, to return both arrays. False, to return just geometry
+    split : boolean
+        True, split points by their geometry groups as an object array.
+        False, a sequential array with shape = (N,)
 
-    Requires:
-    --------
-
-    functions:
-        _xyID
-            function to get geometry array
-        _ndarray
-            function to get the x, y, id array and attribute array
-        fc_info(in_fc)
-            function needed to return fc properties
-    parameters:
-        both
-            True, to return both arrays, False to return just geometry
-        split
-            True, split points by their geometry groups as an object array;
-            False, a sequential array with shape = (N,)
-    variables:
+    Notes
+    -----
+    Requires the functions
+    - _xyID, function to get geometry array
+    - _ndarray, function to get the x, y, id array and attribute array
+    - fc_info(in_fc), function needed to return fc properties
 
     >>> dt_a = [('IDs', '<i4'), ('Xs', '<f8'), ('Ys', '<f8')]
     >>> dt_b = [('IDs', '<i4'), ('Xc', '<f8'), ('Yc', '<f8')]
     >>> dt_b.extend(b.dtype.descr[2:])
 
-        Extend the dtype using the attribute dtype minus geometry and id
+    Extend the dtype using the attribute dtype minus geometry and id
     """
     a = _xyID(in_fc, to_pnts=True)
-    shp_fld, oid_fld, SR, shp_type = fc_info(in_fc)
+    shp_fld, oid_fld, shp_type, SR = fc_info(in_fc)
     dt_a = [('IDs', '<i4'), ('Xs', '<f8'), ('Ys', '<f8')]
     dt_b = [('IDs', '<i4'), ('Xc', '<f8'), ('Yc', '<f8')]
     a.dtype = dt_a
@@ -373,8 +365,8 @@ def _two_arrays(in_fc, both=True, split=True):
         a = np.split(a, w)
         a = np.array([[ids[i], a[i][['Xs', 'Ys']]] for i in range(len(ids))])
     if both:
-        b = _ndarray(in_fc, to_pnts=False, flds=None, SR=None)
-        dt_b.extend(b.dtype.descr[2:])
+        b = _ndarray(in_fc, to_pnts=False, flds=None, SR=SR)
+        dt_b = dt_b + b.dtype.descr[3:]
         b.dtype = dt_b
     return a, b
 
@@ -411,7 +403,15 @@ def _xyID(in_fc, to_pnts=True):
 def _xy_idx(in_fc):
     """Convert featureclass geometry (in_fc) to a simple 2D point array with
     float64 data type and a separate index array to preserve id values
-    ***Best version comparied to _two_arrays
+
+    ** Best version compared to _two_arrays **
+
+    Notes
+    -----
+    To reassemble the geometry, you can get the indices to pull out the
+    geometry.
+    >>> i = idx[:, 0] == 1  # pull out the ids equal to 1
+    >>> a[i]
     """
     flds = ['OID@', 'SHAPE@X', 'SHAPE@Y']
     args = [in_fc, flds, None, None, True, (None, None)]
@@ -435,7 +435,7 @@ def orig_dest_pnts(fc, SR):
     """Convert sequential points to origin-destination pairs to enable
     construction of a line.
 
-    Notes:
+    Notes
     -----
     a : array
 
@@ -457,9 +457,9 @@ def orig_dest_pnts(fc, SR):
          append_only=True)
 
     Sample:
-        fc = 'C:/Git_Dan/a_Data/arcpytools_demo.gdb/polylines_pnts'
 
-        SR = '2951'
+    >>> fc = 'C:/Git_Dan/a_Data/arcpytools_demo.gdb/polylines_pnts'
+    >>> SR = '2951'
     """
     a = arcpy.da.FeatureClassToNumPyArray(fc, ["OID@", "Shape@X", "Shape@Y"],
                                           spatial_reference=SR)
@@ -483,9 +483,9 @@ def obj_array(in_fc):
     The array must have an ID field.  Remove any other fields except
     IDs, Xs and Ys or whatever is used by the featureclass.
 
-    Requires
-    --------
-        _xyID and a variant of group_pnts
+    Parameters
+    ----------
+    xyID and a variant of group_pnts
     """
     def _group_pnts_(a, key_fld='IDs', shp_flds=['Xs', 'Ys']):
         """see group_pnts in tool.py"""
@@ -519,14 +519,22 @@ def change_fld(flds):
     return dt
 
 
+def _geo_array(polys):
+    """Convert polygon/polyline objects to arrays
+    """
+    arrays = [np.asarray(pt.__geo_interface__['coordinates']).squeeze()
+              for pt in polys]  # for p in pt]
+    return arrays
+
+
 def _props(a_shape, prn=True):
     """Get some basic shape geometry properties.
 
-    Note:
-    ----
-        `a_shape`, is a single shape.
-        A searchcursor will return a list of geometries, so you should slice
-        even if there is only one shape.
+    Notes
+    -----
+    - `a_shape`, is a single shape.
+    - A searchcursor will return a list of geometries, so you should slice
+      even if there is only one shape.
     """
     if not hasattr(a_shape, '__geo_interface__'):
         tweet("Requires a 'shape', your provided a {}".format(type(a_shape)))
@@ -553,21 +561,19 @@ def join_arr_fc(a, in_fc, out_fld='Result_', OID_fld='OID@'):
     """Join an array to a featureclass table using matching fields, usually
     an object id field.
 
-    Requires:
-    --------
-
-    a :
+    Parameters
+    ----------
+    a : array
         an array of numbers or text with ndim=1
-    out_fld :
+    out_fld : text
         field name for the results
-    in_fc :
+    in_fc : featureclass
         input featureclass
-    in_flds :
+    in_flds : list
         list of fields containing the OID@ field as a minimum
 
-    ExtendTable (in_table, table_match_field,
-                 in_array, array_match_field, {append_only})
-
+    >>> arcpy.da.ExtendTable (in_table, table_match_field,
+    ...                       in_array, array_match_field, {append_only})
     """
     N = len(a)
     dt_a = [('IDs', '<i4'), (out_fld, a.dtype.str)]
@@ -577,27 +583,6 @@ def join_arr_fc(a, in_fc, out_fld='Result_', OID_fld='OID@'):
     arcpy.da.ExtendTable(in_fc, OID_fld, out, 'IDs', True)
     return out
 
-
-# ----------------------------------------------------------------------
-#
-def _cross_3pnts(a):
-    """Requires 3 points on a plane:
-    """
-    a = np.asarray(a)
-    p0, p1, p2 = a
-    u, v = a[1:] - a[0]  # p1 - p0, p2 - p0
-    # u = unit_vector(u)
-    # v = unit_vector(v)
-    eq = np.cross(u, v)  # Cross product times one of the points
-    d = sum(eq * p0)
-    if d > 0.0:
-        eq /= d
-        d /= d
-    else:
-        d = 0.0
-    return eq, d
-
-
 # ----------------------------------------------------------------------
 # __main__ .... code section
 if __name__ == "__main__":
@@ -605,7 +590,7 @@ if __name__ == "__main__":
       - print the script source name.
       - run the _demo
     """
-    from _common import fc_info, tweet
+#    from _common import fc_info, tweet
 #    print("Script... {}".format(script))
 #    in_fc = r"C:\Git_Dan\a_Data\testdata.gdb\square2"
 #    in_fc = r"C:\Git_Dan\a_Data\testdata.gdb\Carp_5x5km"   # full 25 polygons

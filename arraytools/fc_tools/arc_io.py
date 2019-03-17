@@ -7,7 +7,7 @@ Script :   arc_io.py
 
 Author :   Dan.Patterson@carleton.ca
 
-Modified : 2018-09-14
+Modified : 2019-01-07
 
 Purpose : Basic io tools for numpy arrays and arcpy
 
@@ -58,7 +58,6 @@ def array2raster(a, folder, fname, LL_corner, cellsize):
 
     Requires:
     ---------
-
     `arcpy` and `os` if not previously imported
     """
     if not os.path.exists(folder):
@@ -120,5 +119,5 @@ if __name__ == "__main__":
     : - print the script source name.
     : - run the _demo
     """
-#    print("Script... {}".format(script))
-#    fname = _demo()
+    # print the script source name.
+    print("Script... {}".format(script))

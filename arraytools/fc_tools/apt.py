@@ -7,7 +7,7 @@ Script :   apt.py ... (arcpytools.py)
 
 Author :   Dan.Patterson@carleton.ca
 
-Modified : 2018-09-12
+Modified : 2019-01-07
 
 Purpose :  tools for working with arcpy and numpy arrays
 
@@ -97,6 +97,12 @@ References:
 
 ---------------------------------------------------------------------
 """
+# pylint: disable=C0103  # invalid-name
+# pylint: disable=E1101  # module has no member... arcpy issue
+# pylint: disable=R0914  # Too many local variables
+# pylint: disable=R1710  # inconsistent-return-statements
+# pylint: disable=W0105  # string statement has no effect
+
 # ---- imports, formats, constants ----
 import sys
 from textwrap import dedent
@@ -113,7 +119,7 @@ __all__ = ['_arr_common', '_split_array', 'shapes_fc',
            'shapes_fc', '_id_geom_array',
            'polylines_arr', 'polygons_arr',
            'fc_array', 'change_fld',
-           'tbl_2_np_array', 'tbl_arr', 'to_fc'
+           'tbl_arr', 'to_fc'
            ]
 
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
@@ -192,7 +198,7 @@ def obj_polyline(pnts, SR=None):
     f = []
     for pt in pnts:
         f.append(arcpy.Polyline(arcpy.Array([arcpy.Point(*p)
-                                            for p in pt.tolist()]), SR))
+                                             for p in pt.tolist()]), SR))
     return f
 
 
@@ -230,11 +236,11 @@ def struct_polyline(a, oid_fld, shp_fld, SR):
     f = []
     for pt in pts:
         f.append(arcpy.Polyline(arcpy.Array([arcpy.Point(*p)
-                                            for p in pt.tolist()]), SR))
+                                             for p in pt.tolist()]), SR))
     return f
 
 
-def struct_polygon(a, out_fc, oid_fld, shp_fld, SR):
+def struct_polygon(a, oid_fld, shp_fld, SR):
     """Make polygon features from a structured array.
 
     Requires:
@@ -253,7 +259,7 @@ def struct_polygon(a, out_fc, oid_fld, shp_fld, SR):
     -------
         Produces the featureclass optionally, but returns the polygons anyway.
     """
-    pts = _arr_common(a, oid_fld, shp_fld)
+    pts = a #_arr_common(a, oid_fld, shp_fld)
     f = []
     for pt in pts:
         f.append(arcpy.Polygon(arcpy.Array([arcpy.Point(*p)
@@ -285,7 +291,7 @@ def array_fc(a, out_fc=None, shp_fld=['Shape'], SR=None):
     # return out_fc
 
 
-def array_struct(a, fld_names=['X', 'Y'], dt=['<f8', '<f8']):
+def array_struct(a, fld_names=['X', 'Y'], kinds=['<f8', '<f8']):
     """Convert an array to a structured array
 
     Requires:
@@ -296,11 +302,10 @@ def array_struct(a, fld_names=['X', 'Y'], dt=['<f8', '<f8']):
 
     `names` : names for the fields
     """
-    dts = [(fld_names[i], dt[i]) for i in range(len(fld_names))]
+    dts = list(zip(fld_names, kinds))
     z = np.zeros((a.shape[0],), dtype=dts)
-    names = z.dtype.names
     for i in range(a.shape[1]):
-        z[names[i]] = a[:, i]
+        z[fld_names[i]] = a[:, i]
     return z
 
 
@@ -314,7 +319,7 @@ def arc_np(in_fc):
 
     Requires:
     --------
-    `in_fc` : the file path to the feature class
+    in_fc : the file path to the feature class
 
     ArcGIS Pro is assumed, since the new arcpy.da.Describe is used which
     returns a dictionary of properties.
@@ -366,7 +371,7 @@ def pnts_arr(in_fc, as_struct=True, shp_fld=None, SR=None):
         to return featureclass information.
     """
     if shp_fld is None or SR is None:
-        shp_fld, oid_fld, SR, shp_type = fc_info(in_fc)
+        shp_fld, oid_fld, SR, _ = fc_info(in_fc)
     a = arcpy.da.FeatureClassToNumPyArray(in_fc, "*", "", SR)
     dt = [('Id', '<i4'), ('X', '<f8'), ('Y', '<f8')]
     if as_struct:
@@ -388,7 +393,7 @@ def output_points(out_fc, SR, pnts):
     if arcpy.Exists(out_fc):     # overwrite any existing versions
         arcpy.Delete_management(out_fc)
     arcpy.CopyFeatures_management(pnts_lst, out_fc)
-    return out_fc
+    #return out_fc
 
 
 def output_polylines(out_fc, SR, pnts):
@@ -408,7 +413,7 @@ def output_polylines(out_fc, SR, pnts):
     if arcpy.Exists(out_fc):     # overwrite any existing versions
         arcpy.Delete_management(out_fc)
     arcpy.CopyFeatures_management(polylines, out_fc)
-    return
+    # return
 
 
 def output_polygons(out_fc, SR, pnts):
@@ -429,19 +434,19 @@ def output_polygons(out_fc, SR, pnts):
     if arcpy.Exists(out_fc):     # overwrite any existing versions
         arcpy.Delete_management(out_fc)
     arcpy.CopyFeatures_management(polygons, out_fc)
-    return
+    #return
 
 
 # ---- piece the geometry to featureclasses --------------------------------
-def arr_polyline_fc(a, out_fc, oid_fld, shp_fld, SR):
+def arr_polyline_fc(a, out_fc, SR):
     """Make polyline featureclass from a structured array."""
-    f = obj_polyline(a, oid_fld, shp_fld, SR)
+    f = obj_polyline(a, SR)
     return shapes_fc(f, out_fc)
 
 
-def arr_polygon_fc(a, out_fc, oid_fld, shp_fld, SR):
+def arr_polygon_fc(a, out_fc, SR):
     """Make polyline featureclass from a structured array."""
-    f = obj_polygon(a, oid_fld, shp_fld, SR)
+    f = obj_polygon(a, SR)
     return shapes_fc(f, out_fc)
 
 
@@ -475,7 +480,7 @@ def _id_geom_array(in_fc):
     """The main code segment which gets the id and shape information and
     explodes the geometry to individual points
     """
-    shp_fld, oid_fld, shp_type, SR = fc_info(in_fc)
+    shp_fld, oid_fld, _, SR = fc_info(in_fc)
     a_flds = [oid_fld, shp_fld]
     a = arcpy.da.FeatureClassToNumPyArray(in_fc, field_names=a_flds,
                                           explode_to_points=True,
@@ -485,13 +490,13 @@ def _id_geom_array(in_fc):
     return a
 
 
-def polylines_arr(in_fc, as_struct=True):
+def polylines_arr(in_fc):
     """Create an array from polylines.
     """
     return _id_geom_array(in_fc)
 
 
-def polygons_arr(in_fc, as_struct=True, shp_fld=None, SR=None):
+def polygons_arr(in_fc):
     """Create an array from polygons.
     """
     return _id_geom_array(in_fc)
@@ -505,12 +510,10 @@ def fc_array(in_fc, flds="*", allpnts=True):
     -----------
     in_fc : text
         Full path to the geodatabase and the featureclass name
-
     flds : text or list
         - ``''   : just an object id and shape field``
         - ``'*'  : all fields in the featureclass or``
         - ``list : specific fields ['OBJECTID','Shape','SomeClass', etc]``
-
     allpnts : boolean
         - True `explodes` geometry to individual points.
         - False returns the centroid
@@ -525,20 +528,22 @@ def fc_array(in_fc, flds="*", allpnts=True):
         arcpy documentation
     """
     out_flds = []
-    shp_fld, oid_fld, shp_type, SR = fc_info(in_fc)  # get the base information
+    _, oid_fld, _, SR = fc_info(in_fc)  # get the base information
     flds_all = arcpy.ListFields(in_fc)
     flds_oth = [f for f in flds_all if f.type not in ('OID', 'Geometry')]
-    fld_names = [f.name for f in flds_oth]
+    fld_names = [f.name for f in flds_oth if f.editable]
+#    fld_names.remove('Shape_Length')
+#    fld_names.remove('Shape_Area')
     oid_geom = [oid_fld, 'SHAPE@X', 'SHAPE@Y']
-    i_min = np.iinfo(np.int32).min
     nulls = {'Double':np.nan,
              'Single':np.nan,
-             'Short':i_min,
-             'Long':i_min,
+             'Short':np.iinfo(np.int16).min,
+             'SmallInteger':np.iinfo(np.int16).min,
+             'Long':np.iinfo(np.int32).min,
              'Float':np.nan,
-             'Integer':i_min,
-             'OID':i_min,
-             'Text':"None"}
+             'Integer':np.iinfo(np.int32).min,
+             'String':str(None),
+             'Text':str(None)}
     fld_dict = {i.name: i.type for i in flds_oth}
     null_dict = {f:nulls[fld_dict[f]] for f in fld_names}
     if flds == "":                        # return just OID and Shape values
@@ -573,12 +578,12 @@ def change_fld(flds):
     info = [(fld.type, fld.name, fld.length) for fld in flds]
     dt = []
     for i in info:
-        if i[0] in ('OID', 'Integer', 'Long', 'Short'):
+        if i[0] in ('OID', 'Integer', 'Long', 'Short', 'SmallInteger'):
             dt.append((i[1], '<i4'))
         elif i[0] in ('Double', 'Single', 'Float'):
             dt.append((i[1], '<f8'))
         else:
-            dt.append(i[1], "{}{}".format('U', i[2]))
+            dt.append((i[1], "{}{}".format('U', i[2])))
     return dt
 
 
@@ -596,49 +601,16 @@ def tbl_arr(in_fc):
     with arcpy.da.SearchCursor(in_fc, field_names=f_names) as rows:
         for row in rows:
             vals.append(row)
-            del row
+        del row
         del rows
     dt = [(i.replace('OBJECTID', 'Idx'), j) for i, j in dt]
     a = np.asarray(vals, dtype=dt)
     return a  # vals, az
 
 
-def tbl_2_np_array(in_tbl, flds):
-    """Form the TableToNumPyArray to account for nulls for various dtypes.
-    This is essentially a shortcut to `arcpy.da.TableToNumPyArray`
-
-    Requires
-    --------
-    `in_tbl` :
-        table, or featureclass table name
-    `flds` :
-        list of field names
-    `skip_nulls` = False :
-        set within function
-    `null_value` :
-        determined from the dtype of the array...
-        otherwise you may as well do it manually
-
-    Source
-    ------
-    arraytools, apt.py module
-    """
-    int_min = np.iinfo(np.int32).min
-    float_min = np.finfo(np.float64).min
-    str_val = "None"
-    nulls = {'Double':float_min, 'Integer':int_min, 'String':str_val}
-    #
-    fld_dict = {i.name: i.type for i in arcpy.ListFields(in_tbl)}
-    null_dict = {f:nulls[fld_dict[f]] for f in flds}
-    t = arcpy.da.TableToNumPyArray(in_table=in_tbl, field_names=flds,
-                                   skip_nulls=False,
-                                   null_value=null_dict)
-    return t
-
-
 # ---- functions to convert between array and featureclass ----
 #
-def to_fc(out_fc, a, b=None, dim=2, flds=['Id', 'X', 'Y'], SR_code=None):
+def to_fc(out_fc, a, dim=2, flds=['Id', 'X', 'Y'], SR_code=None):
     """Reconstruct a featureclass from a deconstructed pair of arrays.
 
     This function reverses the functionality of to_array which splits a
@@ -647,25 +619,22 @@ def to_fc(out_fc, a, b=None, dim=2, flds=['Id', 'X', 'Y'], SR_code=None):
     One can perform operations on one or the other or both, then reassemble
     into a new file.
 
+     b=None, removed used extend table elsewhere
+
     Requires:
     --------
     `out_fc` : filename
         full path and name for the output featureclass
-
     `a` : geometry array
         the array of geometry objects
-
     `b` : attribute array
         the array of attributes for 'a'
-
     `dim` : geometry type
         - 0 (point)
         - 1 (polyline) or
         - 2 (polygon)
-
     `fld` : id and shape field(s)
         normally ['Id, 'X', 'Y'] if deconstructed using 'to_array'
-
     `SR_code` :
         The spatial reference code of the output geometry
 
@@ -674,8 +643,7 @@ def to_fc(out_fc, a, b=None, dim=2, flds=['Id', 'X', 'Y'], SR_code=None):
 
     References:
     ----------
-
-        Spatial reference http://spatialreference.org/
+    Spatial reference: `<http://spatialreference.org/>`_.
     """
     args = [to_fc.__module__, dedent(to_fc.__doc__)]
     msg = "\n...to_fc ... in {} failed\n{}".format(*args)
@@ -704,8 +672,8 @@ def to_fc(out_fc, a, b=None, dim=2, flds=['Id', 'X', 'Y'], SR_code=None):
         # pts = _arr_common(a, oid_fld, shp_fld)
         f = []
         for pt in prts:  # g
-            f.append(arcpy.Polygon(
-                             arcpy.Array([arcpy.Point(*p) for p in pt]), SR))
+            f.append(arcpy.Polygon(arcpy.Array([arcpy.Point(*p) for p in pt]),
+                                   SR))
 #    _shapes_fc(f, out_fc)
 #    arcpy.da.ExtendTable(out_fc, table_match_field=oid_fld,
 #                         in_array=b, array_match_field=oid_fld)
