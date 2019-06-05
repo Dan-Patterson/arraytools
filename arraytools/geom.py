@@ -8,7 +8,7 @@ Script :   geom.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2019-02-19
+Modified : 2019-05-25
 
 Purpose :  tools for working with numpy arrays and geometry
 
@@ -132,6 +132,17 @@ __all__ = ['close_arr', 'stride',
 
 # ---- array functions -------------------------------------------------------
 #
+def make_zeros(n, names=None, kinds=None):
+    """quick way to make and empty zeros array
+    """
+    if names is None:
+        names = ('xs', 'ys')
+    if kinds is None:
+        kinds = ('f8', 'f8')
+    dt = {'names': names, 'formats': kinds}
+    z = np.zeros((n,), dtype=dt)
+    return z.view(dtype=dt).squeeze()
+
 def close_arr(a):
     """Close an array representing a sequence of points, so that the
     first and last point are identical.  These arrays are used to construct
@@ -732,6 +743,8 @@ def pnt_on_seg(pnt, seg):
 def pnt_on_poly(pnt, poly):
     """Find closest point location on a polygon/polyline.
 
+    See : ``p_o_p`` for batch running of multiple points to a polygon.
+
     Parameters
     ----------
     pnt : 1D ndarray array
@@ -755,7 +768,7 @@ def pnt_on_poly(pnt, poly):
     This may be as simple as finding the closest point on the edge, but if
     needed, an orthogonal projection onto a polygon/line edge will be done.
     This situation arises when the distance to two sequential points is the
-    same
+    same.
     """
     def _e_2d_(a, p):
         """ array points to point distance... mini e_dist"""
@@ -784,14 +797,14 @@ def pnt_on_poly(pnt, poly):
     if np.all(poly[0] == poly[-1]):  # strip off any duplicate
         poly = poly[:-1]
     # ---- determine the distances
-    d = _e_2d_(poly, pnt)  # abbreviated edist =>  d = e_dist(poly, pnt)
-    key = np.argsort(d)[0]         # dist = d[key]
+    d = _e_2d_(poly, pnt)   # abbreviated edist =>  d = e_dist(poly, pnt)
+    key = np.argsort(d)[0]  # dist = d[key]
     if key == 0:
         seg = np.vstack((poly[-1:], poly[:3]))
     elif (key + 1) >= len(poly):
         seg = np.vstack((poly[-2:], poly[:1]))
     else:
-        seg = poly[key-1:key+2]    # grab the before and after closest
+        seg = poly[key-1:key+2]       # grab the before and after closest
     n1 = _pnt_on_seg_(seg[:-1], pnt)  # abbreviated pnt_on_seg
     d1 = np.linalg.norm(n1 - pnt)
     n2 = _pnt_on_seg_(seg[1:], pnt)   # abbreviated pnt_on_seg
@@ -800,12 +813,30 @@ def pnt_on_poly(pnt, poly):
         dest = [n1[0], n1[1]]
         ang = _line_dir_(pnt, dest)
         ang = np.mod((450.0 - ang), 360.)
-        return [n1[0], n1[1], np.asscalar(d1), np.asscalar(ang)]
+        r = (pnt[0], pnt[1], n1[0], n1[1], np.asscalar(d1), np.asscalar(ang))
+        return r
     else:
         dest = [n2[0], n2[1]]
         ang = _line_dir_(pnt, dest)
         ang = np.mod((450.0 - ang), 360.)
-        return [n2[0], n2[1], np.asscalar(d2), np.asscalar(ang)]
+        r = (pnt[0], pnt[1], n2[0], n2[1], np.asscalar(d2), np.asscalar(ang))
+        return r
+
+
+def p_o_p(pnts, poly):
+    """ main runner to run multiple points to a polygon
+    """
+    result = []
+    for p in pnts:
+        result.append(pnt_on_poly(p, poly))
+    result = np.asarray(result)
+    dt = [('X0', '<f8'), ('Y0', '<f8'), ('X1', '<f8'), ('Y1', '<f8'),
+          ('Dist', '<f8'), ('Angle', '<f8')]
+    z = np.zeros((len(result),), dtype=dt)
+    names = z.dtype.names
+    for i, n in enumerate(names):
+        z[n] = result[:, i]
+    return z
 
 
 def point_in_polygon(pnt, poly):  # pnt_in_poly(pnt, poly):  #
@@ -824,16 +855,6 @@ def point_in_polygon(pnt, poly):  # pnt_in_poly(pnt, poly):  #
             if y_cal < y:
                 return True
     return False
-
-
-def p_o_p(pnt, polys):
-    """ main runner
-    """
-    result = []
-    for p in polys:
-        result.append(pnt_on_poly(p, pnt))
-    return result
-
 
 # ---- nearest neighbors, knn ------------------------------------------------
 #

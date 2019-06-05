@@ -531,7 +531,7 @@ def shape_to2D(a, to_col=False, as_stack=False, col_wise=False):
     return out
 
 
-def reshape_options(a):
+def reshape_options(a, prn=True):
     """Alternative shapes for a numpy array.
 
     Parameters
@@ -572,6 +572,10 @@ def reshape_options(a):
     new_shps = new_shps + z
     new_shps = [i for i in np.unique(new_shps) if 1 not in i]
     new_shps = np.array(sorted(new_shps, key=len, reverse=False))
+    if prn:
+        for i in new_shps:
+            b = a.reshape(i)
+            print("\nshape : {}  ndim : {}\n{}".format(i, b.ndim, b))
     return new_shps
 
 
@@ -728,6 +732,18 @@ def ft_pairs(a, b, to_2D=True):
         out = np.asarray(out)
     return out
 
+def _demos_():
+    """Some things that currently don't have a home
+    """
+    shp = (4, 5)
+    a = np.arange(np.prod(shp)).reshape(shp)
+    d0 = np.arange(shp[0])[:,None]
+    d1 = np.eye(*shp).astype(int)
+    b = np.broadcast_arrays(d0, d1)
+    idx = b[0]
+    t0 = a[idx[:1]]
+    t1 = a[idx[:,:,2]]
+    return a, idx, t0, t1
 # ----------------------------------------------------------------------
 # __main__ .... code section
 if __name__ == "__main__":

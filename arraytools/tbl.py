@@ -34,8 +34,8 @@ following guidelines::
     >>> null_dict = {'Int_fld': int_min, 'Float_fld': float_min}  # None stuff
     >>> flds = ['Int_field', 'Txt01', 'Txt02']  # 2 text fields
     >>> a = arcpy.da.TableToNumPyArray(in_table=f, field_names=flds,
-                                      skip_nulls=False,
-                                      null_value=null_dict)  # if needed
+    ...                                skip_nulls=False,
+    ...                                null_value=null_dict)  # if needed
     >>> row = 'Txt01'
     >>> col = 'Txt02'
     >>> ctab = crosstab(a, row, col, verbose=False)
@@ -94,6 +94,10 @@ import sys
 from textwrap import dedent
 import numpy as np
 
+v =  np.version.version.split('.')[1]  # version check
+if int(v) >= 16:
+    from numpy.lib.recfunctions import structured_to_unstructured as stu
+
 # ---- others from above , de_punc, _describe, fc_info, fld_info, null_dict,
 
 ft = {'bool': lambda x: repr(x.astype('int32')),
@@ -124,6 +128,27 @@ __all__ = ['find_a_in_b',
 #    #np.char.replace(
 #    pass
 #    return None
+
+def _view_(a):
+    """Return a view of the array using the dtype and length
+
+    Notes
+    -----
+    The is a quick function.  The expectation is that the array contains a
+    uniform dtype (e.g 'f8').  For example, coordinate values in the form
+    ``dtype([('X', '<f8'), ('Y', '<f8')])`` maybe with a Z
+
+    See ``structured_to_unstructured`` in np.lib.recfunctions and the imports.
+    """
+    v =  np.version.version.split('.')[1]
+    if int(v) >= 16:
+        return stu(a)
+    else:
+        z = np.zeros((a.shape[0], 2), dtype=np.float)
+        z[:,0] = a['Xs']
+        z[:,1] = a['Ys']
+        return z
+
 
 def find_a_in_b(a, b, a_fields=None, b_fields=None):
     """Find the indices of the elements in a smaller 2d array contained in
@@ -161,9 +186,6 @@ def find_a_in_b(a, b, a_fields=None, b_fields=None):
     `<https://stackoverflow.com/questions/38674027/find-the-row-indexes-of-
     several-values-in-a-numpy-array/38674038#38674038>`_.
     """
-    def _view_(a):
-        """from the same name in arraytools"""
-        return a.view((a.dtype[0], len(a.dtype.names)))
     #
     small, big = [a, b]
     if a.size > b.size:
@@ -192,10 +214,10 @@ def find_in(a, col, what, where='in', any_case=True, pull='all'):
         The query.  If a number, the field is temporarily converted to a
         text representation for the query.
     where : string
-        s, i, eq, en .... `st`(arts with), `in`, `eq`(ual), `en`(ds with)
+        s, i, eq, en  st(arts with), in, eq(ual), en(ds with)
     any_case : boolean
-        True, will find records regardless of `case`, applies to text fields
-    extract: text or list
+        True, will find records regardless of ``case``, applies to text fields
+    extract : text or list
         - `all`,  extracts all records where the column case is found
         - `list`, extracts the records for only those fields in the list
     Example

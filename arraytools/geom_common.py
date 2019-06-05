@@ -8,7 +8,7 @@ Script :   geom_common.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2019-02-19
+Modified : 2019-04-02
 
 Purpose :  Common tools for working with arrays that represent geometry objects
 
@@ -31,6 +31,10 @@ Sample array data, 2000 points with ID, X and Y::
 import sys
 import warnings
 import numpy as np
+
+v =  np.version.version.split('.')[1]  # version check
+if int(v) >= 16:
+    from numpy.lib.recfunctions import structured_to_unstructured as stu
 
 warnings.simplefilter('ignore', FutureWarning)
 
@@ -70,12 +74,26 @@ def _view_(a):
 
     Notes
     -----
-    The is a quick function.  The expectation is that they are coordinate
-    values in the form  dtype([('X', '<f8'), ('Y', '<f8')]) maybe with a Z
+    The is a quick function.  The expectation is that the array contains a
+    uniform dtype (e.g 'f8').  For example, coordinate values in the form
+    ``dtype([('X', '<f8'), ('Y', '<f8')])`` maybe with a Z.
 
-    See ``structured_to_unstructured`` in np.lib.recfunctions
+    References
+    ----------
+    ``structured_to_unstructured`` in np.lib.recfunctions and its imports.
+    `<https://github.com/numpy/numpy/blob/master/numpy/lib/recfunctions.py>`_.
+
     """
-    return a.view((a.dtype[0], len(a.dtype.names)))
+    v =  np.version.version.split('.')[1]  # version check
+    if int(v) >= 16:
+        from numpy.lib.recfunctions import structured_to_unstructured as stu
+        return stu(a)
+    else:
+        names = a.dtype.names
+        z = np.zeros((a.shape[0], 2), dtype=np.float)
+        z[:,0] = a[names[0]]
+        z[:,1] = a[names[1]]
+        return z
 
 
 def _reshape_(a):
@@ -101,13 +119,17 @@ def _reshape_(a):
     common dtype within, as would be expected from a gis package.
     """
     if not isinstance(a, np.ndarray):
-        raise ValueError("\nAn array is required...")
+        try:
+            a = np.asarray(a)
+        except:
+            raise ValueError("\nAn array is required...")
+            return None
     shp = len(a.shape)
     _len = len(a.dtype)
     if a.dtype.kind == 'O':
         if len(a[0].shape) == 1:
             return np.asarray([_view_(i) for i in a])
-        return _view_(a)
+        return a  #_view_(a)
     if _len == 0:
         if shp <= 2:
             return a

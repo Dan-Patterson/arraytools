@@ -1,42 +1,33 @@
 # -*- coding: UTF-8 -*-
 """
+====
 grid
 ====
 
-Script :   grid.py
+Script :  grid.py
 
-Author :   Dan_Patterson@carleton.ca
+Author :  Dan_Patterson@carleton.ca
 
-Modified : 2018-11-23
+Modified : 2018-02-21
 
-Purpose :  tools for working with numpy arrays
+Purpose : tools for working with numpy arrays
 
-Requires:
----------
-arraytools.tools - nd2struct, stride
 
-Functions:
+References
 ----------
->>> art.grid.__all__
-['check_shapes', 'combine_', 'expand_zone', 'euc_dist', 'euc_alloc', 'expand_',
- 'shrink_', 'regions_', 'expand_zone', 'fill_arr', 'reclass_vals',
- 'reclass_ranges', 'scale_up']
-
-References:
------------
-
 `<https://community.esri.com/blogs/dan_patterson/2018/01/19/
-combine-data-classification-from-raster-combinations>`_
+combine-data-classification-from-raster-combinations>`_.
 
 `<https://stackoverflow.com/questions/48035246/
-intersect-multiple-2d-np-arrays-for-determining-zones>`_
-
+intersect-multiple-2d-np-arrays-for-determining-zones>`_.
 
 ---------------------------------------------------------------------
 """
-# pylint: disable=C0103
-# pylint: disable=R1710
-# pylint: disable=R0914
+# pylint: disable=C0103  # invalid-name
+# pylint: disable=R0914  # Too many local variables
+# pylint: disable=R1710  # inconsistent-return-statements
+# pylint: disable=W0105  # string statement has no effect
+
 
 # ---- imports, formats, constants ----
 import sys
@@ -66,7 +57,6 @@ __all__ = ['check_shapes',
            'scale_up'
            ]
 
-
 # ---- array checks and creation --------------------------------------------
 # ---- 3D arrays for stacked operations
 #
@@ -85,17 +75,16 @@ def check_shapes(arrs):
 def combine_(arrs, ret_classes=False):
     """Combine arrays to produce a unique classification scheme
 
-    `arrs` : iterable
+    arrs : iterable
         list, tuple of arrays of the same shape
-    `ret_classes` : array
+    ret_classes : array
         a structured array with the class values for each array and the
         last column is the new_class
 
-    Notes:
-    ------
+    Notes
+    -----
     You should mask any values prior to running this if you want to account
     for nodata values.
-
     """
     err = "\n...A list of 2D arrays, or a 3D array is required, not...{}\n"
     check_shapes(arrs)
@@ -135,8 +124,8 @@ def combine_(arrs, ret_classes=False):
 def euc_dist(a, origins=0, cell_size=1):
     """Calculate the euclidean distance and/or allocation
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     a : array
         numpy float or integer array
     origins : number, list or tuple
@@ -163,8 +152,8 @@ def euc_dist(a, origins=0, cell_size=1):
 def euc_alloc(a, fill_zones=0):
     """Calculate the euclidean distance and/or allocation
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     a : array
         numpy float or integer array
     fill_zones : number, list or tuple
@@ -223,8 +212,8 @@ def regions_(a, cross=True):
     to these groupings.  Any nonzero value will be considered a zone.
     A `structure` is used to filter the raster to describe cell connectivity.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     a : ndarray
         pre-processing may be needed to assign values to `0` which will be
         considered background/offsite
@@ -232,8 +221,8 @@ def regions_(a, cross=True):
        - True, [[0,1,0], [1,1,1], [0,1,0]], diagonal cells not included
        - False, [[1,1,1], [1,1,1], [1,1,1]], diagonals included
 
-    Notes:
-    ------
+    Notes
+    -----
     The use of `np.unique` will ensure that array values are queried and
     returned in ascending order.
 
@@ -359,8 +348,8 @@ def fill_arr(a, win=(3, 3)):
 def reclass_vals(a, old_vals=[], new_vals=[], mask=False, mask_val=None):
     """Reclass an array of integer or floating point values.
 
-    Requires:
-    --------
+    Parameters
+    ----------
     old_vals : number(s)
         list/array of values to reclassify
     new_bins : number(s)
@@ -392,14 +381,13 @@ def reclass_vals(a, old_vals=[], new_vals=[], mask=False, mask_val=None):
 
 
 # ----------------------------------------------------------------------
-# (15) reclass .... code section
+# reclass .... code section
 def reclass_ranges(a, bins=[], new_bins=[], mask=False, mask_val=None):
     """Reclass an array of integer or floating point values based on old and
     new range values.
 
-    Requires:
-    --------
-
+    Parameters
+    ----------
     bins : list/array
         Sequential list/array of the lower limits of each class include one
         value higher to cover the upper range.
@@ -416,10 +404,10 @@ def reclass_ranges(a, bins=[], new_bins=[], mask=False, mask_val=None):
     >>> bins = [0, 5, 10, 15]
     >>> new_bins = [1, 2, 3, 4]
     >>> z_recl = reclass(z, bins, new_bins, mask=False, mask_val=None)
-       # ==> .... z                     ==> .... z_recl
-       array([[ 0,  1,  2,  3,  4],   array([[1, 1, 1, 1, 1],
-              [ 5,  6,  7,  8,  9],          [2, 2, 2, 2, 2],
-              [10, 11, 12, 13, 14]])         [3, 3, 3, 3, 3]])
+    >>> # ==> .... z                     ==> .... z_recl
+    array([[ 0,  1,  2,  3,  4],   array([[1, 1, 1, 1, 1],
+    ...    [ 5,  6,  7,  8,  9],          [2, 2, 2, 2, 2],
+    ...    [10, 11, 12, 13, 14]])         [3, 3, 3, 3, 3]])
     """
     a_rc = np.zeros_like(a)
     if len(bins) < 2:  # or (len(new_bins <2)):
@@ -435,13 +423,13 @@ def reclass_ranges(a, bins=[], new_bins=[], mask=False, mask_val=None):
     return a_rc
 
 
-# (16) scale .... code section
+#  scale .... code section
 def scale_up(a, x=2, y=2, num_z=None):
     """Scale the input array repeating the array values up by the
     x and y factors.
 
-    Requires:
-    --------
+    Parameters
+    ----------
     a : array
         An ndarray, 1D arrays will be upcast to 2D
     x, y : numbers
@@ -454,7 +442,7 @@ def scale_up(a, x=2, y=2, num_z=None):
         With 'repeat' the extras are kept the same and you can add random
         values to particular slices of the 3rd dimension, or multiply them.
 
-    Returns:
+    Returns
     -------
     >>> a = np.array([[0, 1, 2], [3, 4, 5]]
     >>> b = scale(a, x=2, y=2)
@@ -463,7 +451,7 @@ def scale_up(a, x=2, y=2, num_z=None):
            [3, 3, 4, 4, 5, 5],
            [3, 3, 4, 4, 5, 5]])
 
-    Notes:
+    Notes
     -----
     >>> a = np.arange(2*2).reshape(2,2)
     array([[0, 1],
@@ -580,9 +568,7 @@ def _demo_euclid():
 # ----------------------------------------------------------------------
 # __main__ .... code section
 if __name__ == "__main__":
-    """Optionally...
-    : - print the script source name.
-    : - run the _demo
-    """
+    # print the script source name.
+    print("Script... {}".format(script))
 #    print("Script... {}".format(script))
 # https://stackoverflow.com/questions/47861214/

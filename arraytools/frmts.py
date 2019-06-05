@@ -8,7 +8,7 @@ Script:   frmts.py
 
 Author:   Dan_Patterson@carleton.ca
 
-Modified: 2019-02-01
+Modified: 2019-04-14
 
 References
 ----------
@@ -969,6 +969,7 @@ def prn_rec(a, rows_m=25, cols_m=None, deci=2, width=100):
     It is not really possible to deconstruct the exact number of decimals
     to use for float values, so a decision had to be made to simplify.
 
+    Uses : _slice_rows, _col_format, _slice_cols
     """
     names = a.dtype.names
     if cols_m is None:
@@ -1220,7 +1221,7 @@ def pr(func):
     return wrapper
 
 
-@pr
+#@pr  # comment out if you don't want array information
 def prn(a, rows=20, cols=3, deci=2, width=120):
     """Calling function for all the array print options.  Supports structured
     and ndarrays.  For multidimensional ndarrays, the first 3 dimensions are
@@ -1307,6 +1308,86 @@ def prn(a, rows=20, cols=3, deci=2, width=120):
         #prn_struct(a, rows_m=5, cols_m=None, deci=2, width=100)
         prn_rec(a, rows_m=rows, cols_m=cols, deci=deci, width=width)
 
+# ===========================================================================
+# from fc_npGeo and the geometry class
+        
+def prn_tbl(a, rows_m=25, names=None, deci=2, width=100):
+    """Format a structured array with a mixed dtype.  Derived from
+    arraytools.frmts and the prn_rec function therein.
+
+    Parameters
+    ----------
+    a : array
+        A structured/recarray
+    rows_m : integer
+        The maximum number of rows to print.  If rows_m=10, the top 5 and
+        bottom 5 will be printed.
+    names : list/tuple or None
+        Column names to print, or all if None.
+    deci : int
+        The number of decimal places to print for all floating point columns.
+    width : int
+        Print width in characters
+    """
+    def _ckw_(a, name, deci):
+        """columns `a` kind and width"""
+        c_kind = a.dtype.kind
+        if (c_kind in FLOATS) and (deci != 0):  # float with decimals
+            c_max, c_min = np.round([np.nanmin(a), np.nanmax(a)], deci)
+            c_width = len(max(str(c_min), str(c_max), key=len))
+        elif c_kind in NUMS:      # int, unsigned int, float wih no decimals
+            c_width = len(max(str(np.nanmin(a)), str(np.nanmax(a)), key=len))
+        elif c_kind in ('U', 'S', 's'):
+            c_width = len(max(a, key=len))
+        else:
+            c_width = len(str(a))
+        c_width = max(len(name), c_width) + deci
+        return [c_kind, c_width]
+
+    def _col_format(pairs, deci):
+        """Assemble the column format"""
+        form_width = []
+        dts = []
+        for c_kind, c_width in pairs:
+            if c_kind in INTS:  # ---- integer type
+                c_format = ':>{}.0f'.format(c_width, 0)
+            elif (c_kind in FLOATS): # and np.isscalar(c[0]):  # float rounded
+                c_format = ':>{}.{}f'.format(c_width, deci)
+            else:
+                c_format = "!s:<{}".format(c_width)
+            dts.append(c_format)
+            form_width.append(c_width)
+        return dts, form_width
+    # ----
+    dtype_names = a.dtype.names
+    if dtype_names is None:
+        print("Structured/recarray required")
+        return None
+    if names is None:
+        names = dtype_names
+    # ---- slice off excess rows, stack upper and lower slice using rows_m
+    if a.shape[0] > rows_m*2:
+        a = np.hstack((a[:rows_m], a[-rows_m:]))
+    # ---- get the column formats from ... _ckw_ and _col_format ----
+    pairs = [_ckw_(a[name], name, deci) for name in names]  # -- column info
+    dts, wdths = _col_format(pairs, deci)                   # format column
+    # ---- slice off excess columns
+    c_sum = np.cumsum(wdths)               # -- determine where to slice
+    N = len(np.where(c_sum < width)[0])    # columns that exceed ``width``
+    a = a[list(names[:N])]
+    # ---- Assemble the formats and print
+    tail = ['', ' ...'][N < len(names)]
+    row_frmt = "  ".join([('{' + i + '}') for i in dts[:N]])
+    hdr = ["!s:<" + "{}".format(wdths[i]) for i in range(N)]
+    hdr2 = "  ".join(["{" + hdr[i] + "}" for i in range(N)])
+    header = " ... " + hdr2.format(*names[:N]) + tail
+    header = "\n{}\n{}".format(header, "-"*len(header))
+    txt = [header]
+    for idx, i in enumerate(range(a.shape[0])):
+        txt.append(" {:>03.0f} ".format(idx) + row_frmt.format(*a[i]) + tail)
+    msg = "\n".join([i for i in txt])
+    print(msg)
+    # return row_frmt, hdr2  # uncomment for testing
 
 # ----------------------------------------------------------------------
 # (8)  ---- sample data ----

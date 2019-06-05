@@ -266,9 +266,7 @@ def _demo():
 # ----------------------------------------------------------------------
 # __main__ .... code section
 if __name__ == "__main__":
-    """Optionally...
-    : - print the script source name.
-    : - run the _demo
-    """
+    # print the script source name.
+    print("Script... {}".format(script))
 #    print("Script... {}".format(script))
 #    a = _demo()

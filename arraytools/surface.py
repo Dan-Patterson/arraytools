@@ -7,15 +7,15 @@ Script:   surface.py
 
 Author:   Dan.Patterson@carleton.ca
 
-Modified: 2018-04-27
+Modified: 2019-01-06
 
 Purpose :
     Calculate slope, aspect, hillshade and other terrain derivatives
     Plus basic array ramblings so I don't forget.
 
----------------------------
-1. Truth test and slicing:
----------------------------
+-------------------------
+1. Truth test and slicing
+-------------------------
 
 Example:
 
@@ -34,7 +34,7 @@ array([[ 2,  5,  8],
        [20, 23, 26]])
 
 
-2. Filters:
+2. Filters
 ----------
 - f_dxyz : as implemented in arcmap after Burrough
 
@@ -53,8 +53,8 @@ array([[ 2,  5,  8],
    np.array([[t,1,t], [1,0,1], [t,1,t]], dtype="float64")
 
 
-3. Slope calculation:
----------------------
+3. Slope calculation
+--------------------
 - 3rd order finite distance Horn (1981) see Burrough
 >>> filter = [[a, b, c], [d, e, f], [g, h, i]]
     [dz/dx] = ((c + 2f + i) - (a + 2d + g)) / (8 * x_cellsize)
@@ -200,8 +200,8 @@ Computing slope and aspect
                      how-to-calculate-terrain-curvature
 
 
-6. Axis angles conversion:
---------------------------
+6. Axis angles conversion
+-------------------------
 
 ::
 
@@ -214,8 +214,8 @@ Computing slope and aspect
   azimuth np.mod((450.0 - an), 360)   **** best one ****
 
 
-7. single_demo:
----------------
+7. single_demo
+--------------
 
 -  pre-made orientations at 45 deg.  Example with a dx/dy of 2
 
@@ -231,8 +231,8 @@ Computing slope and aspect
      dx=2 - slope: 35.3 asp: 315.0 hshade: 254.0
 
 
-interweave arrays:
-------------------
+interweave arrays
+-----------------
 
 Various examples :
 
@@ -269,8 +269,8 @@ list comprehensions, column_stack, row_stack, r_, c_, vstack, hstack
        '2015-2016', '2016-2017']
 
 
-Masked array:
--------------
+Masked array
+------------
 
 ::
 
@@ -411,7 +411,8 @@ def filter_a(a_s, a_filter=surface_kernel, cell_size=1):
 
 
 # @time_deco
-def slope_a(a, cell_size=1, kern=None, degrees=True, verb=False, keep=False):
+def slope_a(a=None, cell_size=1, kern=None, degrees=True,
+            verb=False, keep=False):
     """Return slope in degrees for an input array using 3rd order
     finite difference method for a 3x3 moing window view into the array.
 
@@ -445,6 +446,8 @@ def slope_a(a, cell_size=1, kern=None, degrees=True, verb=False, keep=False):
     :----------------------------------------:
     """
     # ---- stride the data and calculate slope for 3x3 sliding windows ----
+    if a is None:
+        return a
     np.set_printoptions(edgeitems=10, linewidth=100, precision=1)
     a_s = stride(a, win=(3, 3), stepby=(1, 1))
     if a_s.ndim < 4:
@@ -748,8 +751,8 @@ def single_demo():
 # ---------------------------------------------------------------------
 #
 if __name__ == "__main__":
-    """Main section...   """
-#    print("Script... {}".format(script))
+    # print the script source name.
+    print("Script... {}".format(script))
     #
 #    axis = (-1,-2)
 #    a, d0, d1 = _demo(cell_size=5, degrees=True, pad=False, verbose=True)

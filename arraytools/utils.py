@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """
+=====
 utils
 =====
 
@@ -7,17 +8,26 @@ Script :   utils.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2018-11-22
+Modified : 2019-01-06
 
 Purpose:  tools for working with numpy arrays
+
+References
+----------
+`<http://pro.arcgis.com/en/pro-app/arcpy/data-access/numpyarraytotable.htm>`_.
+
+`<http://pro.arcgis.com/en/pro-app/arcpy/data-access/tabletonumpyarray.htm>`_.
+
 
 Useage:
 -------
 
 **doc_func(func=None)** : see get_func and get_modu
 
-**get_func** : retrieve function information
-::
+**get_func** :
+
+Retrieve function information::
+
     get_func(func, line_nums=True, verbose=True)
     print(art.get_func(art.main))
 
@@ -33,12 +43,13 @@ Useage:
        1   '''Do nothing'''
        2      pass
 
-**get_modu** : retrieve module info
+get_modu :
+    retrieve module info
 
-    get_modu(obj, code=False, verbose=True)
+**info** :
 
-**info(a, prn=True)** : retrieve array information
-::
+Retrieve array information::
+
     - array([(0, 1, 2, 3, 4), (5, 6, 7, 8, 9),
              (10, 11, 12, 13, 14), (15, 16, 17, 18, 19)],
       dtype=[('A', '<i8'), ('B', '<i8')... snip ..., ('E', '<i8')])
@@ -63,18 +74,12 @@ Useage:
          |__['C', '<i8']
          |__['D', '<i8']
          |__['E', '<i8']
-
-References
-----------
-`<http://pro.arcgis.com/en/pro-app/arcpy/data-access/numpyarraytotable.htm>`_.
-
-`<http://pro.arcgis.com/en/pro-app/arcpy/data-access/tabletonumpyarray.htm>`_.
-
----------------------------------------------------------------------
 """
-# pylint: disable=C0103
-# pylint: disable=R1710
-# pylint: disable=R0914
+
+# pylint: disable=C0103  # invalid-name
+# pylint: disable=R0914  # Too many local variables
+# pylint: disable=R1710  # inconsistent-return-statements
+# pylint: disable=W0105  # string statement has no effect
 
 import sys
 from textwrap import dedent, indent, wrap
@@ -101,7 +106,7 @@ __all__ = ['time_deco',
            'get_func',
            'get_modu',
            'dirr',
-           'wrapper',
+           '_wrapper',
            '_utils_help_'
            ]
 
@@ -110,17 +115,17 @@ __all__ = ['time_deco',
 def time_deco(func):  # timing originally
     """Timing decorator function
 
-    Requires:
-    ---------
+    Parameters
+    ----------
     The following import.  Uncomment the import or move it inside the script.
 
     >>> from functools import wraps
 
-    Useage::
+    Example function::
 
         @time_deco  # on the line above the function
         def some_func():
-            '''do stuff'''
+            ``do stuff``
             return None
 
     """
@@ -137,25 +142,25 @@ def time_deco(func):  # timing originally
         if result is None:
             result = 0
         print("  Time: {: <8.2e}s for {:,} objects".format(dt, result))
-        # return result                   # return the result of the function
-        return dt                       # return delta time
+        return result                   # return the result of the function
+        #return dt                       # return delta time
     return wrapper
 
 
 def run_deco(func):
     """Prints basic function information and the results of a run.
 
-    Requires:
-    ---------
+    Parameters
+    ----------
     The following import.  Uncomment the import or move it inside the script.
 
     >>> from functools import wraps
 
-    Useage::
+    Example function::
 
         @run_deco  # on the line above the function
         def some_func():
-            '''do stuff'''
+            ``do stuff``
             return None
 
     """
@@ -179,14 +184,6 @@ def run_deco(func):
 def doc_func(func=None, verbose=True):
     """(doc_func)...Documenting code using inspect
 
-    Requires:
-    ---------
-    >>> import inspect  # module
-
-    Returns
-    -------
-    A listing of the source code with line numbers
-
     Parameters
     ----------
     func : function
@@ -194,11 +191,15 @@ def doc_func(func=None, verbose=True):
     verbose : Boolean
         True prints the result, False returns a string of the result.
 
+    Returns
+    -------
+    A listing of the source code with line numbers
+
     Notes
     -----
+    Requires the `inspect` module
 
-    Source code for...
-    ::
+    Source code for::
 
         module level
         - inspect.getsourcelines(sys.modules[__name__])[0]
@@ -217,7 +218,7 @@ def doc_func(func=None, verbose=True):
         """
         def sub():
             """sub in dummy"""
-            pass
+            print("sub")
         return None
     #
     import inspect
@@ -227,7 +228,7 @@ def doc_func(func=None, verbose=True):
         out = "\nError... `{}` is not a function, but is of type... {}\n"
         print(out.format(func.__name__, type(func)))
         return None
-    script = sys.argv[0]  # a useful way to get a file's name
+    script2 = sys.argv[0]  # a useful way to get a file's name
     lines, line_num = inspect.getsourcelines(func)
     code = "".join(["{:4d}  {}".format(idx+line_num, line)
                     for idx, line in enumerate(lines)])
@@ -239,7 +240,7 @@ def doc_func(func=None, verbose=True):
             inspect.getcomments(func),
             inspect.isfunction(func),
             inspect.ismethod(func),
-            inspect.getmodulename(script),
+            inspect.getmodulename(script2),
             f_args]
     frmt = """
     :----------------------------------------------------------------------
@@ -267,8 +268,8 @@ def doc_func(func=None, verbose=True):
 def get_func(func, line_nums=True, verbose=True):
     """Get function information (ie. for a def)
 
-    Requires
-    --------
+    Parameters
+    ----------
     >>> from textwrap import dedent, indent, wrap
     >>> import inspect
 
@@ -300,8 +301,8 @@ def get_func(func, line_nums=True, verbose=True):
     :
     :-----------------------------------------------------------------
     """
-    import inspect
-    from textwrap import dedent, wrap
+    import inspect  # required if not imported at the top
+    # from textwrap import dedent, wrap
 
     if not inspect.isfunction(func):
         out = "\nError... `{}` is not a function, but is of type... {}\n"
@@ -333,8 +334,8 @@ def get_modu(obj, code=False, verbose=True):
     """Get module (script) information, including source code for
     documentation purposes.
 
-    Requires
-    --------
+    Parameters
+    ----------
     >>> from textwrap import dedent, indent
     >>> import inspect
 
@@ -374,7 +375,7 @@ def get_modu(obj, code=False, verbose=True):
     :-----------------------------------------------------------------
     """
     import inspect
-    from textwrap import dedent
+    # from textwrap import dedent  # required if not immported initially
 
     if not inspect.ismodule(obj):
         out = "\nError... `{}` is not a module, but is of type... {}\n"
@@ -402,9 +403,9 @@ def dirr(obj, colwise=False, cols=4, sub=None, prn=True):
     """A formatted `dir` listing of an object, module, function... anything you
     can get a listing for.
 
-    Source : arraytools.py_tools has a pure python equivalent
+    Source, arraytools.py_tools has a pure python equivalent
 
-    Other : arraytools `__init__._info()` has an abbreviated version
+    Also, arraytools `__init__._info()` has an abbreviated version
 
     Parameters
     ----------
@@ -415,13 +416,13 @@ def dirr(obj, colwise=False, cols=4, sub=None, prn=True):
     sub : text
       sub array with wildcards
 
-    - `arr*` : begin with `arr`
-    - `*arr` : endswith `arr` or
-    - `*arr*`: contains `arr`
+    - `arr\*` : begin with `arr`
+    - `\*arr` : endswith `arr` or
+    - `\*arr\*`: contains `arr`
     prn : boolean
       `True` for print or `False` to return output as string
 
-    Return:
+    Returns
     -------
     A directory listing of a module's namespace or a part of it if the
     `sub` option is specified.
@@ -431,10 +432,10 @@ def dirr(obj, colwise=False, cols=4, sub=None, prn=True):
     See the `inspect` module for possible additions like `isfunction`,
     `ismethod`, `ismodule`
 
-    **Examples**::
+    Examples::
 
         dirr(art, colwise=True, cols=3, sub=None, prn=True)  # all columnwise
-        dirr(art, colwise=True, cols=3, sub='arr', prn=True) # just the `arr`'s
+        dirr(art, colwise=True, cols=3, sub='arr', prn=True) # just the `arr`s
 
           (001)    _arr_common     arr2xyz         arr_json
           (002)    arr_pnts        arr_polygon_fc  arr_polyline_fc
@@ -443,7 +444,8 @@ def dirr(obj, colwise=False, cols=4, sub=None, prn=True):
     """
     err = """
     ...No matches found using substring .  `{0}`
-    ...check with wildcards, *, ... `*abc*`, `*abc`, `abc*`
+    ...check with wildcards, *, ... `\*abc\*`, `\*abc`, `abc\*`
+
     """
     d_arr = dir(obj)
     a = np.array(d_arr)
@@ -504,7 +506,7 @@ def dirr(obj, colwise=False, cols=4, sub=None, prn=True):
 
 # ----------------------------------------------------------------------
 # ---- (5) wrapper .... code section ----
-def wrapper(a, wdth=70):
+def _wrapper(a, wdth=70):
     """Wrap stuff using textwrap.wrap
 
     Notes:
@@ -549,18 +551,14 @@ def _utils_help_():
 # ----------------------------------------------------------------------
 # .... final code section producing the featureclass and extendtable
 
-#
 
 # ----------------------------------------------------------------------
 # __main__ .... code section
 if __name__ == "__main__":
-    """Optionally...
-    : - print the script source name.
-    : - run the _demo
-    """
+    # print the script source name.
     testing = True
     print('\n{} in source script... {}'.format(__name__, script))
-        # parameters here
+    # parameters here
 else:
     testing = False
     # parameters here

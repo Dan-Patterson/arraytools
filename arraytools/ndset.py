@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """
+=====
 ndset
 =====
 
@@ -7,10 +8,10 @@ Script :   ndset.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2018-12-10
+Modified : 2019-01-06
 
-Purpose
--------
+Purpose :
+
 This set of functions is largely directed to extending some of numpy set
 functions to apply to Nxd shaped arrays as well as structured and recarrays.
 The functionality largely depends on using a `view` of the input array so that
@@ -20,15 +21,17 @@ If you are working with arrays and wish to perform functions on certain columns
 then you will have to preprocess/preselect.  You can only add so much to a
 function before it loses its readability and utility.
 
-**ndset**
-::
-  _view_as_, is_in, nd_diff, nd_diffxor, nd_intersect, nd_union, nd_uniq
+ndset::
 
-Notes:
-------
-_view_as_(a)
+    _view_as_struct_, is_in, nd_diff, nd_diffxor, nd_intersect,
+    nd_union, nd_uniq
+
+Notes
+-----
+
+_view_as_struct_(a)
     >>> a = np.array([[  0,   0], [  0, 100], [100, 100]])
-    >>> _view_as_(a)
+    >>> _view_as_struct_(a)
     ... array([[(  0,   0)],
     ...        [(  0, 100)],
     ...        [(100, 100)]], dtype=[('f0', '<i4'), ('f1', '<i4')])
@@ -81,8 +84,8 @@ nd_uniq(a, counts=False)
     array([[  0,   0],
            [100, 100]])
 
-References:
------------
+References
+----------
 `<https://community.esri.com/blogs/dan_patterson/2016/10/23/numpy-lessons-5-
 identical-duplicate-unique-different>`_.
 
@@ -106,7 +109,7 @@ np.ma.masked_print_option.set_display('-')  # change to a single -
 script = sys.argv[0]  # print this should you need to locate the script
 
 
-__all__ = ['_view_as_',
+__all__ = ['_view_as_struct_',
            '_check_dtype_',
            'nd_diff',
            'nd_diffxor',
@@ -118,7 +121,7 @@ __all__ = ['_view_as_',
            ]
 
 
-def _view_as_(a):
+def _view_as_struct_(a):
     """Key function to get uniform nd arrays to be viewed as structured arrays.
     A bit of trickery, but it works for all set-like functionality
 
@@ -127,8 +130,8 @@ def _view_as_(a):
     a : array
         ndarray to be viewed
 
-    Returns:
-    --------
+    Returns
+    -------
     Array view as structured/recarray, with shape = (N, 1)
 
     See main documentation under ``Notes``.
@@ -171,8 +174,8 @@ def nd_diffxor(a, b, uni=False):
     """using setxor... it is slower than nd_diff, 36 microseconds vs 18.2
     but this is faster for large sets
     """
-    a_view = _view_as_(a)
-    b_view = _view_as_(b)
+    a_view = _view_as_struct_(a)
+    b_view = _view_as_struct_(b)
     good = _check_dtype_(a_view, b_view)  # check dtypes
     if not good:
         return None
@@ -183,18 +186,23 @@ def nd_diffxor(a, b, uni=False):
 def nd_intersect(a, b, invert=False):
     """Intersect of two, 2D arrays using views and in1d
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     a, b : arrays
         Arrays are assumed to have a shape = (N, 2)
 
+    References
+    ----------
     `<https://github.com/numpy/numpy/blob/master/numpy/lib/arraysetops.py>`_.
 
     `<https://stackoverflow.com/questions/9269681/intersection-of-2d-
     numpy-ndarrays>`_.
+
+    `<https://stackoverflow.com/questions/8317022/get-intersecting-rows-
+    across-two-2d-numpy-arrays>`_.
     """
-    a_view = _view_as_(a)
-    b_view = _view_as_(b)
+    a_view = _view_as_struct_(a)
+    b_view = _view_as_struct_(b)
     good = _check_dtype_(a_view, b_view)  # check dtypes
     if not good:
         return None
@@ -208,7 +216,7 @@ def nd_intersect(a, b, invert=False):
 def nd_isin(a, look_for, reverse=False):
     """Checks ndarray `a` for the presence of other records ndarray `look_for`
 
-    Parameters:
+    Parameters
     ----------
     arr : array
         the array to check for the elements
@@ -217,8 +225,8 @@ def nd_isin(a, look_for, reverse=False):
     reverse : boolean
         Switch the query look_for to `True` to find those not in `a`
     """
-    a_view = _view_as_(a)
-    b_view = _view_as_(look_for)
+    a_view = _view_as_struct_(a)
+    b_view = _view_as_struct_(look_for)
     good = _check_dtype_(a_view, b_view)  # check dtypes
     if not good:
         return None
@@ -232,14 +240,13 @@ def nd_isin(a, look_for, reverse=False):
 def nd_merge(a, b):
     """Merge views of 2 ndarrays or recarrays.  Duplicates are not removed, use
     nd_union instead.
-
     """
     ab = None
     if (a.dtype.kind in ('f', 'i')) and (b.dtype.kind in ('f', 'i')):
         ab = np.concatenate((a, b), axis=0)
     else:
-        a_view = _view_as_(a)
-        b_view = _view_as_(b)
+        a_view = _view_as_struct_(a)
+        b_view = _view_as_struct_(b)
         good = _check_dtype_(a_view, b_view)  # check dtypes
         if good:
             ab = np.concatenate((a_view, b_view), axis=None)
@@ -250,8 +257,8 @@ def nd_merge(a, b):
 def nd_union(a, b):
     """Union view of arrays
     """
-    a_view = _view_as_(a)
-    b_view = _view_as_(b)
+    a_view = _view_as_struct_(a)
+    b_view = _view_as_struct_(b)
     good = _check_dtype_(a_view, b_view)  # check dtypes
     if not good:
         return None
@@ -267,16 +274,15 @@ def nd_uniq(a, counts=False):
     To enable determination of unique values in uniform arrays with
     uniform dtypes.  np.unique in versions < 1.13 need to use this.
 
-    https://github.com/numpy/numpy/blob/master/numpy/lib/arraysetops.py
+    `<https://github.com/numpy/numpy/blob/master/numpy/lib/arraysetops.py>`_.
     """
-    a_view = _view_as_(a)
+    a_view = _view_as_struct_(a)
     if counts:
-        u, i, inv, cnts = np.unique(a_view, return_index=True,
-                                    return_inverse=True,
-                                    return_counts=counts)
+        uni, i, cnts = np.unique(a_view, return_index=True,
+                                 return_counts=counts)
         uni = a[np.sort(i)]
         return uni.squeeze(), cnts
-    u, i = np.unique(a_view, return_index=True, return_counts=False)
+    uni, i = np.unique(a_view, return_index=True, return_counts=False)
     uni = a[np.sort(i)]
     return uni.squeeze()
 
@@ -291,7 +297,5 @@ def _demo_data():
 # ----------------------------------------------------------------------
 # __main__ .... code section
 if __name__ == "__main__":
-    """Optionally...
-    : - print the script source name.
-    : - run the _demo
-    """
+    # print the script source name.
+    print("Script... {}".format(script))

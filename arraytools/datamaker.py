@@ -1,25 +1,30 @@
 # -*- coding: UTF-8 -*-
 """
+=========
 datamaker
 =========
 
-Script:   datamaker.py
+Script :  datamaker.py
 
-Author:   Dan_Patterson@carleton.ca
+Author :  Dan_Patterson@carleton.ca
 
-Modified: 2018-11-03
+Modified : 2019-03-25
 
-Purpose:  tools for working with numpy arrays
+Purpose : tools for working with numpy arrays
 
-Useage:
+References
+----------
 
-References:
-
-`blog post_. https://community.esri.com/blogs/dan_patterson/2016/04/04/
-numpy-lessons-6-creating-data-for-testing-purposes`
+`<blog post_. https://community.esri.com/blogs/dan_patterson/2016/04/04/
+numpy-lessons-6-creating-data-for-testing-purposes>`_.
 
 ---------------------------------------------------------------------
 """
+# pylint: disable=C0103  # invalid-name
+# pylint: disable=R0914  # Too many local variables
+# pylint: disable=R1710  # inconsistent-return-statements
+# pylint: disable=W0105  # string statement has no effect
+
 # ---- imports, formats, constants ----
 import sys
 from functools import wraps
@@ -29,8 +34,8 @@ import numpy.lib.recfunctions as rfn
 
 ft = {'bool': lambda x: repr(x.astype(np.int32)),
       'float_kind': '{: 0.3f}'.format}
-np.set_printoptions(edgeitems=10, linewidth=80, precision=2, suppress=True,
-                    threshold=100, formatter=ft)
+np.set_printoptions(edgeitems=5, linewidth=120, precision=2, suppress=True,
+                    threshold=20, formatter=ft)
 np.ma.masked_print_option.set_display('-')  # change to a single -
 
 script = sys.argv[0]  # print this should you need to locate the script
@@ -111,12 +116,16 @@ def concat_flds(a, flds=None, out_name="Concat", sep=" ", with_ids=True):
     """Concatenate a sequence of fields to string format and return a
     structured array or ndarray
 
-    Requires
-    --------
-
-    - arrs : a list single arrays of the same length
-    -  sep : the separator between lists
-    -  name : used for structured array
+    Parameters
+    ----------
+    a : array
+        structured array
+    flds : text
+        a list of field names
+    sep : text
+        the separator between lists
+    name : text
+        used for structured array
     """
     strip_list = [" ", ",", None]
     if (flds is None) or (a.dtype.names is None):
@@ -151,10 +160,10 @@ def concat_flds(a, flds=None, out_name="Concat", sep=" ", with_ids=True):
 
 
 def colrow_txt(N=10, cols=2, rows=2, zero_based=True):
-    """  Produce spreadsheet like labels either 0- or 1-based.
+    """Produce spreadsheet like labels either 0- or 1-based.
 
-    Requires
-    --------
+    Parameters
+    ----------
     N : number
         Number of records/rows to produce.
     cols/rows : numbers
@@ -326,12 +335,64 @@ def blog_post2(N=20):
     return arr
 
 
+
+def joe_demo():
+    """To use...
+    zz, uni, idx, cnt, sub, final = joe_demo()
+    """
+    zz = np.array([( 1, 316, '', 'Maple', 'St', 'Arnprior'),
+                   ( 2, 257, 'E', 'Pine', 'Ave', 'Carp'),
+                   ( 3, 561, '', 'Oak', 'St', 'Arnprior'),
+                   ( 4, 771, '', 'Elm', 'Ave', 'Carleton Place'),
+                   ( 5, 488, 'E', 'Spruce', 'St', 'Arnprior'),
+                   ( 6, 523, 'W', 'Spruce', 'Ave', 'Arnprior'),
+                   ( 7,  29, 'W', 'Elm', 'St', 'Almonte'),
+                   ( 8, 374, '', 'Elm', 'St', 'Carp'),
+                   ( 9, 477, 'W', 'Elm', 'St', 'Carp'),
+                   (10, 714, '', 'Oak', 'St', 'Almonte'),
+                   (11, 714, '', 'Oak', 'St', 'Almonte'),
+                   (12, 477, 'W', 'Elm', 'St', 'Carp'),
+                   (13, 374, '', 'Elm', 'St', 'Carp'),
+                   (14,  29, 'W', 'Elm', 'St', 'Almonte'),
+                   (15, 523, 'W', 'Spruce', 'Ave', 'Arnprior'),
+                   (16, 488, 'E', 'Spruce', 'St', 'Arnprior'),
+                   (17, 771, '', 'Elm', 'Ave', 'Carleton Place'),
+                   (18, 561, '', 'Oak', 'St', 'Arnprior'),
+                   (19, 257, 'E', 'Pine', 'Ave', 'Carp'),
+                   (20, 316, '', 'Maple', 'St', 'Arnprior')],
+                  dtype=[('Ids', '<i4'), ('Str_Number', '<i4'),
+                         ('Prefix', '<U1'), ('Str_Name', '<U6'),
+                         ('Str_Type', '<U3'), ('Town', '<U14')])
+    uni, idx, cnt = np.unique(zz, True, False, True)
+    all_names =  list(zz.dtype.names)
+    uni_flds = list(zz.dtype.names[1:])  # keep on the address fields
+    uni, idx, cnt = np.unique(zz[uni_flds], True, False, True)
+    sub = zz[idx]
+    final = sub[np.argsort(sub, order=all_names)]
+    return zz, uni, idx, cnt, sub, final
+
+zz, uni, idx, cnt, sub, final = joe_demo()
+uniq_towns, twn_cnt =  np.unique(zz['Town'], False, False, True)
+oh_where = np.logical_and(zz['Str_Name'] == 'Elm', zz['Str_Type'] == 'St')
+pick_one = zz[oh_where]
+
+# just print the above to see how they work
+
+
 # ----------------------------------------------------------------------
 # __main__ .... code section
 if __name__ == "__main__":
     """create ID,Shape,{txt_fld,int_fld...of any number}
     """
-    a = blog_post2(N=20)
+    import arcpy
+#    in_tbl = r"C:\Git_Dan\arraytools\Data\numpy_demos.gdb\sample_10k"
+#    in_flds = ['OBJECTID', 'County', 'Town']
+#    a = arcpy.da.TableToNumPyArray(in_tbl, in_flds)
+#    all_names =  list(a.dtype.names)  # ['OBJECTID', 'County', 'Town']
+#    q_flds = ['County', 'Town']
+#    uni, idx, cnt = np.unique(a[q_flds], True, False, True)
+#    sub = a[idx]
+#    a = blog_post2(N=20)
 #    a = np.array(['a11', 'b11', 'c12', 'a13', 'b15', 'c15'])
 #
 #    check = np.array(['11', '12', '13'])

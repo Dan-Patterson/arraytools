@@ -7,7 +7,7 @@ Script :   tblstats.py
 
 Author :   Dan.Patterson@carleton.ca
 
-Modified : 2018-11-23
+Modified : 2019-01-06
 
 Purpose :  Descriptive statistics for tables using numpy.
 
@@ -61,10 +61,12 @@ if 'prn' not in locals().keys():
 def freq(a, flds=None, to_array=True):
     """Frequency and crosstabulation
 
-    `a` : array
+    Parameters
+    ----------
+    a : array
        input structured array
 
-    `flds` : string or list
+    flds : string or list
        fields/columns to use in the analysis
 
     Notes
@@ -86,24 +88,26 @@ def freq(a, flds=None, to_array=True):
     fr = np.zeros_like(uniq, dtype=dt)
     names = fr.dtype.names
     vals = list(zip(*uniq)) + [counts.tolist()]  # (4) reassemble
-    for i in range(len(names)):
+    N = len(names)
+    for i in range(N):
         fr[names[i]] = vals[i]
     if to_array:
         return fr
-    else:
-        prn(fr)
+    prn(fr)
 
 
 def summ(a, cls_flds, uniq, sum_flds):
     """sum the input field
 
-    `a` : array
+    Parameters
+    ----------
+    a : array
         large array sliced by the classification fields
-    `cls_fields` : fields
+    cls_fields : fields
         fields to slice the array with
-    `uniq` : string
+    uniq : string
         unique values to sum on
-    `sum_flds` : string or list
+    sum_flds : string or list
         The fields to do the sum on
     """
     to_sum = a[cls_flds]
@@ -121,8 +125,8 @@ def skew_kurt(a, avg, var_x, std_x, col=True, mom='both'):
     Emulates the nan functions approach to calculating these parameters
     when data contains nan values.
 
-    Requires
-    ---------
+    Parameters
+    ----------
     a : array
         an array of float/double values where there are at least 3 non-nan
         numbers in each column.  This is not checked since this situation
@@ -130,7 +134,7 @@ def skew_kurt(a, avg, var_x, std_x, col=True, mom='both'):
     moment : string
         both, skew or kurt  to return the moments
 
-    Notes:
+    Notes
     -----
     >>> a= np.arange(16.).reshape(4,4)
     >>> mask = [0, 5, 10, 15]
@@ -166,7 +170,7 @@ def _calc_stats(arr, axis=None, deci=4):
     """Calculate stats for an array of number types, with nodata (nan, None)
     in the column.
 
-    Notes:
+    Notes
     -----
     see the args tuple for examples of nan functions
 
@@ -242,8 +246,8 @@ def col_stats(a, fields=None, deci=2):
     >>> col_stats(a, fields='A')  # run with field 'A', must be integer/float
     >>> col_stats(a, fields=['A', 'B'])  # both fields checked
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     a : array
         A structured/recarray
     fields : list, string or None
@@ -253,8 +257,8 @@ def col_stats(a, fields=None, deci=2):
     deci : integer
         an attempt to format floats with deci(mal) places
 
-    Requires:
-    ---------
+    Requires
+    --------
     _numeric_fields_ : function
         returns the numeric fields in a structured/recarray
     _calc_stats : function
@@ -275,7 +279,8 @@ def col_stats(a, fields=None, deci=2):
                           'median', 'std', 'var', 'skew', 'kurt'])
     z = np.zeros((len(col_names),), dtype=dts)
     z['Statistic'] = col_names
-    for i in range(len(num_flds)):
+    N = len(num_flds)
+    for i in range(N):
         fld = num_flds[i]
         z[fld] = s_lst[i]
     return z
@@ -284,8 +289,8 @@ def col_stats(a, fields=None, deci=2):
 def group_stats(a, case_fld=None, num_flds=None, deci=2):
     """Group column statistics.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     a : structured/recarray
         Make sure that you know the field names in advance
     case_fld : string, list
@@ -295,8 +300,8 @@ def group_stats(a, case_fld=None, num_flds=None, deci=2):
         You can limit the input fields accordingly, if you only need a few
         know numeric fields.
 
-    Requires:
-    ---------
+    Requires
+    --------
     col_stats : function ... which requires
       : _numeric_fields_ : function
           returns the numeric fields in a structured/recarray
@@ -322,8 +327,5 @@ def group_stats(a, case_fld=None, num_flds=None, deci=2):
 # ----------------------------------------------------------------------
 # __main__ .... code section
 if __name__ == "__main__":
-    """Optionally...
-    : - print the script source name.
-    : - run the _demo
-    """
-#    print("Script... {}".format(script))
+    # print the script source name.
+    print("Script... {}".format(script))

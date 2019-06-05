@@ -8,7 +8,7 @@ Script :   geom_properties.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2019-02-18
+Modified : 2019-03-19
 
 Purpose :  Properties for geometry objects represented as arrays
 
@@ -27,6 +27,7 @@ Included in this module::
 
 """
 # pylint: disable=C0103  # invalid-name
+# plylint: disable=E0611 # stifle the arcgisscripting
 # pylint: disable=R0914  # Too many local variables
 # pylint: disable=R1710  # inconsistent-return-statements
 # pylint: disable=W0105  # string statement has no effect
@@ -51,12 +52,13 @@ __all__ = ['max_', 'median_', 'min_',      # max, mean, median, min
            'extent_', 'extent_poly',       # extents
            'center_', 'centers',           # centers, centroids
            'centroid_', 'centroids',
+           'convex',
            'e_area', 'e_dist', 'e_leng',   # areas, distances, lengths
            'areas', 'lengths', 
            'total_length', 'seg_lengths',
            'dx_dy_np', 'angle_np',         # angles, direction
            'azim_np',  'angle_between',
-           'angle_2pnts', 'angle_seq',
+           'angle_2pnts', 'angles_seq',
            'angles_poly',
            'orig_dest_angle', 'line_dir'       
            ]
@@ -67,15 +69,62 @@ __all__ = ['max_', 'median_', 'min_',      # max, mean, median, min
 #  _view_ or _new_view_ could also be used but are only suited for x,y
 #  structured/recarrays
 #
+# ---- helper functions -------- ---------------------------------------------
+def _splat_(arr, flat_in=None, dump_nan=True):
+    """Flatten an ndarray that may be an object array or an array with ndim>2
+    """
+    if flat_in is None:
+        flat_in = []
+    for item in arr:
+        if isinstance(item, (np.ndarray)):
+            _splat_(item.ravel(), flat_in, dump_nan)
+        else:
+            flat_in.append(item)
+    out = np.asarray(flat_in)
+    out = out.reshape(-1, 2)
+    if dump_nan:
+        out = out[~np.isnan(out[:, 0])]
+    return out
+
+
+def _nan_sp_(arr):
+    """Split at an array with nan values for an  ndarray.  It is assumed that
+    the `x` column contains nan to separate array parts.
+    """
+    s = np.isnan(arr[:, 0])
+    if np.any(s):
+        w = np.where(s)[0]
+        ss = np.split(arr, w)
+        subs = [ss[0]]
+        subs.extend(i[1:] for i in ss[1:])
+        return subs #np.asarray(subs)
+    return arr
+
+def pieces(arr):
+    """split up objects arrays into a list of pieces
+    """
+    out = []
+    for item in arr:
+        check = np.isnan(item)
+        if np.any(check):
+            subs = _nan_sp_(item)
+            for sub in subs:
+                out.append(sub)
+        else:
+            out.append(item)
+    return out
+
+
 # ---- stats/descriptive related ---------------------------------------------
+#
 def max_(a):
     """Array maximums.  No `finite_check`. See Note above
     """
     a = _reshape_(a)
     if (a.dtype.kind == 'O') or (len(a.shape) > 2):
-        maxs = np.asanyarray([i.max(axis=0) for i in a])
+        maxs = np.asanyarray([np.nanmax(i, axis=0) for i in a])
     else:
-        maxs = a.max(axis=0)
+        maxs = np.nanmax(a, axis=0)
     return maxs
 
 
@@ -86,7 +135,7 @@ def mean_(a):
     if (a.dtype.kind == 'O') or (len(a.shape) > 2):
         means = np.asanyarray([i.mean(axis=0) for i in a])
     else:
-        means = a.means(axis=0)
+        means = np.nanmean(a, axis=0)
     return means
 
 
@@ -106,9 +155,9 @@ def min_(a):
     """
     a = _reshape_(a)
     if (a.dtype.kind == 'O') or (len(a.shape) > 2):
-        mins = np.asanyarray([i.min(axis=0) for i in a])
+        mins = np.asanyarray([np.nanmin(i, axis=0) for i in a])
     else:
-        mins = a.min(axis=0)
+        mins = np.nanmin(a, axis=0)
     return mins
 
 
@@ -157,7 +206,7 @@ def center_(a, remove_dup=True):
     if remove_dup:
         if np.all(a[0] == a[-1]):
             a = a[:-1]
-    return a.mean(axis=0)
+    return np.nanmean(a, axis=0)
 
 
 def centroid_(a, a_6=None):
@@ -174,18 +223,18 @@ def centroid_(a, a_6=None):
         Contained in this module.
     """
     if a.dtype.kind in ('V', 'O'):
-        a = _new_view_(a)
+        a = _view_(a)
     x, y = a.T
     t = ((x[:-1] * y[1:]) - (y[:-1] * x[1:]))
     if a_6 is None:
         a_6 = e_area(a) * 6.0  # area * 6.0
-    x_c = np.sum((x[:-1] + x[1:]) * t) / a_6
-    y_c = np.sum((y[:-1] + y[1:]) * t) / a_6
+    x_c = np.nansum((x[:-1] + x[1:]) * t, axis=0) / a_6
+    y_c = np.nansum((y[:-1] + y[1:]) * t, axis=0) / a_6
     return np.asarray([-x_c, -y_c])
 
 
 def centers(a, remove_dup=True):
-    """batch centres (ie _center)
+    """batch centres (ie center_)
     """
     a = np.asarray(a)
     if a.dtype == 'O':
@@ -200,7 +249,7 @@ def centers(a, remove_dup=True):
 
 
 def centroids(a):
-    """batch centroids (ie _centroid)
+    """batch centroids (ie centroid_)
     """
     a = np.asarray(a)
     if a.dtype == 'O':
@@ -213,10 +262,44 @@ def centroids(a):
     c = np.asarray([centroid_(i) for i in a]).squeeze()
     return c
 
+
+def convex(points):
+    """Calculates the convex hull for given points
+    :Input is a list of 2D points [(x, y), ...]
+    """
+    def _cross_(o, a, b):
+        """Cross-product for vectors o-a and o-b"""
+        xo, yo = o
+        xa, ya = a
+        xb, yb = b
+        return (xa - xo)*(yb - yo) - (ya - yo)*(xb - xo)
+    #
+    if isinstance(points, np.ndarray):
+        points = points.tolist()
+        points = [tuple(i) for i in points]
+    points = sorted(set(points))  # Remove duplicates
+    if len(points) <= 1:
+        return points
+    # Build lower hull
+    lower = []
+    for p in points:
+        while len(lower) >= 2 and _cross_(lower[-2], lower[-1], p) <= 0:
+            lower.pop()
+        lower.append(p)
+    # Build upper hull
+    upper = []
+    for p in reversed(points):
+        while len(upper) >= 2 and _cross_(upper[-2], upper[-1], p) <= 0:
+            upper.pop()
+        upper.append(p)
+    #print("lower\n{}\nupper\n{}".format(lower, upper))
+    return np.array(lower[:-1] + upper)  # upper[:-1]) # for open loop
+
+
 # ---- distance, length and area --------------------------------------------
 # ----
 def e_area(a, b=None):
-    """Area calculation, using einsum.
+    """Area calculation, using the `shoelace` formula via einsum.
 
     Some may consider this overkill, but consider a huge list of polygons,
     many multipart, many with holes and even multiple version therein.
@@ -228,30 +311,36 @@ def e_area(a, b=None):
     a : array
         Either a 2D+ array of coordinates or arrays of x, y values
     b : array, optional
-        If a < 2D, then the y values need to be supplied
+        If `a < 2D`, then the y values need to be supplied
 
     Notes
     -----
     Outer rings are ordered clockwise, inner holes are counter-clockwise.
     First and last points are assumed to be the same, if not... fix it.
 
+    Object arrays will need to use
+
+    >>> [e_area(i) for i in arr] # where arr is an object array
+
     See ein_geom.py for examples
     """
     a = np.asarray(a)
-    if b is None:
-        xs = a[..., 0]
-        ys = a[..., 1]
-    else:
-        b = np.asarray(b)
-        xs, ys = a, b
-    x0 = np.atleast_2d(xs[..., 1:])
-    y0 = np.atleast_2d(ys[..., :-1])
-    x1 = np.atleast_2d(xs[..., :-1])
-    y1 = np.atleast_2d(ys[..., 1:])
-    e0 = np.einsum('...ij,...ij->...i', x0, y0)
-    e1 = np.einsum('...ij,...ij->...i', x1, y1)
-    area = abs(np.sum((e0 - e1)*0.5))
-    return area
+    if b is not None:
+        a = np.stack((a, b), axis=0)
+    x0, y1 = (a.T)[:, 1:]
+    x1, y0 = (a.T)[:, :-1]
+    e0 = np.einsum('...i,...i->...i', x0, y0)
+    e1 = np.einsum('...i,...i->...i', x1, y1)
+    return np.nansum((e0-e1)*0.5)
+#    x0 = xs[np.newaxis, 1:]   #np.atleast_2d(xs[..., 1:])
+#    y0 = ys[np.newaxis, :-1]  #np.atleast_2d(ys[..., :-1])
+#    x1 = xs[np.newaxis, :-1]  #np.atleast_2d(xs[..., :-1])
+#    y1 = ys[np.newaxis, 1:]   #np.atleast_2d(ys[..., 1:])
+#    e0 = np.einsum('...ij,...ij->...i', x0, y0)
+#    e1 = np.einsum('...ij,...ij->...i', x1, y1)
+#    area = abs(np.sum((e0 - e1)*0.5))
+#    area = np.nansum((e0 - e1)*0.5)
+#    return area
 
 
 def e_dist(a, b, metric='euclidean'):
@@ -335,7 +424,7 @@ def e_leng(a, close=False):
         """ perform the calculation, see above
         """
         d_leng = np.sqrt(np.einsum('ijk,ijk->ij', diff, diff)).squeeze()
-        length = np.sum(d_leng.flatten())
+        length = np.nansum(d_leng.flatten())
         return length, d_leng
     # ----
     def _close_ply(a):
@@ -374,6 +463,7 @@ def e_leng(a, close=False):
 
 # ---- Batch calculations of e_area and e_leng ------------------------------
 #
+
 def areas(a):
     """Calls e_area to calculate areas for many types of nested objects.
 
@@ -384,15 +474,29 @@ def areas(a):
     -------
         A list with one or more areas.
     """
-    a = np.asarray(a)
+    def _e_area(a):
+        """mini e_area with a twist, shoelace formula using einsum"""
+        x0, y1 = (a.T)[:, 1:]
+        x1, y0 = (a.T)[:, :-1]
+        e0 = np.einsum('...i,...i->...i', x0, y0)
+        e1 = np.einsum('...i,...i->...i', x1, y1)
+        return np.nansum((e0-e1)*0.5)
+    #
+#    a = np.asarray(a).squeeze()
+    if isinstance(a, (list, tuple)):
+        a = np.asarray(a)
     if a.dtype == 'O':
-        tmp = [_reshape_(i) for i in a]
-        return [e_area(i) for i in tmp]
+        tmp = pieces(a)      # ---- did some fixing
+        return sum([_e_area(i) for i in tmp])
     if len(a.dtype) >= 1:
         a = _reshape_(a)
     if a.ndim == 2:
+        has_nan = np.any(np.isnan(a[:, 0]))
+        if has_nan:
+            tmp = _nan_sp_(a)
+            return sum([_e_area(i) for i in tmp])
         a = a.reshape((1,) + a.shape)
-    a_s = np.array([e_area(i) for i in a])
+    a_s = np.array(sum([_e_area(i) for i in a]))
     return a_s
 
 
@@ -427,10 +531,14 @@ def lengths(a, close=False, prn=False):
         r = ["{:12.3f}  {!r:}".format(*a_s[i]) for i in range(len(a_s))]
         print(hdr + "\n".join(r))
     #
-    a = np.asarray(a)
+#    a = np.asarray(a).squeeze()
+    if isinstance(a, (list, tuple)):
+        return sum([e_leng(i) for i in a])
     if a.dtype == 'O':
-        tmp = [_reshape_(i) for i in a]
-        a_s = [e_leng(i, close) for i in tmp]
+#        tmp = [np.asarray(i).squeeze() for i in a]
+#        a_s = [e_leng(i, close) for i in tmp]
+        tmp = pieces(a)      # ---- did some fixing
+        a_s = sum([e_leng(i, close)[0] for i in tmp])
         if prn:
             _prn_(a_s)
         return a_s
@@ -543,8 +651,9 @@ def angle_2pnts(p0, p1):
     return np.rad2deg(ang_ab % (2 * np.pi))
 
 
-def angle_seq(a):
-    """Sequential angles for a points list
+def angles_seq(a):
+    """Sequential angles for a points list, relative to the x-axis.  See
+    ``line_dir`` if you want to control the angle type output option.
 
     >>> angle = atan2(vector2.y, vector2.x) - atan2(vector1.y, vector1.x)
     Accepted answer from the poly_angles link
@@ -553,6 +662,7 @@ def angle_seq(a):
     ba = a[1:] - a[:-1]
     ang_ab = np.arctan2(ba[:, 1], ba[:, 0])
     return np.degrees(ang_ab % (2 * np.pi))
+
 
 
 def angles_poly(a=None, inside=True, in_deg=True):
@@ -564,7 +674,7 @@ def angles_poly(a=None, inside=True, in_deg=True):
         an array of points, derived from a polygon/polyline geometry
     inside : boolean
         determine inside angles, outside if False
-    in_deg : bolean
+    in_deg : boolean
         convert to degrees from radians
 
     Notes
@@ -595,9 +705,12 @@ def angles_poly(a=None, inside=True, in_deg=True):
     if len(a) == 2:
         ba = a[1] - a[0]
         return np.arctan2(*ba[::-1])
-    a0 = a[0:-2]
-    a1 = a[1:-1]
-    a2 = a[2:]
+    dx, dy = a[0] - a[-1]
+    if np.allclose(dx, dy):  # closed loop
+        a = a[:-1]
+    a0 = np.roll(a, 1, 0)
+    a1 = a
+    a2 = np.roll(a, -1, 0)
     ba = a1 - a0
     bc = a1 - a2
     cr = np.cross(ba, bc)
@@ -611,6 +724,7 @@ def angles_poly(a=None, inside=True, in_deg=True):
     if in_deg:
         angles = np.degrees(ang)
     return angles
+
 
 
 def orig_dest_angle(orig, dest, fromNorth=False):
@@ -649,13 +763,23 @@ def line_dir(orig, dest, fromNorth=False):
     return ang
 
 
+
 # ===========================================================================
 #
 if __name__ == "__main__":
     """optional location for parameters"""
     print("Script... {}".format(script))
 """
-fc = np.load(r"C:\Arc_projects\Polygon_lineTools\Data\profile01.npy")
-a = fc[['POINT_X', 'POINT_Y', 'Z_cal']]
-p = _view_(a)
+npy1 = np.load(r"C:\Arc_projects\Polygon_lineTools\Data\profile01.npy")
+npy0 = np.load(r"C:\Arc_projects\Polygon_lineTools\Data\rotated.npy")
+
+from numpy.lib.recfunctions import structured_to_unstructured as stu
+fc = r"C:\Arc_projects\profile_maker\profiler.gdb\rotated"
+tbl = arcpy.da.FeatureClassToNumPyArray(fc, ['SHAPE@X', 'SHAPE@Y'])
+a = stu(tbl)
+
+# featureclasses
+
+in_fc = r"C:\Arc_projects\Polygon_lineTools\Polygon_lineTools.gdb\Polygons"
+
 """

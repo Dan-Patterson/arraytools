@@ -1,27 +1,24 @@
 # -*- coding: UTF-8 -*-
 """
+========
 py_tools
 ========
 
-Script :   py_tools.py
+Script : py_tools.py
 
-Author :   Dan_Patterson@carleton.ca
+Author : Dan_Patterson@carleton.ca
 
-Modified: 2018-10-15
-
--------
+Modified : 2019-01-06
 
 Purpose : tools for working with python, numpy and other python packages
 
-- iterables :
-    _flatten, flatten_shape, pack, unpack
-- folders :
-    get_dir, folders, sub-folders, dir_py
-Useage:
+>>> # ---- transpose a list
+>>> N = len(data)
+>>> m = len(data[0])
+>>> d2 = [[data[j][i] for j in range(N)] for i in range(m)]
 
-References:
-
-------------------------------------------------------------------------------
+if else in list comprehension
+>>> [i if i is not None else -9 for i in d2[10]]
 """
 # pylint: disable=C0103
 # pylint: disable=R1710
@@ -46,7 +43,7 @@ script = sys.argv[0]  # print this should you need to locate the script
 __all__ = ['comp_info',
            'get_dir', 'folders', 'sub_folders',  # basic folder functions
            'dir_py',    # object and directory functions
-           '_flatten', 'flatten_shape',  # iterables
+           'splat', '_flatten', 'flatten_shape',  # iterables
            'pack', 'unpack',
            'combine_dicts']
 
@@ -106,11 +103,10 @@ def get_dir(path):
 
 def folders(path, first=True, prefix=""):
     """ Print recursive listing of folders in a path.  Make sure you `raw`
-    format the path...
-    ::
-        r'c:\Temp'  or 'c:/Temp' or 'c:\\Temp'
+    format the path::
 
-    - Requires : _get_dir .... also, an example of path common prefix
+        ``r'c:\\Temp'``  or ``'c:/Temp' or 'c:\\Temp'``
+    Needs ``_get_dir`` also, an example of path common prefix
     """
     if first:  # Detect outermost call, print a heading
         print("-"*30 + "\n|.... Folder listing for ....|\n|--{}".format(path))
@@ -147,9 +143,8 @@ def sub_folders(path, combine=False):
 
 
 def env_list(pth, ordered=False):
-    """List folders and files in a path
+    """List folders and files in a path.  Requires ``os`` module.
     """
-    import os
     d = []
     for item in os.listdir(pth):
         check = os.path.join(pth, item)
@@ -198,12 +193,33 @@ def dir_py(obj, colwise=False, cols=4, prn=True):
 
 # ---- (4) iterables ---------------------------------------------------------
 #
+def extract_nested_values(it):
+    """A generator function to flatten iterables like lists and dictionaries
+
+    >>> d = {u'A': [{u'ID_num': {u'Long': -75.5, u'Lat': 45.0},
+                                u'obsersations': 100,
+                                u'mtm_09': {u'y': 300100, u'x': 5025000},
+                                u'address': u'my house'}],
+                                u'spatialReference': {u'wkid': 1234,
+                                                      u'latestWkid': 1234}}
+    """
+    if isinstance(it, list):
+        for sub_it in it:
+            yield from extract_nested_values(sub_it)
+    elif isinstance(it, dict):
+        for value in it.values():
+            yield from extract_nested_values(value)
+    else:
+        yield it
+# print(list(extract_nested_values(d)))
+
+
 def _flatten(a_list, flat_list=None):
     """Change the isinstance as appropriate.
 
     Flatten an object using recursion
 
-    see: itertools.chain() for an alternate method of flattening.
+    See _flat_ and itertools.chain() for an alternate method of flattening.
     """
     if flat_list is None:
         flat_list = []
@@ -215,26 +231,43 @@ def _flatten(a_list, flat_list=None):
     return flat_list
 
 
+def splat(an_iter, flat_in=None):
+    """Change the isinstance as appropriate.  Flatten an object using recursion
+
+    See `splat_arr` if the iterator is know to be an ndarray
+    """
+    if flat_in is None:
+        flat_in = []
+    for item in an_iter:
+        if isinstance(item, (list, tuple, np.ndarray, np.unicode)):
+            splat(item, flat_in)
+        else:
+            flat_in.append(item)
+    return flat_in
+
+
 def flatten_shape(shp, completely=False):
     """Flatten a array or geometry shape object using itertools.
 
-    Parameters:
-    -----------
-
-    shp :
+    Parameters
+    ----------
+    shp : array
        an array or an array representing polygon, polyline, or point shapes
-    completely :
+    completely : boolean
        True returns points for all objects
        False, returns Array for polygon or polyline objects
 
-    Notes:
-    ------
-    - for conventional array-like objects use `completely = False` to flatten
-      the object completely.
-    - for geometry objects, use `True` for polygon and polylines to retain their
-      parts, but for points, use `False` since you need to retain the x,y pair
-    - `__iter__` property: Polygon, Polyline, Array all have this property...
-      Points do not.
+    Notes
+    -----
+    For conventional array-like objects use `completely = False` to flatten
+    the object completely.
+
+    For geometry objects, use `True` for polygon and polylines to retain their
+    parts, but for points, use `False` since you need to retain the x,y pair
+
+    The `__iter__` property.  Polygon, Polyline, Array all have this property.
+    Points do not.
+
     """
     import itertools
     if completely:
@@ -255,14 +288,16 @@ def pack(a, param='__iter__'):
 def unpack(iterable, param='__iter__'):
     """Unpack an iterable based on the param(eter) condition using recursion.
 
-    Notes:
-    ------
+    Notes
+    -----
     - Use `flatten` for recarrays or structured arrays.
     - See main docs for more information and options.
     - To produce uniform array from this, use the following after this is done.
+
     >>> out = np.array(xy).reshape(len(xy)//2, 2)
 
     - To check whether unpack can be used.
+
     >>> isinstance(x, (list, tuple, np.ndarray, np.void)) like in flatten above
     """
     xy = []
@@ -273,18 +308,24 @@ def unpack(iterable, param='__iter__'):
             xy.append(x)
     return xy
 
+
 def combine_dicts(ds):
     """Combine dictionary values from multiple dictionaries and combine
     their keys if needed.
-    Requires: import numpy as np
-    Returns: a new dictionary
+
+    Parameters
+    ----------
+    If not at the top of the script, import numpy as np
+
+    Returns
+    -------
+    A new dictionary.
     """
-    a = np.array([(k, v)                 # key, value pairs
-                  for d in ds            # dict in dictionaries
-                  for k, v in d.items()  # get the key, values from items
-                  ])
+    a = np.array([(k, v)                   # key, value pairs
+                  for d in ds              # dict in dictionaries
+                  for k, v in d.items()])  # get the key, values from items
     ks, idx = np.unique(a[:, 0], True)
-    ks = ks[np.lexsort((ks, idx))]       # optional sort by appearance
+    ks = ks[np.lexsort((ks, idx))]         # optional sort by appearance
     uniq = [np.unique(a[a[:, 0] == i][:, 1]) for i in ks]
     nd = [" ".join(u.tolist()) for u in uniq]
     new_d = dict(zip(ks, nd))
@@ -303,15 +344,8 @@ def find_dups(a_list):
         else:
             counter[item] = 1
     return [item for item, counts in counter.items() if counts > 1]
-# ---- (5) demos  -------------------------------------------------------------
-#
 
-# ----------------------------------------------------------------------------
 # ---- __main__ .... code section --------------------------------------------
 if __name__ == "__main__":
-    """Optionally...
-    : - print the script source name.
-    : - run the _demo
-    """
-#    print("Script... {}".format(script))
-#    _demo()
+    # print the script source name.
+    print("Script... {}".format(script))

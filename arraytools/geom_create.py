@@ -42,7 +42,6 @@ __all__ = ['rot_matrix',
            'circle', 'circle_mini', 'circle_ring',
            'ellipse',
            'hex_flat', 'hex_pointy',
-           'convex',
            'mesh_xy',
            'pyramid',
            'rectangle',
@@ -307,40 +306,6 @@ def hex_pointy(dx=1, dy=1, cols=1, rows=1):
     for j in range(1, rows):  # create the other rows
         hexs += [hexs[h] + [dx * (j % 2), dy * j] for h in range(m)]
     return hexs
-
-
-def convex(points):
-    """Calculates the convex hull for given points
-    :Input is a list of 2D points [(x, y), ...]
-    """
-    def _cross_(o, a, b):
-        """Cross-product for vectors o-a and o-b
-        """
-        xo, yo = o
-        xa, ya = a
-        xb, yb = b
-        return (xa - xo)*(yb - yo) - (ya - yo)*(xb - xo)
-    #
-    if isinstance(points, np.ndarray):
-        points = points.tolist()
-        points = [tuple(i) for i in points]
-    points = sorted(set(points))  # Remove duplicates
-    if len(points) <= 1:
-        return points
-    # Build lower hull
-    lower = []
-    for p in points:
-        while len(lower) >= 2 and _cross_(lower[-2], lower[-1], p) <= 0:
-            lower.pop()
-        lower.append(p)
-    # Build upper hull
-    upper = []
-    for p in reversed(points):
-        while len(upper) >= 2 and _cross_(upper[-2], upper[-1], p) <= 0:
-            upper.pop()
-        upper.append(p)
-    #print("lower\n{}\nupper\n{}".format(lower, upper))
-    return np.array(lower[:-1] + upper)  # upper[:-1]) # for open loop
 
 
 def mesh_xy(L=0, B=0, R=5, T=5, dx=1, dy=1, as_rec=True):

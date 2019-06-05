@@ -8,7 +8,7 @@ Script : tools.py
 
 Author : Dan_Patterson@carleton.ca
 
-Modified : 2019-01-06
+Modified : 2019-03-22
 
 Purpose : tools for working with numpy arrays
 
@@ -330,7 +330,7 @@ Alphabetical listing::
     __spec__            _demo_tools         _func               arr2xyz
     arrays_struct       block               block_arr           change_arr
     concat_arrs         find                find_closest        group_pnt
-    group_vals          is_in               make_blocks         make_flds
+    group_vals          is_in   is_in2d     make_blocks         make_flds
     nd2rec              nd2struct           nd_rec              nd_struct
     pack_last_axis      pad_                pad_sides           pyramid
     rc_vals             reclass             rolling_stats       running_count
@@ -367,7 +367,7 @@ __all__ = ['arr2xyz', 'make_blocks',     # (1-6) ndarrays ... make arrays,
            'block_arr', 'rolling_stats',
            '_func', 'find', 'find_closest',  # (23-28) querying, analysis
            'group_pnts',
-           'uniq', 'is_in',
+           'uniq', 'is_in', 'compare_2d',
            'running_count', 'sequences',
            'pack_last_axis'  # extras -------
            ]
@@ -1589,7 +1589,7 @@ def uniq(ar, key_flds=None, return_index=False, return_inverse=False,
     return np.unique(ar, return_index, return_inverse,
                      return_counts, axis=axis)
 
-def is_in(arr, look_for, keep_shape=True, binary=True, not_in=False):
+def is_in(look_for, arr, keep_shape=True, binary=True, not_in=False):
     """Similar to `np.isin` for numpy versions < 1.13, but with additions to
     return the original shaped array with an `int` dtype
 
@@ -1606,23 +1606,44 @@ def is_in(arr, look_for, keep_shape=True, binary=True, not_in=False):
 
     Notes
     -----
+    Make sure you don't include unique ID fields unless you need to look for
+    them as well.
+
     >>> from numpy.lib import NumpyVersion
     >>> if NumpyVersion(np.__version__) < '1.13.0'):
         # can add for older versions later
     """
     arr = np.asarray(arr)
-    shp = arr.shape
+    shp = look_for.shape
     look_for = np.asarray(look_for)
-    uni = False
-    inv = False
-    if not_in:
-        inv = True
-    r = np.in1d(arr, look_for, assume_unique=uni, invert=inv)
+    r = np.isin(look_for, arr, assume_unique=False, invert=not_in)
     if keep_shape:
         r = r.reshape(shp)
     if binary:
         r = r.astype('int')
     return r
+
+
+def compare_2d(arr, look_for, invert=False):
+    """Look for duplicates in two 2D arrays.
+    
+    ** can use as find duplicates between 2 arrays ie compare_arrays **
+
+    Parameters
+    ----------
+    arr : array
+        The main array, preferably the larger of the two
+    look_for : array
+        The array to compare with
+
+    Returns
+    -------
+    The duplicates in both arrays
+    """
+    result = (arr[:, None] == look_for).all(-1).any(-1)
+    if invert:
+        result = ~result
+    return arr[result]
 
 
 def running_count(a, to_label=False):

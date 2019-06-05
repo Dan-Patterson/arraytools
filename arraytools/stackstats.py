@@ -1,22 +1,23 @@
 # -*- coding: UTF-8 -*-ct
 """
+==========
 stackstats
-===========
+==========
 
 Script:   stackstats.py
 
 Author:   Dan.Patterson@carleton.ca
 
-Modified: 2018-11-23
+Modified: 2019-01-06
 
 Purpose:  tools for working with numpy arrays
 
-Requires:
----------
-    arraytools.tools - nd2struct, stride
+Requires
+--------
+arraytools.tools - nd2struct, stride
 
-References:
------------
+References
+----------
 
 `<https://community.esri.com/blogs/dan_patterson/2018/02/06/cell-\
 statistics-made-easy-raster-data-over-time>`_.
@@ -174,18 +175,19 @@ def stack_var(arrs, nodata=None):
 def stack_percentile(arrs, q=50, nodata=None):
     """nanpercentile for an array stack with optional nodata masked
 
-    -arrs :
-        either a list, tuple of arrays or an array with ndim=3
-    - q :
+    Parameters
+    ----------
+    arrs : array-like
+        Either a list, tuple of arrays or an array with ndim=3
+    q : number
         the percentile
-    - nodata :
+    nodata : number
         nodata value, numeric or np.nan (will upscale integers)
     """
     a = check_stack(arrs)
     if nodata is not None:
         a = mask_stack(a, nodata=nodata)
-    nan_per = np.nanpercentile(a, q=q, axis=0)
-    return nan_per
+    return np.nanpercentile(a, q=q, axis=0)
 
 
 def stack_stats(arrs, ax=0, nodata=None):
@@ -217,8 +219,8 @@ def stack_stats(arrs, ax=0, nodata=None):
 def stack_stats_tbl(arrs, nodata=None):  # col_names, args):
     """Produce the output table
 
-    Returns:
-    --------
+    Returns
+    -------
     Table of statistical results by band.  The dtype is shown below
     dtype=[('Band', '<i4'), ('N', '<i4'), ('N_nan', '<i4'), ('Sum', '<f8'),
            ('Min', '<f8'), ('Mean', '<f8'), ('Med', '<f8'), ('Max', '<f8'),
@@ -270,9 +272,6 @@ def _demo_stack():
 # ----------------------------------------------------------------------
 # __main__ .... code section
 if __name__ == "__main__":
-    """Optionally...
-    : - print the script source name.
-    : - run the _demo
-    """
-#    print("Script... {}".format(script))
+    # print the script source name.
+    print("Script... {}".format(script))
 #    stack = _demo_stack()
