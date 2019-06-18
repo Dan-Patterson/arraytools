@@ -8,7 +8,7 @@ Script :   utils.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2019-01-06
+Modified : 2019-06-16
 
 Purpose:  tools for working with numpy arrays
 

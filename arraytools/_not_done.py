@@ -53,7 +53,43 @@ def isPointInPath(x, y, poly):
         j = i
     return c
 
+def pr(a):
+    """ prune prior to convex hull
 
+    `<http://mindthenerd.blogspot.com/2012/05/
+    fastest-convex-hull-algorithm-ever.html>`_.
+
+    A = (Ax, Ay) which maximizes x-y 
+    B = (Bx, By) which maximizes x+y 
+    C = (Cx, Cy) which minimizes x-y
+    D = (Dx, Dy) which minimizes x+y
+
+    """
+    a_minus = np.nansum(a * [1, -1], axis=1)
+    a_plus = np.nansum(a, axis=1)
+    xy0, xy1 = np.nanmin(a_minus), np.nanmax(a_minus)
+    xy2, xy3 = np.nanmin(a_plus), np.nanmax(a_plus)
+    A = a[np.where(a_minus == xy0)[0]]  # min x-y
+    B = a[np.where(a_minus == xy1)[0]]   # max x-y
+    C = a[np.where(a_plus == xy2)[0]]   # min x+y
+    D = a[np.where(a_plus == xy3)[0]]   # max x+y
+    
+    stack = np.vstack((A, B, C, D))
+    x1 = max(stack[2][0], stack[3][0])  # max Cx, Dx
+    x2 = min(stack[0][0], stack[1][0])  # min Ax, Bx
+    y1 = max(stack[0][1], stack[3][1])  # max Ay, Dy
+    y2 = min(stack[1][1], stack[2][1])  # min By, Cy
+    # (x₂, y₁), (x₂, y₂), (x₁, y₂), (x₁, y₁)
+    n_arr = np.array([[x2, y1], [x2, y2], [x1, y2], [x1, y1]]) 
+    # Need pip this only provides the first run
+    return A, B, C, D, x1, x2, y1, y2, n_arr
+
+#z = np.random.randint(0, 10, size=(10,2))
+#a = np.copy(z)
+a = np.array([[6, 7], [1, 1], [0, 6], [6, 3], [3, 8],
+               [4, 0], [9, 1],[7, 0], [0, 5], [2, 2]])
+
+    
 def prune(a):
     """Prune the points to reduce the point cloud.  Pruning is done from the
     centre of the data. The distance from the centre to each point is
@@ -176,8 +212,67 @@ if __name__ == "__main__":
 #a1 = 'C:/Arc_projects/Ice/Data/fordan3_b.npy'
 #a = np.load(a0)
 
+import numpy as np
+#import arcpy
+
+def mean_split(a, minSize=3):
+    """split at means"""
+    def slice_array(a):
+        m = np.mean(a)
+        yes = a <= m  # check for a less than the overal mean
+        a_left, a_rght = a[~yes], a[yes]  # slice the arrays
+        return m, a_left, a_rght
+    # ----
+    m, L, R = slice_array(a)
+    m0, L, _ = slice_array(L)
+    m1, _, R = slice_array(R)
+    means = [m0, m, m1]
+    while (len(L) > minSize) and (len(R) > minSize):
+        print("lefts", len(L), len(R))
+        m0, L, _ = slice_array(L)
+        m1, _, R = slice_array(R)
+        means.extend([m0, m1])
+#    while (len(R) > minSize):
+#        print("Rights", len(L), len(R))
+#        m0, l, _ = slice_array(L)
+#        m1, _, R = slice_array(R)
+#        means.extend([m0, m1])       
+    return sorted(means)
+
+#a = np.array([59, 43, 60, 97, 18,  3, 96, 41, 62, 60])
+#a = np.arange(1, 20)
+#
+#tbl = r"C:\Arc_projects\Table_tools\Table_tools.gdb\pnts_2K_normal"
+#in_fld = "Norm"
+#out_fld = "New_class"
+#
+## ---- Do some work
+## (1)  Get the field from the table and make it a simple array
+#arr = arcpy.da.TableToNumPyArray(tbl, ['OID@', in_fld], "", True, None)
+#a = arr[in_fld]
+#
+## (2)  Set up for the results
+#out_arr = np.copy(arr)
+#out_arr.dtype.names = ['OID@', out_fld]
+#
+## (3)  Run the mean_split script... note minSize!!! set it smartly or...
+#means = mean_split(a, minSize=100)
+#classed = np.digitize(a, bins=means)
+#
+## (4)  Send the results to the output array and add it back to arcgis pro
+#out_arr[out_fld] = classed
+#arcpy.da.ExtendTable(tbl, 'OID@', out_arr, 'OID@')
 
 
+# -----
+#a = np.arange(3*4*2).reshape(3,4,2)
+#powr = np.array([2])  # or [2,2,2] if a.shape[0] == 3
+## simulating power
+#b = np.repeat(powr, a.shape[0])
+#c = np.power(a, b[:, np.newaxis, np.newaxis])
+#d = a ** b[:, None, None] # smoothest
+
+# ----
 #from scipy.spatial import Delaunay
 #a0, a1, a = _common_(proj_pth, fn, pth, gdb, buff)
 #arr, SR, new_names, shp_fld =a0
@@ -309,12 +404,12 @@ def spiral_archim(N, n, clockwise=True, reverse=False):
 #       [ 9,  8,  7,  6,  5,  4,  3,  2,  1,  0,  1],
 #       [10,  9,  8,  7,  6,  5,  4,  3,  2,  1,  0]])
 
-import arcpy
-in_fc = r'C:\Arc_projects\profile_maker\profiler.gdb\transect'
-desc = arcpy.da.Describe(in_fc)
-SR = desc['spatialReference']
-out_fc = r'C:\Arc_projects\profile_maker\profiler.gdb\transect_split'
-shps = []
+#import arcpy
+#in_fc = r'C:\Arc_projects\profile_maker\profiler.gdb\transect'
+#desc = arcpy.da.Describe(in_fc)
+#SR = desc['spatialReference']
+#out_fc = r'C:\Arc_projects\profile_maker\profiler.gdb\transect_split'
+#shps = []
 
 
 
@@ -322,3 +417,4 @@ shps = []
 #arcpy.CopyFeatures_management(
 #        [line.segmentAlongLine(i/float(out_count),
 #           ((i+1)/float(out_count)),  True) for i in range(0, out_count)], out_fc)
+    """

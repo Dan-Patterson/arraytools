@@ -182,8 +182,7 @@ def colrow_txt(N=10, cols=2, rows=2, zero_based=True):
     UC = (list("ABCDEFGHIJKLMNOPQRSTUVWXYZ"))[:cols]  # see constants
     dig = (list('0123456789'))[start:rows]
     cr_vals = [c + r for r in dig for c in UC]
-    colrow = np.random.choice(cr_vals, N)
-    return colrow
+    return np.random.choice(cr_vals, N)
 
 
 def rowcol_txt(N=10, rows=2, cols=2):
@@ -192,8 +191,7 @@ def rowcol_txt(N=10, rows=2, cols=2):
     rc_vals = ["({},{})".format(r, c)
                for c in range(cols)
                for r in range(rows)]
-    rowcol = np.random.choice(rc_vals, N)
-    return rowcol
+    return np.random.choice(rc_vals, N)
 
 
 def pnts_IdShape(N=10, x_min=0, x_max=10, y_min=0, y_max=10, simple=True):
@@ -231,8 +229,7 @@ def rand_text(N=10, cases=3, vals=str_opt[3]):
     vals:  see str_opt in required constants section
     """
     vals = list(vals)
-    txt_vals = np.random.choice(vals[:cases], N)
-    return txt_vals
+    return np.random.choice(vals[:cases], N)
 
 
 def rand_str(N=10, low=1, high=10, vals=str_opt[3]):
@@ -251,8 +248,7 @@ def rand_str(N=10, low=1, high=10, vals=str_opt[3]):
         np.random.shuffle(vals)
         size = np.random.choice(letts, 1)
         result.append("".join(vals[:size]))
-    result = np.array(result)
-    return result
+    return np.array(result)
 
 
 def rand_case(N=10, cases=["Aa", "Bb"], p_vals=[0.8, 0.2]):
@@ -272,8 +268,7 @@ def rand_case(N=10, cases=["Aa", "Bb"], p_vals=[0.8, 0.2]):
 def rand_int(N=10, begin=0, end=10):
     """Generate N random integers within the range begin - end
     """
-    int_vals = np.random.randint(begin, end, size=(N))
-    return int_vals
+    return np.random.randint(begin, end, size=(N))
 
 
 def rand_float(N=10, begin=0, end=10):
@@ -283,8 +278,7 @@ def rand_float(N=10, begin=0, end=10):
     amount within 0-1 is added to the value
     """
     float_vals = np.random.randint(begin, end-1, size=(N))
-    float_vals = float_vals + np.random.rand(N)
-    return float_vals
+    return float_vals + np.random.rand(N)
 
 
 def blog_post():
@@ -331,9 +325,7 @@ def blog_post2(N=20):
                       p_vals=[0.3, 0.3, 0.2, 0.2])
     fld_names = ['Str_Number', 'Prefix', 'Str_Name', 'Str_Type', 'Town']
     fld_data = [int_fld, case1, case2, case3, case4]
-    arr = rfn.append_fields(ids, fld_names, fld_data, usemask=False)
-    return arr
-
+    return rfn.append_fields(ids, fld_names, fld_data, usemask=False)
 
 
 def joe_demo():

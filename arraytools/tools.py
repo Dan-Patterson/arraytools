@@ -8,10 +8,9 @@ Script : tools.py
 
 Author : Dan_Patterson@carleton.ca
 
-Modified : 2019-03-22
+Modified : 2019-06-16
 
 Purpose : tools for working with numpy arrays
-
 
 `tools.py` and other scripts are part of the arraytools package.
 Access in other programs using .... art.func(params) ....
@@ -684,7 +683,6 @@ def split_array(a, fld='ID', ordered=False):
     Returns
     -------
     A list of arrays split on the categorizing field
-
     """
     if ordered:
         return np.split(a, np.where(np.diff(a[fld]))[0] + 1)
@@ -724,7 +722,6 @@ def make_flds(n=2, as_type='float', names=None, def_name="col"):
     dtype([('f01', '<i8'), ('f02', '<i8')])
 
     Don't forget the above, a cool way to create fields quickly
-
     """
     from numpy.lib._iotools import easy_dtype as easy
     if as_type in ['float', 'f8', '<f8']:
@@ -812,7 +809,6 @@ def nd_struct(a, flds=None, types=None):
     465 µs ± 53 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
     >>> %timeit nd_struct(a, flds=['A', 'B', 'C'], types=['U8', 'f8', 'i8'])
     253 µs ± 27.1 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
-
     """
     _, c = a.shape
     dt_base = [a.dtype.str] * c  # a.dtype.descr[0][1]
@@ -976,7 +972,6 @@ def change_arr(a, order=None, prn=False):
     Tip :
         Use... `arraytools._base_functions.arr_info(a, verbose=True)`
         This gives field names which can be copied for use here.
-
     """
     if order is None or (not isinstance(order, (list, tuple))):
         print("Order not given in a list or tuple")
@@ -1205,8 +1200,7 @@ def block(a, win=(3, 3)):
 
     See block_arr if you want padding
     """
-    a_b = stride(a, win=win, stepby=win)
-    return a_b
+    return stride(a, win=win, stepby=win)
 
 
 def block_arr(a, win=[3, 3], nodata=-1, as_masked=False):
@@ -1295,7 +1289,6 @@ def rolling_stats(a, no_null=True, prn=True):
     Std...         Var...         Range...
     [[2.06 2.06]   [[4.25 4.25]   [[5 5]
      [2.06 2.06]]   [4.25 4.25]]   [5 5]]
-
     """
     a = np.asarray(a)
     a = np.atleast_2d(a)
@@ -1405,7 +1398,6 @@ def find(a, func, this=None, count=0, keep=None, prn=False, r_lim=2):
     Returns
     -------
         A 1D or 2D array meeting the conditions
-
     """
     if a.ndim > 1:
         print("1D array expected")
@@ -1535,7 +1527,6 @@ def group_pnts(a, key_fld='IDs', shp_flds=['Xs', 'Ys']):
     Notes
     -----
     split-apply-combine .... that is the general rule
-
     """
     returned = np.unique(a[key_fld],           # the unique id field
                          return_index=True,    # first occurrence index
@@ -1574,7 +1565,6 @@ def uniq(ar, key_flds=None, return_index=False, return_inverse=False,
     References
     ----------
     `<https://github.com/numpy/numpy/blob/master/numpy/lib/arraysetops.py>`_.
-
     """
     ar = np.asanyarray(ar)
     if key_flds is not None:
@@ -1680,7 +1670,6 @@ def running_count(a, to_label=False):
     >>> running_count(b, True)
     array(['z_001', 'a_001', 'b_001', 'c_001', 'a_002', 'a_003', 'b_002',
            'b_003', 'd_001', 'e_001', 'd_002', 'b_004', 'z_002'], dtype='<U5')
-
     """
     dt = [('Value', a.dtype.str), ('Count', '<i4')]
     N = a.shape[0]  # used for padding

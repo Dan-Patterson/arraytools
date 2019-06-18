@@ -140,14 +140,7 @@ def _view_(a):
 
     See ``structured_to_unstructured`` in np.lib.recfunctions and the imports.
     """
-    v =  np.version.version.split('.')[1]
-    if int(v) >= 16:
-        return stu(a)
-    else:
-        z = np.zeros((a.shape[0], 2), dtype=np.float)
-        z[:,0] = a['Xs']
-        z[:,1] = a['Ys']
-        return z
+    return stu(a)
 
 
 def find_a_in_b(a, b, a_fields=None, b_fields=None):

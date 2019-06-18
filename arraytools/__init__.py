@@ -8,7 +8,7 @@ Script : __init__.py
 
 Author : Dan.Patterson@carleton.ca
 
-Modified : 2018-12-16
+Modified : 2019-06-17
 
 **Purpose**
 
@@ -112,7 +112,7 @@ utils::
 
 
 from . import (_basic, _io, frmts, geom, geom_common, geom_create,
-               geom_properties, grid, image, ndset, py_tools, saws,
+               geom_properties, grid, image, ndset, npGeo, py_tools, saws,
                stackstats, surface, tbl, tblstats, tools, utils)
 
 from ._basic import *
@@ -124,6 +124,7 @@ from .geom_create import *
 from .geom_properties import *
 from .grid import *
 from .ndset import *
+from .npGeo import *
 from .saws import *
 from .stackstats import *
 from .tbl import find_a_in_b, find_in, _split_sort_slice_, tbl_count, tbl_sum
@@ -147,6 +148,7 @@ __art_dict__ = {
         'grid': grid.__all__,
         'image': image.__all__,
         'ndset': ndset.__all__,
+        'npGeo': npGeo.__all__,
         'py_tools': py_tools.__all__,
         'saws': saws.__all__,
         'stackstats': stackstats.__all__,

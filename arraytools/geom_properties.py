@@ -8,7 +8,7 @@ Script :   geom_properties.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2019-03-19
+Modified : 2019-06-17
 
 Purpose :  Properties for geometry objects represented as arrays
 
@@ -27,7 +27,7 @@ Included in this module::
 
 """
 # pylint: disable=C0103  # invalid-name
-# plylint: disable=E0611 # stifle the arcgisscripting
+# pylint: disable=E0611  # stifle the arcgisscripting
 # pylint: disable=R0914  # Too many local variables
 # pylint: disable=R1710  # inconsistent-return-statements
 # pylint: disable=W0105  # string statement has no effect
@@ -332,15 +332,6 @@ def e_area(a, b=None):
     e0 = np.einsum('...i,...i->...i', x0, y0)
     e1 = np.einsum('...i,...i->...i', x1, y1)
     return np.nansum((e0-e1)*0.5)
-#    x0 = xs[np.newaxis, 1:]   #np.atleast_2d(xs[..., 1:])
-#    y0 = ys[np.newaxis, :-1]  #np.atleast_2d(ys[..., :-1])
-#    x1 = xs[np.newaxis, :-1]  #np.atleast_2d(xs[..., :-1])
-#    y1 = ys[np.newaxis, 1:]   #np.atleast_2d(ys[..., 1:])
-#    e0 = np.einsum('...ij,...ij->...i', x0, y0)
-#    e1 = np.einsum('...ij,...ij->...i', x1, y1)
-#    area = abs(np.sum((e0 - e1)*0.5))
-#    area = np.nansum((e0 - e1)*0.5)
-#    return area
 
 
 def e_dist(a, b, metric='euclidean'):
@@ -708,9 +699,9 @@ def angles_poly(a=None, inside=True, in_deg=True):
     dx, dy = a[0] - a[-1]
     if np.allclose(dx, dy):  # closed loop
         a = a[:-1]
-    a0 = np.roll(a, 1, 0)
+    a0 = np.roll(a, -1, 0)
     a1 = a
-    a2 = np.roll(a, -1, 0)
+    a2 = np.roll(a, 1, 0)
     ba = a1 - a0
     bc = a1 - a2
     cr = np.cross(ba, bc)

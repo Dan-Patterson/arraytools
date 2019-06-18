@@ -8,7 +8,7 @@ Script :   create.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2019-02-18
+Modified : 2019-06-17
 
 Purpose :  Tools for creating arrays of various geometric shapes
 
@@ -431,13 +431,12 @@ def pnt_from_dist_bearing(orig=(0, 0), bearings=None, dists=None, prn=False):
 
         shapeXY = ['X_to', 'Y_to']
         fc_name = 'C:/path/Geodatabase.gdb/featureclassname'
-        arcpy.da.NumPyArrayToFeatureClass(out, fc_name,
-                                          ['X_to', 'Y_to'], "2951")
+        arcpy.da.NumPyArrayToFeatureClass(
+            out, fc_name, ['X_to', 'Y_to'], "2951")
         # ... syntax
-        arcpy.da.NumPyArrayToFeatureClass(in_array=out,
-                                          out_table=fc_name,
-                                          shape_fields=shapeXY,
-                                          spatial_reference=SR)
+        arcpy.da.NumPyArrayToFeatureClass(
+            in_array=out, out_table=fc_name, shape_fields=shapeXY,
+            spatial_reference=SR)
     """
     error = "A origin with distances and bearings of equal size required"
     orig = np.array(orig)

@@ -380,7 +380,16 @@ def weave(a, b, match=False, by_row=True, by_cell=False):
         - For 1D arrays, the weave is by element in the array
         - For N-d arrays, the weave is by dimension, mixing or flattening
 
-    **cool!!!** np.asarray([\*sum(zip(a, b), ())])
+    **cool!!!** np.asarray([\*sum(zip(a, b), ())])::
+
+        def weave(a, b):
+            '''mini-weave'''
+            a = str(a).split(".")[0][1:]
+            b = str(b).split(".")[0][:-1]
+            return "".join([*sum(zip(a, b), ())])
+    
+        weave(1831548.520524, 490651.99297)
+        Out[]: '8439105645'
 
     Returns
     -------

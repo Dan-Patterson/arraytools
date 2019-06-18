@@ -8,7 +8,7 @@ Script :   geom_common.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2019-04-02
+Modified : 2019-06-17
 
 Purpose :  Common tools for working with arrays that represent geometry objects
 
@@ -31,10 +31,7 @@ Sample array data, 2000 points with ID, X and Y::
 import sys
 import warnings
 import numpy as np
-
-v =  np.version.version.split('.')[1]  # version check
-if int(v) >= 16:
-    from numpy.lib.recfunctions import structured_to_unstructured as stu
+from numpy.lib.recfunctions import structured_to_unstructured as stu
 
 warnings.simplefilter('ignore', FutureWarning)
 
@@ -82,18 +79,8 @@ def _view_(a):
     ----------
     ``structured_to_unstructured`` in np.lib.recfunctions and its imports.
     `<https://github.com/numpy/numpy/blob/master/numpy/lib/recfunctions.py>`_.
-
     """
-    v =  np.version.version.split('.')[1]  # version check
-    if int(v) >= 16:
-        from numpy.lib.recfunctions import structured_to_unstructured as stu
-        return stu(a)
-    else:
-        names = a.dtype.names
-        z = np.zeros((a.shape[0], 2), dtype=np.float)
-        z[:,0] = a[names[0]]
-        z[:,1] = a[names[1]]
-        return z
+    return stu(a)  # ---- structured to unstructured
 
 
 def _reshape_(a):

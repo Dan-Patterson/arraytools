@@ -8,7 +8,7 @@ Script:   frmts.py
 
 Author:   Dan_Patterson@carleton.ca
 
-Modified: 2019-04-14
+Modified: 2019-06-17
 
 References
 ----------
@@ -387,6 +387,7 @@ def xy_dist_headers(N):
     n = [names[i].format(vals[i]) for i in range(len(vals))]
     f = ['<f8']*N*2 + ['<f8']*(N-1)
     return list(zip(n, f))
+
 # ----------------------------------------------------------------------
 # (1b) deline ... code section .....
 def deline(a, width=100, header="Array...", prefix="  ."):
@@ -489,8 +490,7 @@ def redent(lines, spaces=4):
     sp = [len(ln) - len(ln.lstrip()) for ln in lines]
     spn = " "*spaces
     out = list(zip(lines, sp))
-    ret = "\n".join(["{0}{1!s:>{2}}".format(spn, *ln) for ln in out])
-    return ret
+    return "\n".join(["{0}{1!s:>{2}}".format(spn, *ln) for ln in out])
 
 
 # ----------------------------------------------------------------------
@@ -529,6 +529,7 @@ def head_tail(size=10, head=3, tail=None, fill=None):
 def _check(a):
     """Check dtype and max value for formatting information"""
     return a.shape, a.ndim, a.dtype.kind, np.nanmin(a), np.nanmax(a)
+
 
 def _slice_rows(a, edge_rows=3):
     """Split an array keeping `edge_rows` from the start and end of the array.
@@ -872,6 +873,7 @@ def pd_(a, deci=2, use_names=True):
     """see help for `prn_rec`..."""
     prn_rec(a, deci=deci)
 
+
 def quick_prn(a, edges=3, max_lines=25, width=100, decimals=2):
     """Format a structured array by setting the width so it hopefully wraps.
     """
@@ -879,6 +881,7 @@ def quick_prn(a, edges=3, max_lines=25, width=100, decimals=2):
     with np.printoptions(edgeitems=edges, threshold=max_lines, linewidth=width,
                          precision=decimals, suppress=True, nanstr='-n-'):
         print("\nArray fields/values...:\n{}\n{}".format(a.dtype.names, a))
+
 
 def prn_q(a, rows=None, deci=2):
     """Quick print a structured array.
@@ -1383,8 +1386,15 @@ def prn_tbl(a, rows_m=25, names=None, deci=2, width=100):
     header = " ... " + hdr2.format(*names[:N]) + tail
     header = "\n{}\n{}".format(header, "-"*len(header))
     txt = [header]
+#    for idx, i in enumerate(range(a.shape[0])):
+#        txt.append(" {:>03.0f} ".format(idx) + row_frmt.format(*a[i]) + tail)
+#    msg = "\n".join([i for i in txt])
     for idx, i in enumerate(range(a.shape[0])):
-        txt.append(" {:>03.0f} ".format(idx) + row_frmt.format(*a[i]) + tail)
+        if idx == rows_m:
+            txt.append("...")
+        else:
+            t = " {:>03.0f} ".format(idx) + row_frmt.format(*a[i]) + tail
+            txt.append(t)
     msg = "\n".join([i for i in txt])
     print(msg)
     # return row_frmt, hdr2  # uncomment for testing

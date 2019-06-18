@@ -121,27 +121,17 @@ type_keys = np.typecodes.keys()
 type_vals = np.typecodes.values()
 
 
-__all__ = ['arr_info',      # (0) info functions
-           'is_finite',     # (1) numeric check
-           'is_float',
-           'keep_ascii',    # (2) chararray
-           'keep_nums',
-           'del_punc',
-           'n_largest',     # (3) ndarray... size-based
-           'n_smallest',
-           'num_to_nan',    # (4) masking
-           'num_to_mask',
-           'even_odd',      # (5) padding, diagonal
-           'pad_even_odd',
-           'pad_nan',
-           'pad_zero',
-           'fill_diagonal',
-           'shape_to2D',    # (6) reshaping arrays
-           'reshape_options',
-           'cartesian',     # (7) form from-to pairs from one or two arrays
-           'all_pairs',
-           'ft_pairs'
-           ]
+__all__ = [
+    'arr_info',                              # (0) info functions
+    'is_finite', 'is_float',                 # (1) numeric check
+    'keep_ascii', 'keep_nums', 'del_punc',   # (2) chararray
+    'n_largest', 'n_smallest',               # (3) ndarray... size-based
+    'num_to_nan', 'num_to_mask',             # (4) masking
+    'even_odd', 'pad_even_odd',              # (5) padding, diagonal
+     'pad_nan', 'pad_zero', 'fill_diagonal',
+    'shape_to2D', 'reshape_options',         # (6) reshaping arrays
+    'cartesian', 'all_pairs',                # (7) form from-to pairs from one     'ft_pairs'
+     ]                                       #      or two arrays
 
 # ----------------------------------------------------------------------
 # ---- (0) info .... code section ----
@@ -399,12 +389,10 @@ def num_to_mask(a, nums=None, hardmask=True):
     ``False False False False], fill_value = 999999)``
     """
     if nums is None:
-        ret = a
-    else:
-        m = np.isin(a, nums, assume_unique=False, invert=False)
-        nums = np.array(nums)
-        ret = np.ma.MaskedArray(a, mask=m, hard_mask=hardmask)
-    return ret
+        return a
+    m = np.isin(a, nums, assume_unique=False, invert=False)
+    nums = np.array(nums)
+    return np.ma.MaskedArray(a, mask=m, hard_mask=hardmask)
 
 
 # ---- (5) padding arrays  ... even_odd, pad_even_odd, pad_nan, pad_zero

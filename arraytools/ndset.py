@@ -8,7 +8,7 @@ Script :   ndset.py
 
 Author :   Dan_Patterson@carleton.ca
 
-Modified : 2019-01-06
+Modified : 2019-06-16
 
 Purpose :
 
@@ -166,8 +166,7 @@ def _check_dtype_(a_view, b_view):
 def nd_diff(a, b, invert=True):
     """See nd_intersect.  This just returns the opposite/difference
     """
-    diff = nd_intersect(a, b, invert=invert)
-    return diff
+    return nd_intersect(a, b, invert=invert)
 
 
 def nd_diffxor(a, b, uni=False):
@@ -209,8 +208,7 @@ def nd_intersect(a, b, invert=False):
     if len(a) > len(b):
         idx = np.in1d(a_view, b_view, assume_unique=False, invert=invert)
         return a[idx]
-    idx = np.in1d(b_view, a_view, assume_unique=False, invert=invert)
-    return b[idx]
+    return np.in1d(b_view, a_view, assume_unique=False, invert=invert)
 
 
 def nd_isin(a, look_for, reverse=False):

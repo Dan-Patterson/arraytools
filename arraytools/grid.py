@@ -8,7 +8,7 @@ Script :  grid.py
 
 Author :  Dan_Patterson@carleton.ca
 
-Modified : 2018-02-21
+Modified : 2019-06-17
 
 Purpose : tools for working with numpy arrays
 
@@ -75,6 +75,8 @@ def check_shapes(arrs):
 def combine_(arrs, ret_classes=False):
     """Combine arrays to produce a unique classification scheme
 
+    Parameters
+    ----------
     arrs : iterable
         list, tuple of arrays of the same shape
     ret_classes : array
@@ -143,8 +145,7 @@ def euc_dist(a, origins=0, cell_size=1):
     if cell_size == 0:
         cell_size = 1
     msk = (~np.isin(a, origins)).astype('int')
-    dist = nd.distance_transform_edt(msk,
-                                     sampling=cell_size,
+    dist = nd.distance_transform_edt(msk, sampling=cell_size,
                                      return_distances=True)
     return dist
 
