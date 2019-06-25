@@ -491,7 +491,7 @@ class Geo(np.ndarray):
         """
         def _extent_(i):
             """Extent of a sub-array in an object array"""
-            return np.concatenate((np.nanmin(i, axis=0), np.nanmax(i, axis=0)))
+            return np.concatenate((np.nanmin(i, axis=0), np.nanmax(i, axis=0)))                                                                                      
         # ----
         if self.N == 1:
             by_part = True
